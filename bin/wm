@@ -1,0 +1,631 @@
+#!/usr/bin/env python3
+"""wm — shared work memory for AI agents.
+
+Storage:  one markdown file per work item in $WM_DIR/items/ (default ~/workmem),
+          flat YAML-subset frontmatter + freeform markdown body.
+History:  every mutation is a git commit, authored as the acting agent.
+Contract: this tool is deterministic plumbing only (store, query, mutate, link,
+          history, notify). All judgment — planning, prioritization, capture —
+          belongs to the AI agents described in AGENTS.md.
+
+Output is JSON (JSONL for find/search) so any agent or script can parse it.
+"""
+import argparse
+import json
+import os
+import re
+import secrets
+import shutil
+import subprocess
+import sys
+import time
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+WM_DIR = Path(os.environ.get("WM_DIR", str(Path.home() / "workmem"))).expanduser()
+ITEMS = WM_DIR / "items"
+
+CORE_ORDER = ["id", "type", "title", "status", "priority", "due",
+              "people", "tags", "links", "created", "updated", "source"]
+LIST_FIELDS = {"people", "tags", "links"}
+PROTECTED = {"id", "created", "updated"}
+ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+KEY_RE = r"[A-Za-z_][A-Za-z0-9_-]*?"
+OPS = "(!=|!~|>=|<=|=|~|<|>)"
+ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz"  # no 0/1/l/o/i lookalikes
+
+
+def die(msg, code=1):
+    print(json.dumps({"error": msg}, ensure_ascii=False), file=sys.stderr)
+    sys.exit(code)
+
+
+def agent_name(args=None):
+    by = getattr(args, "by", None) if args else None
+    return by or os.environ.get("WM_AGENT") or "unknown"
+
+
+def now_ts():
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def now_minute():
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
+
+
+def resolve_date(v):
+    """Expand `today`, `today+N`, `today-N` (local date) and `now` (UTC)."""
+    m = re.fullmatch(r"today([+-]\d+)?", v.strip())
+    if m:
+        d = datetime.now() + timedelta(days=int(m.group(1) or 0))
+        return d.strftime("%Y-%m-%d")
+    if v.strip() == "now":
+        return now_ts()
+    return v
+
+
+# ---------------------------------------------------------------- frontmatter
+# Deliberately a flat YAML subset: string scalars and flat lists of strings.
+# Anything richer belongs in the markdown body. See SCHEMA.md.
+
+def unquote(s):
+    if len(s) >= 2 and s[0] == s[-1] and s[0] in "\"'":
+        return s[1:-1]
+    return s
+
+
+def parse_text(text, where="item"):
+    text = text.replace("\r\n", "\n")
+    lines = text.split("\n")
+    if not lines or lines[0].strip() != "---":
+        raise ValueError("%s: missing frontmatter open '---'" % where)
+    try:
+        end = next(i for i in range(1, len(lines)) if lines[i].strip() == "---")
+    except StopIteration:
+        raise ValueError("%s: missing frontmatter close '---'" % where)
+    fm, last_key = {}, None
+    for raw in lines[1:end]:
+        if not raw.strip() or raw.lstrip().startswith("#"):
+            continue
+        m = re.match(r"^\s*-\s+(.*)$", raw)
+        if m and last_key is not None:  # block-style list item (read-tolerated)
+            if not isinstance(fm[last_key], list):
+                fm[last_key] = [] if fm[last_key] == "" else [fm[last_key]]
+            fm[last_key].append(unquote(m.group(1).strip()))
+            continue
+        key, sep, val = raw.partition(":")
+        if not sep:
+            raise ValueError("%s: bad frontmatter line %r" % (where, raw))
+        key, val = key.strip(), val.strip()
+        if val.startswith("[") and val.endswith("]"):
+            inner = val[1:-1].strip()
+            fm[key] = [unquote(x.strip()) for x in inner.split(",") if x.strip()] if inner else []
+        else:
+            fm[key] = unquote(val)
+        last_key = key
+    body = "\n".join(lines[end + 1:]).strip("\n")
+    return fm, body
+
+
+def emit_scalar(v):
+    v = str(v)
+    if v != v.strip() or v.startswith(("[", '"', "'")):
+        return '"%s"' % v.replace('"', "'")
+    return v
+
+
+def dump_text(fm, body):
+    out = ["---"]
+    keys = [k for k in CORE_ORDER if k in fm] + [k for k in fm if k not in CORE_ORDER]
+    for k in keys:
+        v = fm[k]
+        if v in (None, "", []):
+            continue
+        if isinstance(v, list):
+            out.append("%s: [%s]" % (k, ", ".join(emit_scalar(x) for x in v)))
+        else:
+            out.append("%s: %s" % (k, emit_scalar(v)))
+    out.append("---")
+    text = "\n".join(out) + "\n"
+    if body.strip():
+        text += "\n" + body.strip("\n") + "\n"
+    return text
+
+
+# ---------------------------------------------------------------- item store
+
+def item_path(id_):
+    if not ID_RE.match(id_):
+        die("invalid id: %s" % id_)
+    return ITEMS / (id_ + ".md")
+
+
+def load(id_):
+    p = item_path(id_)
+    if not p.exists():
+        die("not found: %s" % id_)
+    fm, body = parse_text(p.read_text(encoding="utf-8"), where=id_)
+    return fm, body, p
+
+
+def save(id_, fm, body):
+    ITEMS.mkdir(parents=True, exist_ok=True)
+    p = item_path(id_)
+    tmp = p.with_suffix(".md.tmp")
+    tmp.write_text(dump_text(fm, body), encoding="utf-8")
+    os.replace(tmp, p)
+    return p
+
+
+def load_all():
+    items = []
+    if not ITEMS.is_dir():
+        return items
+    for p in sorted(ITEMS.glob("*.md")):
+        try:
+            fm, body = parse_text(p.read_text(encoding="utf-8"), where=p.name)
+        except ValueError as e:
+            print(json.dumps({"warning": str(e)}), file=sys.stderr)
+            continue
+        fm["body"] = body
+        items.append(fm)
+    return items
+
+
+def new_id():
+    while True:
+        id_ = "wm-" + "".join(secrets.choice(ALPHABET) for _ in range(6))
+        if not (ITEMS / (id_ + ".md")).exists():
+            return id_
+
+
+def public(item, fields=None, full=False):
+    if fields:
+        want = ["id"] + [f for f in fields if f != "id"]
+        return {k: item.get(k) for k in want}
+    return {k: v for k, v in item.items() if k != "body" or full}
+
+
+def emit(obj):
+    print(json.dumps(obj, ensure_ascii=False))
+
+
+# ---------------------------------------------------------------- git history
+
+def in_repo():
+    return (WM_DIR / ".git").exists()
+
+
+def git(*argv, **kw):
+    return subprocess.run(["git", "-C", str(WM_DIR)] + list(argv),
+                          capture_output=True, text=True, **kw)
+
+
+def commit(msg, agent):
+    """Auto-commit every mutation; the acting agent is the commit author."""
+    if not in_repo() or os.environ.get("WM_NO_COMMIT"):
+        return
+    env = dict(os.environ,
+               GIT_AUTHOR_NAME=agent, GIT_AUTHOR_EMAIL=agent + "@workmem.local",
+               GIT_COMMITTER_NAME="wm", GIT_COMMITTER_EMAIL="wm@workmem.local")
+    for attempt in range(3):
+        git("add", "-A")
+        r = subprocess.run(["git", "-C", str(WM_DIR), "commit", "-q", "-m", msg],
+                           capture_output=True, text=True, env=env)
+        if r.returncode == 0 or "nothing to commit" in r.stdout + r.stderr:
+            return
+        time.sleep(0.2 * (attempt + 1))  # likely index.lock contention
+    print(json.dumps({"warning": "git commit failed: " + (r.stderr or r.stdout).strip()}),
+          file=sys.stderr)
+
+
+# ---------------------------------------------------------------- assignments
+# k=v sets (comma-splits on list fields), k= clears, k+=v / k-=v edit lists.
+
+ASSIGN_RE = re.compile(r"^(%s)(\+=|-=|=)(.*)$" % KEY_RE, re.S)
+
+
+def apply_assign(fm, assigns):
+    for a in assigns:
+        m = ASSIGN_RE.match(a)
+        if not m:
+            die("bad assignment: %r (expected field=value)" % a)
+        k, op, v = m.group(1), m.group(2), m.group(3).strip()
+        if k in PROTECTED:
+            die("field '%s' is managed by wm and cannot be set" % k)
+        if k == "due" and v:
+            v = resolve_date(v)
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+                die("due must be YYYY-MM-DD (or today/today+N), got %r" % v)
+        if op == "=":
+            if v == "":
+                fm.pop(k, None)
+            elif k in LIST_FIELDS:
+                fm[k] = [x.strip() for x in v.split(",") if x.strip()]
+            else:
+                fm[k] = v
+        else:
+            cur = fm.get(k, [])
+            cur = [cur] if isinstance(cur, str) else list(cur)
+            if op == "+=" and v and v not in cur:
+                cur.append(v)
+            if op == "-=" and v in cur:
+                cur.remove(v)
+            fm[k] = cur
+            if not cur:
+                fm.pop(k, None)
+    return fm
+
+
+def read_body(arg):
+    if arg is None:
+        return None
+    return sys.stdin.read() if arg == "-" else arg
+
+
+# ---------------------------------------------------------------- where engine
+# Generic filtering: =, != (comma = IN), ~, !~ (substring), <, <=, >, >=
+# (numeric when both sides are numbers, else string — ISO dates compare right).
+# `null` matches absent/empty. Values today / today±N / now expand to dates.
+
+WHERE_RE = re.compile(r"^(%s)%s(.*)$" % (KEY_RE, OPS), re.S)
+
+
+def match(item, key, op, raw):
+    cur = item.get(key)
+    empty = cur in (None, "", [])
+    if raw.strip() == "null":
+        if op == "=":
+            return empty
+        if op == "!=":
+            return not empty
+        return False
+    vals = [resolve_date(x) for x in raw.split(",")] if op in ("=", "!=") else [resolve_date(raw)]
+    if isinstance(cur, list):
+        if op == "=":
+            return any(v in cur for v in vals)
+        if op == "!=":
+            return all(v not in cur for v in vals)
+        if op == "~":
+            return any(vals[0].lower() in str(x).lower() for x in cur)
+        if op == "!~":
+            return not any(vals[0].lower() in str(x).lower() for x in cur)
+        return False
+    if empty:
+        return op in ("!=", "!~")
+    s = str(cur)
+    if op == "=":
+        return s in vals
+    if op == "!=":
+        return s not in vals
+    if op == "~":
+        return vals[0].lower() in s.lower()
+    if op == "!~":
+        return vals[0].lower() not in s.lower()
+    a, b = s, vals[0]
+    try:
+        a, b = float(a), float(b)
+    except ValueError:
+        pass
+    return {"<": a < b, "<=": a <= b, ">": a > b, ">=": a >= b}[op]
+
+
+def apply_where(items, exprs):
+    parsed = []
+    for e in exprs or []:
+        m = WHERE_RE.match(e)
+        if not m:
+            die("bad where expression: %r" % e)
+        parsed.append(m.groups())
+    return [it for it in items if all(match(it, k, op, v) for k, op, v in parsed)]
+
+
+def apply_sort(items, spec):
+    for part in reversed(spec.split(",")):
+        key, _, direc = part.partition(":")
+        key = key.strip()
+
+        def valkey(it, key=key):
+            v = it.get(key)
+            if isinstance(v, list):
+                v = ",".join(str(x) for x in v)
+            s = "" if v is None else str(v)
+            try:
+                return (0, float(s), "")
+            except ValueError:
+                return (1, 0.0, s.lower())
+
+        items.sort(key=valkey, reverse=(direc.strip() == "desc"))
+        items.sort(key=lambda it, key=key: it.get(key) in (None, "", []))  # absent last
+    return items
+
+
+# ------------------------------------------------------------------- commands
+
+def cmd_init(args):
+    for d in (ITEMS, WM_DIR / "prompts", WM_DIR / ".logs"):
+        d.mkdir(parents=True, exist_ok=True)
+    fresh = not in_repo()
+    if fresh:
+        git("init", "-q")
+    emit({"dir": str(WM_DIR), "git": "initialized" if fresh else "already a repo"})
+
+
+def cmd_new(args):
+    id_ = new_id()
+    fm = {"id": id_, "type": args.type, "title": args.title, "status": "open",
+          "created": now_ts(), "updated": now_ts(), "source": agent_name(args)}
+    apply_assign(fm, args.assign)
+    fm["id"], fm["created"] = id_, fm["created"]
+    body = read_body(args.body) or ""
+    p = save(id_, fm, body)
+    commit("new %s: %s" % (id_, fm.get("title", "")), agent_name(args))
+    emit(dict(fm, body=body, path=str(p)))
+
+
+def cmd_get(args):
+    for id_ in args.id:
+        fm, body, p = load(id_)
+        if args.raw:
+            sys.stdout.write(p.read_text(encoding="utf-8"))
+        else:
+            emit(dict(fm, body=body, path=str(p)))
+
+
+def cmd_set(args):
+    if not args.assign and args.body is None:
+        die("nothing to do: pass field=value assignments and/or --body")
+    fm, body, _ = load(args.id)
+    apply_assign(fm, args.assign)
+    if args.body is not None:
+        body = read_body(args.body)
+    fm["updated"] = now_ts()
+    p = save(args.id, fm, body)
+    commit("set %s: %s" % (args.id, " ".join(args.assign) or "body"), agent_name(args))
+    emit(dict(fm, body=body, path=str(p)))
+
+
+def cmd_log(args):
+    fm, body, _ = load(args.id)
+    line = "- %s [%s] %s" % (now_minute(), agent_name(args), args.message)
+    if "## Log" not in body:
+        body = (body.rstrip("\n") + "\n\n## Log" if body.strip() else "## Log")
+    body = body.rstrip("\n") + "\n" + line
+    fm["updated"] = now_ts()
+    save(args.id, fm, body)
+    commit("log %s: %s" % (args.id, args.message), agent_name(args))
+    emit({"id": args.id, "logged": line})
+
+
+def cmd_link(args):
+    fm, body, _ = load(args.a)
+    load(args.b)  # validate target exists
+    edge = "%s:%s" % (args.rel, args.b)
+    links = fm.get("links", [])
+    links = [links] if isinstance(links, str) else list(links)
+    if edge not in links:
+        links.append(edge)
+    fm["links"], fm["updated"] = links, now_ts()
+    save(args.a, fm, body)
+    commit("link %s %s %s" % (args.a, args.rel, args.b), agent_name(args))
+    emit({"id": args.a, "links": links})
+
+
+def cmd_unlink(args):
+    fm, body, _ = load(args.a)
+    edge = "%s:%s" % (args.rel, args.b)
+    links = [x for x in fm.get("links", []) if x != edge]
+    fm["links"], fm["updated"] = links, now_ts()
+    if not links:
+        fm.pop("links", None)
+    save(args.a, fm, body)
+    commit("unlink %s %s %s" % (args.a, args.rel, args.b), agent_name(args))
+    emit({"id": args.a, "links": links})
+
+
+def cmd_links(args):
+    """Outbound edges from the item's own frontmatter; inbound derived by scan."""
+    fm, _, _ = load(args.id)
+    all_items = {it["id"]: it for it in load_all() if it.get("id")}
+
+    def describe(other_id):
+        o = all_items.get(other_id)
+        return {"id": other_id, "title": o.get("title"), "status": o.get("status")} if o \
+            else {"id": other_id, "missing": True}
+
+    out = []
+    for edge in fm.get("links", []):
+        rel, _, target = edge.partition(":")
+        out.append(dict({"rel": rel}, **describe(target)))
+    inbound = []
+    for it in all_items.values():
+        for edge in it.get("links", []) if isinstance(it.get("links"), list) else []:
+            rel, _, target = edge.partition(":")
+            if target == args.id:
+                inbound.append({"rel": rel, "id": it["id"],
+                                "title": it.get("title"), "status": it.get("status")})
+    emit({"id": args.id, "out": out, "in": inbound})
+
+
+def cmd_find(args):
+    items = apply_where(load_all(), args.where)
+    if args.count:
+        emit({"count": len(items)})
+        return
+    apply_sort(items, args.sort)
+    if args.offset:
+        items = items[args.offset:]
+    if args.limit is not None:
+        items = items[:args.limit]
+    fields = [f.strip() for f in args.fields.split(",")] if args.fields else None
+    for it in items:
+        if args.oneline:
+            due = " due:%s" % it["due"] if it.get("due") else ""
+            print("%s  [%s] %s%s" % (it.get("id"), it.get("status", "?"), it.get("title", ""), due))
+        else:
+            emit(public(it, fields=fields, full=args.full))
+
+
+def cmd_search(args):
+    tokens = [t.lower() for t in " ".join(args.query).split()]
+    if not tokens:
+        die("empty query")
+    results = []
+    for it in load_all():
+        title = str(it.get("title", "")).lower()
+        tags = " ".join(it.get("tags", []) if isinstance(it.get("tags"), list) else []).lower()
+        hay = json.dumps(it, ensure_ascii=False).lower()
+        if not all(t in hay for t in tokens):
+            continue
+        score = sum(5 * title.count(t) + 3 * tags.count(t) + hay.count(t) for t in tokens)
+        body = it.get("body", "").lower()
+        pos = min((body.find(t) for t in tokens if t in body), default=-1)
+        snippet = ""
+        if pos >= 0:
+            snippet = " ".join(it["body"][max(0, pos - 60):pos + 90].split())
+        results.append((score, {"id": it.get("id"), "title": it.get("title"),
+                                "status": it.get("status"), "type": it.get("type"),
+                                "score": score, "snippet": snippet}))
+    results.sort(key=lambda r: -r[0])
+    for _, r in results[:args.limit]:
+        emit(r)
+
+
+def cmd_history(args):
+    if not in_repo():
+        die("history requires the memory dir to be a git repo (run: wm init)")
+    rel = "items/%s.md" % args.id
+    if args.diff:
+        subprocess.run(["git", "-C", str(WM_DIR), "log", "-p", "--follow",
+                        "-n", str(args.limit), "--", rel])
+        return
+    r = git("log", "--follow", "-n", str(args.limit),
+            "--format=%h%x09%aI%x09%an%x09%s", "--", rel)
+    for line in r.stdout.strip().splitlines():
+        h, date, author, subject = line.split("\t", 3)
+        emit({"commit": h, "date": date, "agent": author, "message": subject})
+
+
+def cmd_rm(args):
+    for id_ in args.id:
+        _, _, p = load(id_)
+        p.unlink()
+        commit("rm %s" % id_, agent_name(args))
+        emit({"deleted": id_})
+
+
+def cmd_notify(args):
+    if sys.platform == "darwin" and shutil.which("osascript"):
+        script = "display notification %s with title %s" % (
+            json.dumps(args.message), json.dumps(args.title))
+        subprocess.run(["osascript", "-e", script], capture_output=True)
+        emit({"notified": args.title, "via": "osascript"})
+    elif shutil.which("notify-send"):
+        subprocess.run(["notify-send", args.title, args.message], capture_output=True)
+        emit({"notified": args.title, "via": "notify-send"})
+    else:
+        print("NOTIFY: %s — %s" % (args.title, args.message))
+
+
+def cmd_sync(args):
+    commit("wm sync", agent_name(args))
+    if not in_repo():
+        die("not a git repo (run: wm init)")
+    remotes = git("remote").stdout.split()
+    if not remotes:
+        emit({"synced": False, "note": "no git remote configured; local history only"})
+        return
+    pull = git("pull", "--rebase", "-q", remotes[0])
+    push = git("push", "-q", remotes[0])
+    if pull.returncode or push.returncode:
+        die("sync failed: %s" % (pull.stderr or push.stderr).strip())
+    emit({"synced": True, "remote": remotes[0]})
+
+
+# ----------------------------------------------------------------------- main
+
+def main():
+    ap = argparse.ArgumentParser(prog="wm", description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest="cmd", required=True)
+
+    sub.add_parser("init", help="create dirs and git repo").set_defaults(fn=cmd_init)
+
+    p = sub.add_parser("new", help="create an item: wm new <type> <title> [field=value ...]")
+    p.add_argument("type"); p.add_argument("title"); p.add_argument("assign", nargs="*")
+    p.add_argument("--body", help="markdown body ('-' reads stdin)")
+    p.set_defaults(fn=cmd_new)
+
+    p = sub.add_parser("get", help="print item(s) as JSON")
+    p.add_argument("id", nargs="+"); p.add_argument("--raw", action="store_true")
+    p.set_defaults(fn=cmd_get)
+
+    p = sub.add_parser("set", help="update fields: wm set <id> k=v k+=v k-=v [--body ...]")
+    p.add_argument("id"); p.add_argument("assign", nargs="*")
+    p.add_argument("--body", help="replace body ('-' reads stdin)")
+    p.set_defaults(fn=cmd_set)
+
+    p = sub.add_parser("log", help="append a timestamped line to the item's ## Log")
+    p.add_argument("id"); p.add_argument("message")
+    p.set_defaults(fn=cmd_log)
+
+    p = sub.add_parser("link", help="add directed edge: wm link <id> <rel> <id>")
+    p.add_argument("a"); p.add_argument("rel"); p.add_argument("b")
+    p.set_defaults(fn=cmd_link)
+
+    p = sub.add_parser("unlink", help="remove edge: wm unlink <id> <rel> <id>")
+    p.add_argument("a"); p.add_argument("rel"); p.add_argument("b")
+    p.set_defaults(fn=cmd_unlink)
+
+    p = sub.add_parser("links", help="show outbound and inbound edges for an item")
+    p.add_argument("id")
+    p.set_defaults(fn=cmd_links)
+
+    p = sub.add_parser("find", help="query items; repeat --where to AND filters")
+    p.add_argument("--where", action="append", metavar="EXPR",
+                   help="field OP value; ops: = != ~ !~ < <= > >= ; null; today±N")
+    p.add_argument("--sort", default="updated:desc", metavar="k[:desc][,k2...]")
+    p.add_argument("--limit", type=int); p.add_argument("--offset", type=int, default=0)
+    p.add_argument("--fields", help="comma-separated projection")
+    p.add_argument("--full", action="store_true", help="include body")
+    p.add_argument("--count", action="store_true")
+    p.add_argument("--oneline", action="store_true", help="human-readable lines")
+    p.set_defaults(fn=cmd_find)
+
+    p = sub.add_parser("search", help="full-text search over all items")
+    p.add_argument("query", nargs="+"); p.add_argument("--limit", type=int, default=20)
+    p.set_defaults(fn=cmd_search)
+
+    p = sub.add_parser("history", help="git history of one item")
+    p.add_argument("id"); p.add_argument("--diff", action="store_true")
+    p.add_argument("--limit", type=int, default=20)
+    p.set_defaults(fn=cmd_history)
+
+    p = sub.add_parser("rm", help="delete item file(s) (prefer status=dropped)")
+    p.add_argument("id", nargs="+")
+    p.set_defaults(fn=cmd_rm)
+
+    p = sub.add_parser("notify", help="OS notification: wm notify <title> <message>")
+    p.add_argument("title"); p.add_argument("message")
+    p.set_defaults(fn=cmd_notify)
+
+    sub.add_parser("sync", help="commit, then pull --rebase && push if a remote exists")\
+       .set_defaults(fn=cmd_sync)
+
+    for name, sp in sub.choices.items():
+        if name in ("new", "set", "log", "link", "unlink", "rm", "sync"):
+            sp.add_argument("--by", help="acting agent name (default: $WM_AGENT)")
+
+    args = ap.parse_args()
+    try:
+        args.fn(args)
+    except SystemExit:
+        raise
+    except Exception as e:
+        if os.environ.get("WM_DEBUG"):
+            raise
+        die("%s: %s" % (type(e).__name__, e))
+
+
+if __name__ == "__main__":
+    main()
