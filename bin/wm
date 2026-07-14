@@ -235,8 +235,10 @@ def apply_assign(fm, assigns):
             die("field '%s' is managed by wm and cannot be set" % k)
         if k == "due" and v:
             v = resolve_date(v)
-            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
-                die("due must be YYYY-MM-DD (or today/today+N), got %r" % v)
+            try:
+                datetime.strptime(v, "%Y-%m-%d")
+            except ValueError:
+                die("due must be a real YYYY-MM-DD date (or today/today+N), got %r" % v)
         if op == "=":
             if v == "":
                 fm.pop(k, None)

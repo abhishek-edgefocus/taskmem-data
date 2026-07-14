@@ -4,12 +4,12 @@ type: followup
 title: Ask Rahul about pricing API timeline
 status: waiting
 priority: p1
-due: 2026-13-99
+due: 2026-07-15
 people: [Rahul]
 tags: [pricing]
 links: [relates:wm-kpyq3c]
 created: 2026-07-14T14:21:08Z
-updated: 2026-07-14T14:21:08Z
+updated: 2026-07-14T14:21:44Z
 source: e2e-test
 ---
 
