@@ -6,6 +6,7 @@ status: open
 priority: p2
 due: 2026-07-16
 tags: [workmem]
+links: [follows:wm-kpyq3c]
 created: 2026-07-14T14:20:46Z
 updated: 2026-07-14T14:20:46Z
 source: bootstrap
