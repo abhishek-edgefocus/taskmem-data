@@ -13,3 +13,6 @@ source: e2e-test
 ---
 
 Test item: verifying the full lifecycle.
+
+## Log
+- 2026-07-14T14:21Z [e2e-test] Rahul pinged on Slack; waiting for reply
