@@ -5,7 +5,7 @@ title: Raise sshd MaxSessions on dpx to prevent VSCode Remote-SSH channel satura
 status: dropped
 tags: [dpx, infra]
 created: 2026-07-14T16:09:11Z
-updated: 2026-07-14T16:33:50Z
+updated: 2026-07-14T16:39:53Z
 source: claude-code
 ---
 
@@ -13,3 +13,4 @@ source: claude-code
 
 ## Log
 - 2026-07-14T16:33Z [claude-code] Server-side changes are out of Abhishek's scope on dpx (shared host). Prevention must be client-side: remove ControlMaster sharing for the dp host, or give VSCode its own SSH config. Quick recovery if it recurs: ssh -O exit dp, then Reload Window.
+- 2026-07-14T16:39Z [claude-code] RESOLVED client-side instead: removed ControlMaster/ControlPath/ControlPersist from the dp host block in ~/.ssh/config so VSCode Remote-SSH gets a dedicated connection. Verified: exthost9 on dpx activated 10 extensions incl. Anthropic.claude-code at 2026-07-14 16:39 UTC. If slow-socket symptoms ever return, check for anything re-multiplexing ssh to dpx.
