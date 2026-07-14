@@ -2,10 +2,10 @@
 id: wm-r28p9n
 type: task
 title: Raise sshd MaxSessions on dpx to prevent VSCode Remote-SSH channel saturation
-status: open
+status: dropped
 tags: [dpx, infra]
 created: 2026-07-14T16:09:11Z
-updated: 2026-07-14T16:09:11Z
+updated: 2026-07-14T16:33:49Z
 source: claude-code
 ---
 
