@@ -2,10 +2,11 @@
 id: wm-hzpya6
 type: followup
 title: Ask Rahul about pricing API timeline
-status: open
+status: active
+priority: p1
 due: 2026-07-15
 people: [Rahul]
-tags: [pricing]
+tags: [pricing, api]
 created: 2026-07-14T14:21:08Z
 updated: 2026-07-14T14:21:08Z
 source: e2e-test
