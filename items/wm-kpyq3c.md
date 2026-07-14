@@ -10,3 +10,6 @@ source: bootstrap
 ---
 
 Chose flat-frontmatter markdown per item, git for history, one generic zero-dependency CLI (wm), and prose contracts (SCHEMA.md/AGENTS.md) for all business logic. Full rationale in README.md. Revisit storage (SQLite cache) only if scale demands it.
+
+## Log
+- 2026-07-14T14:20Z [bootstrap] recorded at system bootstrap; see README.md for the full decision table
