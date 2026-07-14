@@ -2,7 +2,7 @@
 id: wm-hzpya6
 type: followup
 title: Ask Rahul about pricing API timeline
-status: active
+status: waiting
 priority: p1
 due: 2026-13-99
 people: [Rahul]
