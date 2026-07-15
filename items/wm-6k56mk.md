@@ -40,3 +40,6 @@ must never modify; this is a human-only task.
 - Evidence: today's stale automated self-DM in Slack ("Morning brief — Wed Jul 15")
 - Old system docs on dpx: ~/tasks/README.md, ~/tasks/PROTOCOL.md
 - Blocked-on/related: wm-c4vhst (create taskmem GitHub remote)
+
+## Log
+- 2026-07-15T15:12Z [intake-review] upgraded to pickup-ready standard (context, next steps, links)
