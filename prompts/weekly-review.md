@@ -19,7 +19,7 @@ Steps:
 1. Stale sweep: taskmem find --where "status!=done,dropped" --where "updated<today-14"
    For each: revive it (log why it still matters), re-date it, or mark it
    dropped with a log line. Never drop silently. Then archive old closed
-   items: taskmem find --where status=done,dropped --where "updated<today-90"
+   items: taskmem find --where status=done,dropped --where "updated<today-30"
    --fields id,title → taskmem archive <ids>.
 2. If Linear MCP tools are available, reconcile READ-ONLY (assignee "me",
    last 7 days) the same way the daily agent does — missing assigned issues

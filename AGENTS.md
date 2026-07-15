@@ -249,7 +249,7 @@ open xs/s/m child in `next`/`active`) and flag `xl` items without children;
 walk `blocks`/`waiting` edges and flag what one action would unblock; check workload balance across people/projects; write a short
 `note` tagged `weekly-review` with observations and proposals. Finally,
 archive old closed items so the working set stays small:
-`taskmem find --where status=done,dropped --where "updated<today-90"` →
+`taskmem find --where status=done,dropped --where "updated<today-30"` →
 `taskmem archive <ids>`. Archived items stay id-addressable and searchable
 via `--archived`; the move itself is the record, no log line needed.
 
