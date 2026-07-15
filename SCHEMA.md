@@ -127,6 +127,7 @@ so mutations are attributed to you — in `## Log` lines and as the git author.
 | `taskmem links <id>` | outbound + inbound edges |
 | `taskmem thread <id> [--all] [--oneline]` | transitive parent/follows lineage, both directions |
 | `taskmem story <id> [--oneline]` | full context + lineage + merged timeline (git mutations ∪ log lines) |
+| `taskmem delegate <id>` | copy-paste prompt handing the item to any AI agent (inline context + item pointers + working agreement) |
 | `taskmem find [--where EXPR]… [--sort k:desc,k2] [--limit N] [--offset N] [--fields a,b] [--full] [--count] [--oneline]` | generic query |
 | `taskmem search <text> [--limit N]` | full-text, all-tokens-match, scored |
 | `taskmem history <id> [--diff]` | git history of one item |

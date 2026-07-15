@@ -239,7 +239,10 @@ m → half a day · l → about a day · xl → multi-day. The generated views
 briefs. When asked for everything about an item ("full context",
 "where did this come from", "what happened with X"), answer from
 `taskmem story <id>` — context prose first, then the timeline as the
-single table. Speak plain language, never field syntax:
+single table. When asked to "delegate this" / "give me a prompt for X",
+run `taskmem delegate <id>` and hand its output over verbatim (adjust only
+if the human adds constraints); if a delegated agent later reports back,
+record the outcome on the item. Speak plain language, never field syntax:
 say "now waiting on Kushagra for the schema doc — I'll flag it Friday", not
 `waiting_on=Kushagra nudge=2026-07-17`. Disclose every mutation you made,
 one line each (including links you added); beyond that, stop — lead with

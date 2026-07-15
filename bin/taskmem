@@ -594,6 +594,76 @@ def cmd_story(args):
         print("%-25s %-14s %s" % (e["time"], e["by"], e["event"]))
 
 
+def cmd_delegate(args):
+    """Render a copy-paste prompt that hands this item to any AI agent:
+    inline context (self-contained) + pointers to the underlying item."""
+    fm, body, p = load(args.id)
+    context = body.split("## Log")[0].strip()
+    pri = {"p0": "urgent", "p1": "high", "p2": "", "p3": "low"}.get(
+        fm.get("priority", ""), fm.get("priority", ""))
+    size = {"xs": "~15 min", "s": "under an hour", "m": "half a day",
+            "l": "about a day", "xl": "multi-day"}.get(fm.get("size", ""), fm.get("size", ""))
+    user = "the user"
+    conf = WM_DIR / "config.env"
+    if conf.exists():
+        for ln in conf.read_text(encoding="utf-8").splitlines():
+            if ln.startswith("USER_NAME=") and ln.split("=", 1)[1].strip():
+                user = ln.split("=", 1)[1].strip()
+    people = fm.get("people")
+    facts = [x for x in (
+        "status: %s" % fm.get("status", "?"),
+        ("priority: %s" % pri) if pri else "",
+        ("effort: %s" % size) if size else "",
+        ("due: %s" % fm["due"]) if fm.get("due") else "",
+        ("scheduled: %s" % fm["scheduled"]) if fm.get("scheduled") else "",
+        ("people: %s" % ", ".join(people)) if isinstance(people, list) and people else "",
+    ) if x]
+    out = ["You are being delegated a work item from %s's shared task memory." % user, "",
+           "# %s — %s" % (fm["id"], fm.get("title", ""))]
+    if facts:
+        out.append("(%s)" % " · ".join(facts))
+    out.append("")
+    if context:
+        out += [context, ""]
+    refs = fm.get("refs") or []
+    if refs:
+        out.append("## References")
+        for r in (refs if isinstance(refs, list) else [refs]):
+            label, _, url = r.partition("=")
+            out.append("- %s: %s" % (label, url or label))
+        out.append("")
+    nodes = thread_nodes(args.id)
+    if len(nodes) > 1:
+        out.append("## Where this sits (lineage)")
+        for n in nodes:
+            out.append("%s- %s [%s] %s%s" % ("  " * n["depth"], n["id"], n.get("status", "?"),
+                                             n.get("title", ""),
+                                             "  ← this item" if n["focus"] else ""))
+        out.append("")
+    out += [
+        "## The underlying item (source of truth)",
+        "- id: %s · file: %s" % (fm["id"], p),
+        "- Full record: `%s get %s --raw` · history: `%s story %s --oneline` · "
+        "lineage: `%s thread %s --oneline`" % (PROG, fm["id"], PROG, fm["id"], PROG, fm["id"]),
+        "- CLI: %s/bin/%s · protocol: %s/AGENTS.md · data model: %s/SCHEMA.md"
+        % (WM_DIR, PROG, WM_DIR, WM_DIR),
+        "",
+        "## Working agreement (if you can access this memory)",
+        "1. Identify yourself: export WM_AGENT=<your-role> (or pass --by on every mutation).",
+        "2. Read the full item first (`%s get %s --raw`), then mark it active:"
+        " `%s set %s status=active`." % (PROG, fm["id"], PROG, fm["id"]),
+        "3. Log material findings and decisions as you go: `%s log %s \"...\"`." % (PROG, fm["id"]),
+        "4. Capture work you discover as NEW items with status=inbox, linked to this one.",
+        "5. Finish: `%s set %s status=done` plus a log line stating the outcome." % (PROG, fm["id"]),
+        "   Blocked instead: status=waiting waiting_on=<who> nudge=<date>, log what you await.",
+        "6. End with `%s sync` (a safe no-op when no remote is configured)." % PROG,
+        "",
+        "If you CANNOT access this memory (different machine, no filesystem), work from the "
+        "context above and report your outcome back to %s so their agents can record it." % user,
+    ]
+    print("\n".join(out))
+
+
 def cmd_find(args):
     items = apply_where(load_all(args.archived), args.where)
     if args.count:
@@ -769,6 +839,10 @@ def main():
     p.add_argument("id")
     p.add_argument("--oneline", action="store_true", help="human-readable story")
     p.set_defaults(fn=cmd_story)
+
+    p = sub.add_parser("delegate", help="copy-paste prompt to hand this item to any AI agent")
+    p.add_argument("id")
+    p.set_defaults(fn=cmd_delegate)
 
     p = sub.add_parser("find", help="query items; repeat --where to AND filters")
     p.add_argument("--where", action="append", metavar="EXPR",
