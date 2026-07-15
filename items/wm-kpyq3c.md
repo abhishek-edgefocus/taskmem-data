@@ -5,7 +5,7 @@ title: Work memory v1: markdown files + git + generic CLI
 status: open
 tags: [taskmem]
 created: 2026-07-14T14:20:46Z
-updated: 2026-07-15T20:23:51Z
+updated: 2026-07-15T20:32:59Z
 source: bootstrap
 ---
 
@@ -21,3 +21,4 @@ Chose flat-frontmatter markdown per item, git for history, one generic zero-depe
 - 2026-07-15T19:48Z [claude-code] organization model made explicit: project / thread / independent as composable containers; dashboard renders full nested project lineages via tm thread; independent = no parent+no follows outbound; weekly review proposes filing, never silently reparents
 - 2026-07-15T19:55Z [claude-code] added tm story (context + thread + merged git/log timeline per item) and the one-consolidated-table presentation rule (user preference, also saved to assistant memory)
 - 2026-07-15T20:23Z [claude-code] made the tool user-agnostic: identity (name, Slack id) moved to gitignored config.env written by install.sh; {{PLACEHOLDER}} tokens in prompts resolved at runtime by agent-brief; GitHub infra snapshot force-refreshed with the generic version
+- 2026-07-15T20:32Z [claude-code] archive policy tightened per user review: closed items now archive after 30 days untouched (was 90); model unchanged — status is lifecycle truth, folder is temperature
