@@ -100,6 +100,8 @@ def main():
 
     upcoming = take(find(*OPEN, "--where", "due>today", "--sort", "due"))
     section(out, "Upcoming (dated)", upcoming)
+    backlog = take(find(*OPEN, "--where", "type!=project", "--sort", "priority,updated:desc"))
+    section(out, "Backlog (undated)", backlog)
     done = find("--where", "status=done", "--where", "updated>=today-7", "--sort", "updated:desc")
     section(out, "Done this week", done)
 
