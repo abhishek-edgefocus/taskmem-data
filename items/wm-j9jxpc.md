@@ -43,3 +43,4 @@ platform cc'ing ops; either way record it in the acknowledgment sheet.
 ## Log
 - 2026-07-15T14:56Z [intake-review] captured from Slack mention sweep (intake demo run); dedup anchor is the message permalink in refs
 - 2026-07-15T15:08Z [intake-review] intake re-check: Kushagra's thread still has no NorthPond confirmation from Abhishek as of this evening; Nakula/Sanjali confirmed, Abhijeet checking his refresh
+- 2026-07-15T15:12Z [intake-review] upgraded to pickup-ready standard (context, next steps, links)
