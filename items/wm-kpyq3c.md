@@ -10,3 +10,6 @@ source: bootstrap
 ---
 
 Chose flat-frontmatter markdown per item, git for history, one generic zero-dependency CLI (taskmem), and prose contracts (SCHEMA.md/AGENTS.md) for all business logic. Full rationale in README.md. Revisit storage (SQLite cache) only if scale demands it.
+
+## Log
+- 2026-07-15T13:33Z [claude-code] renamed tool workmem -> taskmem; brand is replaceable (see README 'Renaming the tool'), wm- ids and WM_* env vars are stable engine identifiers
