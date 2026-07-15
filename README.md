@@ -157,14 +157,33 @@ Any headless runner works the same way: `codex exec`, `gemini`, or a script
 that calls a model API and executes the returned commands. Claude Code cloud
 "routines" are an alternative to local cron.)
 
-## Multi-machine
+## Multi-host / multi-environment sync
+
+One git remote is the sync bus for every host, dev environment, and agent
+type. One-time setup, from any machine that already has the memory:
 
 ```bash
-cd ~/taskmem && git remote add origin <your-private-repo> && taskmem sync
+# 1. create a PRIVATE repo under your personal profile
+#    (https://github.com/new, or: gh repo create taskmem --private)
+# 2. wire it up and push:
+cd ~/taskmem && git remote add origin git@github.com:<you>/taskmem.git && taskmem sync
 ```
 
-`taskmem sync` commits, pulls --rebase, pushes. Per-item files make conflicts rare;
-when they happen, git surfaces them and any agent can resolve semantically.
+Every additional host, container, or dev environment just follows "Setup on
+a fresh machine" above. From then on `taskmem sync` (commit → pull --rebase →
+push) converges everyone:
+
+- **Agents sync automatically** — the session lifecycle in AGENTS.md begins
+  and ends with `taskmem sync` whenever a remote exists, so any agent type
+  on any host both sees and publishes the latest state.
+- **Quiet hosts stay fresh via cron**:
+  `*/15 * * * * $HOME/taskmem/bin/taskmem sync >> $HOME/taskmem/.logs/sync.log 2>&1`
+- **Conflicts are rare and safe.** One file per item keeps concurrent edits
+  apart; when two hosts do touch the same lines, `sync` aborts the rebase
+  cleanly back to your local state and reports the file — resolve with
+  normal git (or hand it to an agent) and sync again.
+- **Offline is fine.** Mutations always commit locally; the next sync
+  reconciles.
 
 ## Renaming the tool
 

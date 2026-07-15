@@ -17,7 +17,9 @@ Identify yourself: `export WM_AGENT=<your-role>` (e.g. `claude-code`,
 
 Follow this in every substantive session:
 
-1. **Orient (start).** Search the memory for what you're about to touch:
+1. **Orient (start).** If a git remote is configured, run `taskmem sync`
+   first so you see the latest state from other hosts, environments, and
+   agents. Then search the memory for what you're about to touch:
    `taskmem search "<topic>"` and, if relevant, `taskmem find --where tags=<project>
    --where "status!=done,dropped"`. Use what you find — open items, past
    decisions, known blockers — as context for the work itself.
@@ -28,6 +30,8 @@ Follow this in every substantive session:
      log the blocker), scope changes, new links, people who got involved.
    - Create items for every new commitment you inferred.
    - Log one line on anything materially advanced but not finished.
+   - Finish with `taskmem sync` (a safe no-op without a remote) so every
+     other host and agent sees your updates.
 
 If your session produced no commitments and touched no tracked work, updating
 nothing is correct — don't manufacture items.
