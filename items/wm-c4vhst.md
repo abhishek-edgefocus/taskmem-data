@@ -2,9 +2,11 @@
 id: wm-c4vhst
 type: task
 title: Create private GitHub repo (personal profile) and push taskmem infra branch
-status: open
+status: waiting
 priority: p2
 due: 2026-07-17
+waiting_on: Abhishek
+nudge: 2026-07-17
 tags: [taskmem]
 links: [relates:wm-kpyq3c]
 created: 2026-07-15T13:53:45Z
