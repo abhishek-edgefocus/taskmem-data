@@ -26,3 +26,6 @@ IMPORTANT: do NOT 'git remote add' in ~/taskmem yet — the 15-min autosync cron
 ## Links
 - Infra branch (local): ~/taskmem, branch 'infra'
 - Related deferred restructure: wm-jpxt8v (brain monorepo — repo can be renamed on GitHub later without breaking anything)
+
+## Log
+- 2026-07-15T15:43Z [claude-code] infra branch built and verified task-free (12 files, 1 commit); blocked on user: SSH key registration + repo creation (no gh/token/brew on this machine)
