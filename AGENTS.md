@@ -33,7 +33,9 @@ Follow this in every substantive session:
    - Create items for every new commitment you inferred.
    - Log one line on anything materially advanced but not finished.
    - Finish with `taskmem sync` (a safe no-op without a remote) so every
-     other host and agent sees your updates.
+     other host and agent sees your updates — and say so in one clause of
+     your wrap-up reply ("memory synced"), since a remote-less sync leaves
+     no other trace.
 
 If your session produced no commitments and touched no tracked work, updating
 nothing is correct — don't manufacture items.
@@ -106,8 +108,13 @@ item alone, without the originating conversation. Body structure:
 
 Skip a section only when it's genuinely empty; Context plus at least the
 source link is the floor. Never invent links or steps — an honest "unknown,
-ask X" beats a plausible guess. When you touch an existing thin item,
-upgrade it to this standard as part of the touch.
+ask X" beats a plausible guess. **Any mutation counts as a touch** — a
+`set`, a `log` line, a link, a reschedule. If the item's body is thin when
+you touch it, upgrading it to this standard is part of the same touch and
+is always in scope, never out-of-scope collateral: a field change on a bare
+item leaves it exactly as unpickable as before. The one exception is
+another agent's item you are only cross-referencing — there, a log line
+suffices.
 
 ## Quality bar for updates
 
@@ -117,12 +124,26 @@ upgrade it to this standard as part of the touch.
   `waiting_on=<person/thing>` and `nudge=<date to ping again>` (default
   `today+2`), plus a log line saying what exactly you're waiting for. After
   a nudge happens, push `nudge` forward — never let it silently pass.
+  And know *when* waiting is required: `active` means the human or an agent
+  is working the item right now. If the next movement is in someone else's
+  hands — including the pattern "ping X, then wait for their answer" — the
+  item is `waiting` with the structured fields set; a reminder or due date
+  for sending the ping complements them, never replaces them. When in doubt:
+  if nobody touches this for a week, who dropped the ball? If the answer is
+  another person, it's `waiting`.
 - **The next-step rule.** An active project (`type=project`) must always
   have at least one open child in `next`/`active` sized xs/s/m. Never leave
   just "Build the dashboard" — if you close a project's last concrete step,
   create the next one. Reviews audit this.
 - An `xl` item is a container, not a task — decompose it into sized children
   (`taskmem link <child> parent <xl-id>`) before anyone "starts" it.
+- **Reread after you write.** After your last mutation on an item,
+  `taskmem get <id>` and read it cold, as tomorrow's stranger. Fix anything
+  your change made stale or that a cold reader would trip on: titles must
+  not encode status ("(in progress)" on a done item is a lie in every
+  future search result), placeholders must resolve to real ids ("see child
+  item below" is never finished), and every pronoun needs an unambiguous
+  referent.
 - Prefer `status=dropped` over `taskmem rm`; deletion is for mistakes and true
   duplicates only.
 - Link generously: `parent` for decomposition, `blocks` for ordering,
@@ -134,8 +155,15 @@ upgrade it to this standard as part of the touch.
 ## Presenting to the human
 
 Prefer **tables with jumpable links** (render `refs` as markdown links).
-Always show full titles — never bare ids as the only reference. Lead with
-what needs a decision or is slipping; don't recite the whole working set.
+If an item you mention carries `refs`, render at least its primary ref as a
+markdown link in the reply — naming DEV-1234 or "Kushagra's thread" without
+linking it is a defect, not a style choice. Always show full titles — never
+bare ids as the only reference. Speak plain language, never field syntax:
+say "now waiting on Kushagra for the schema doc — I'll flag it Friday", not
+`waiting_on=Kushagra nudge=2026-07-17`. Disclose every mutation you made,
+one line each (including links you added); beyond that, stop — lead with
+what needs a decision or is slipping, and don't recite item bodies or the
+whole working set unasked.
 
 Notification channels: `taskmem notify` (desktop), the daily-brief /
 weekly-review note items, DASHBOARD.md, and — from human-triggered review
@@ -183,6 +211,9 @@ someone's item during a review without logging the reasoning on the item.
 - Don't invent facts into items; if unsure, phrase as a question in the body.
 - The memory holds work state, not secrets — no tokens, passwords, or private
   keys in items.
+- Draft bodies and scratch files belong outside the memory directory (use
+  your session scratchpad) — per-mutation auto-commits sweep any stray file
+  in the repo into permanent git history.
 - **This memory is private to the human.** Never mirror its items into
   company-visible trackers (Linear, Jira, shared boards) — those are
   read-only references; point at them with `refs`, never the reverse.
