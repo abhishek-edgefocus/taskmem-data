@@ -661,7 +661,16 @@ def cmd_delegate(args):
         "If you CANNOT access this memory (different machine, no filesystem), work from the "
         "context above and report your outcome back to %s so their agents can record it." % user,
     ]
-    print("\n".join(out))
+    text = "\n".join(out)
+    print(text)
+    if args.copy:
+        for cmd in (["pbcopy"], ["xclip", "-selection", "clipboard"], ["wl-copy"]):
+            if shutil.which(cmd[0]):
+                subprocess.run(cmd, input=text.encode("utf-8"))
+                print("(copied to clipboard via %s)" % cmd[0], file=sys.stderr)
+                break
+        else:
+            print("(no clipboard tool found: pbcopy/xclip/wl-copy)", file=sys.stderr)
 
 
 def cmd_find(args):
@@ -842,6 +851,7 @@ def main():
 
     p = sub.add_parser("delegate", help="copy-paste prompt to hand this item to any AI agent")
     p.add_argument("id")
+    p.add_argument("--copy", action="store_true", help="also put the prompt on the clipboard")
     p.set_defaults(fn=cmd_delegate)
 
     p = sub.add_parser("find", help="query items; repeat --where to AND filters")
