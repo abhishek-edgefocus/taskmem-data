@@ -1,20 +1,28 @@
 ---
 id: wm-c4vhst
 type: task
-title: Create private GitHub repo and connect taskmem remote
+title: Create private GitHub repo (personal profile) and push taskmem infra branch
 status: open
 priority: p2
 due: 2026-07-17
 tags: [taskmem]
 links: [relates:wm-kpyq3c]
 created: 2026-07-15T13:53:45Z
-updated: 2026-07-15T13:53:45Z
+updated: 2026-07-15T15:43:01Z
 source: claude-code
 ---
 
-One-time step to enable cross-host/agent sync (protocol is already live; verified against a simulated remote 2026-07-15).
+Goal: private repo github.com/<personal-user>/taskmem containing ONLY infrastructure for now — Abhishek explicitly excluded task content at this stage. A task-free orphan branch 'infra' (1 commit, 12 files: bin/, prompts/, docs, install.sh — no items/, archive/, DASHBOARD.md, no history) is already built locally in ~/taskmem.
 
-1. Create a PRIVATE repo under the personal profile: https://github.com/new (name: taskmem), or 'gh repo create taskmem --private' if gh gets installed.
-2. cd ~/taskmem && git remote add origin git@github.com:<user>/taskmem.git && tm sync
+IMPORTANT: do NOT 'git remote add' in ~/taskmem yet — the 15-min autosync cron would push local main (which contains all tasks) on its next tick. Push the infra branch remoteless-ly instead (step 3).
 
-Other hosts then follow README 'Setup on a fresh machine'. Optional: the */15min autosync cron line in README 'Multi-host'.
+## Next steps
+1. Register this machine's SSH key with GitHub (personal account): https://github.com/settings/ssh/new — paste ~/.ssh/id_rsa.pub
+2. Create the empty PRIVATE repo under the personal profile (not the org): https://github.com/new — name: taskmem, Private, no README.
+3. Push without configuring a remote:  git -C ~/taskmem push git@github.com:<user>/taskmem.git infra:main
+4. Verify on github.com: private badge, 12 files, 1 commit, no items/.
+5. LATER, when ready to include tasks: git -C ~/taskmem remote add origin git@github.com:<user>/taskmem.git && git push -f origin main && tm sync  (force-push replaces the infra-only main with full history; autosync takes over from there).
+
+## Links
+- Infra branch (local): ~/taskmem, branch 'infra'
+- Related deferred restructure: wm-jpxt8v (brain monorepo — repo can be renamed on GitHub later without breaking anything)
