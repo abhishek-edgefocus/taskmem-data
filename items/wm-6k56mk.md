@@ -2,13 +2,14 @@
 id: wm-6k56mk
 type: task
 title: Disable the dpx ~/tasks crontab (unattended claude runs + automated DMs, against policy)
-status: inbox
+status: next
+priority: p1
 due: 2026-07-16
 people: [Abhishek]
 tags: [taskmem]
 links: [relates:wm-c4vhst]
 created: 2026-07-15T15:08:25Z
-updated: 2026-07-15T15:12:08Z
+updated: 2026-07-15T15:16:04Z
 source: intake-review
 ---
 
