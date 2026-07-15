@@ -645,8 +645,8 @@ def cmd_delegate(args):
         "- id: %s · file: %s" % (fm["id"], p),
         "- Full record: `%s get %s --raw` · history: `%s story %s --oneline` · "
         "lineage: `%s thread %s --oneline`" % (PROG, fm["id"], PROG, fm["id"], PROG, fm["id"]),
-        "- CLI: %s/bin/%s · protocol: %s/AGENTS.md · data model: %s/SCHEMA.md"
-        % (WM_DIR, PROG, WM_DIR, WM_DIR),
+        "- CLI: %s (invoked here as `%s`) · protocol: %s/AGENTS.md · data model: %s/SCHEMA.md"
+        % (Path(__file__).resolve(), PROG, WM_DIR, WM_DIR),
         "",
         "## Working agreement (if you can access this memory)",
         "1. Identify yourself: export WM_AGENT=<your-role> (or pass --by on every mutation).",
