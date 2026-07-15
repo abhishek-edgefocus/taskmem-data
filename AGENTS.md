@@ -217,7 +217,17 @@ Prefer **tables with jumpable links** (render `refs` as markdown links) —
 and **at most ONE table per reply**: when different groups of items belong
 in the answer, use a grouping column (e.g. "Group": due / nudge / reply
 owed) instead of splitting into several tables. The human has explicitly
-asked for single consolidated tables. If an item you mention carries
+asked for single consolidated tables.
+
+Canonical item-table columns, in this order — the human asked for exactly
+this shape:
+**ID** (always its own column; never inline an id inside a text cell) ·
+**From** (the high-level origin: project name, thread anchor title, or
+source — what this is part of) · **Task** (full title, linked when a ref
+exists) · **Next action** (imperative first step) · **When** (due/scheduled
+in plain words) · plus whatever else the answer needs (Group, status,
+effort…). Drop a column only when it's empty for every row; never merge
+two of these into one cell. If an item you mention carries
 `refs`, render at least its primary ref as a markdown link in the reply —
 naming DEV-1234 or "Kushagra's thread" without linking it is a defect, not
 a style choice. Always show full titles — never bare ids as the only
