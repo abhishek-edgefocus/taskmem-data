@@ -54,13 +54,20 @@ conversation or work implies future action, capture it. Signals:
 | "We should look into X someday." | `idea` or `research`, `priority=p3` |
 | "Why does Y behave like this?" (unresolved) | `question` |
 | We chose A over B (and why) | `decision` — record the why in the body |
-| Someone @-mentions the human with an ask and they haven't replied | `followup`, tag `needs-reply`, `due=today+1` (or the stated deadline), ref = message permalink |
+| Someone asks the human something — @-mention, DM, thread, email — and they haven't replied | `followup`, tag `needs-reply`, `due=today+1` (or the stated deadline), ref = message permalink; if the ask also implies real work, a second linked work item |
 | Test/bug discovered but out of scope right now | `bug`, linked to the current task |
 | PR merged / implementation finished | `set status=done` on the matching item + log |
 
 Rules of thumb:
 
 - Capture at the moment of inference, not at session end — sessions get cut off.
+- **Reading messages counts as intake.** Whenever you read, fetch, or
+  summarize inbound messages for the human — DMs, mentions, channels,
+  email, in ANY session, not just the intake sweep — apply the needs-reply
+  rule on the spot: every ask directed at them that they haven't answered
+  becomes a `needs-reply` item immediately. "They haven't replied yet" is
+  the *trigger* to capture, never a reason to skip; an unanswered ask you
+  read and didn't record is the system's worst failure mode.
 - **Search before you create** (`taskmem search`, `taskmem find --where "title~…"`;
   add `--archived` when checking whether something was already done before).
   If an item exists, enrich it (log a line, add people/tags/links, adjust
