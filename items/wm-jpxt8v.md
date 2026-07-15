@@ -4,6 +4,7 @@ type: idea
 title: Revisit: restructure into ~/brain monorepo (taskmem/ + notes/ + context/)
 status: someday
 tags: [taskmem]
+links: [relates:wm-c4vhst]
 created: 2026-07-15T15:37:16Z
 updated: 2026-07-15T15:37:16Z
 source: claude-code
