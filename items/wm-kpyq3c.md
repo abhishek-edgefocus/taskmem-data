@@ -5,7 +5,7 @@ title: Work memory v1: markdown files + git + generic CLI
 status: open
 tags: [taskmem]
 created: 2026-07-14T14:20:46Z
-updated: 2026-07-15T21:03:02Z
+updated: 2026-07-15T21:22:43Z
 source: bootstrap
 ---
 
@@ -23,3 +23,4 @@ Chose flat-frontmatter markdown per item, git for history, one generic zero-depe
 - 2026-07-15T20:23Z [claude-code] made the tool user-agnostic: identity (name, Slack id) moved to gitignored config.env written by install.sh; {{PLACEHOLDER}} tokens in prompts resolved at runtime by agent-brief; GitHub infra snapshot force-refreshed with the generic version
 - 2026-07-15T20:32Z [claude-code] archive policy tightened per user review: closed items now archive after 30 days untouched (was 90); model unchanged — status is lifecycle truth, folder is temperature
 - 2026-07-15T21:03Z [claude-code] views and replies now surface the next ACTION, not just the title: deterministic first-step extraction from ## Next steps in digest and dashboard, Action column in the daily brief, presenting rule in AGENTS.md
+- 2026-07-15T21:22Z [claude-code] presentation simplification: internal codes (p0-p3, xs-xl) now translate to plain words in digest/dashboard/briefs/replies (urgent-high-low, ~15m..multi-day); storage vocabulary unchanged
