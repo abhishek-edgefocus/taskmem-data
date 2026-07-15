@@ -7,10 +7,35 @@ due: 2026-07-16
 people: [Abhishek]
 tags: [taskmem]
 created: 2026-07-15T15:08:25Z
-updated: 2026-07-15T15:08:25Z
+updated: 2026-07-15T15:12:08Z
 source: intake-review
 ---
 
-Intake sweep 2026-07-15 evening: the dpx ~/tasks agent-brief cron is still live — it sent an automated 'Morning brief — Wed Jul 15' Slack self-DM today (with stale dpx #ids), and Abhishek told Abhijeet it's 'still not working properly'. This violates the no-unattended-claude-runs policy and risks split-brain with taskmem (now canonical; dpx items were imported 2026-07-15).
+The old task system on dpx (~/tasks) still has a live crontab running
+unattended claude (bin/agent-brief daily/weekly) and sending automated
+Slack DMs — it sent a stale "Morning brief — Wed Jul 15" self-DM today
+referencing old dpx #ids. That violates the no-unattended-claude-runs
+policy, and it risks split-brain: all 13 live items + 4 projects were
+imported into taskmem on 2026-07-15 (each carries source "dpx-tasks #N"),
+so taskmem is canonical now. The dpx CLI itself crashes on the box's
+default python3 (uses 3.10+ syntax), so the old store isn't mutating —
+only its cron agents are still alive. dpx is a shared server that agents
+must never modify; this is a human-only task.
 
-Fix on dpx (server is user-managed, agents must not change it): crontab -e, delete the '# >>> task-system >>>' block. Optionally archive ~/tasks.
+## Next steps
+1. ssh dp
+2. crontab -e → delete the block between "# >>> task-system >>>" and
+   "# <<< task-system <<<" (that kills agent-brief daily/weekly + dash).
+3. Optional: mv ~/tasks ~/tasks.archived — keeps git history, makes the
+   deprecation obvious.
+4. Optional: remove the old SessionStart/SubagentStart hooks pointing at
+   ~/tasks/bin/session-context from dpx ~/.claude/settings.json, and the
+   ~/.local/bin/task symlink.
+5. Follow-up: once the taskmem GitHub remote exists (wm-c4vhst), clone
+   taskmem on dpx per README "Setup on a fresh machine" so dpx becomes a
+   sync peer instead.
+
+## Links
+- Evidence: today's stale automated self-DM in Slack ("Morning brief — Wed Jul 15")
+- Old system docs on dpx: ~/tasks/README.md, ~/tasks/PROTOCOL.md
+- Blocked-on/related: wm-c4vhst (create taskmem GitHub remote)
