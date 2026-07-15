@@ -54,6 +54,19 @@ taskmem history wm-xxxxxx                                          # who did wha
 Requirements: `python3` (3.9+) and `git`. The CLI has zero Python
 dependencies. An AI agent can run this whole section unattended.
 
+**The one-prompt way** — paste this into a fresh Claude Code session on the
+new machine (fill in the repo URL and your identity):
+
+> Set up my shared task memory on this machine. Clone
+> `https://github.com/<you>/taskmem.git` to `~/taskmem` — if the clone hits
+> an auth wall, walk me through `gh auth login` (device flow) first. Then
+> run `TASKMEM_USER_NAME="<name>" TASKMEM_SLACK_USER_ID="<slack-id>"
+> ~/taskmem/install.sh --cron` and verify: `tm find --count` answers,
+> `~/taskmem/bin/session-context --plain` prints a digest, and the crontab
+> block exists. Then read `~/taskmem/AGENTS.md` — from now on you are one
+> of this memory's maintainer agents. Finish by showing me the memory's
+> current state.
+
 The short way:
 
 ```bash
