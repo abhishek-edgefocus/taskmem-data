@@ -7,13 +7,19 @@ read and edit it freely, but almost never have to say "create a task."
 
 ```
 ~/taskmem/
-  bin/taskmem            # the entire infrastructure: one ~550-line Python CLI, zero deps
-  items/            # one markdown file per work item (the actual memory)
-  prompts/          # scheduled-agent prompts (daily/weekly review)
-  SCHEMA.md         # STABLE: data model + CLI contract (rarely changes)
-  AGENTS.md         # EVOLVING: behavioral protocol for every agent
-  README.md         # this file (humans)
-  .logs/            # scheduler output (gitignored)
+  bin/taskmem          # the core: one zero-dependency Python CLI
+  bin/session-context  # Claude Code hook — injects task state into every session
+  bin/dashboard        # regenerates DASHBOARD.md (glanceable view)
+  bin/agent-brief      # headless cron runner for the review agents
+  install.sh           # idempotent machine setup (symlinks, hooks, cron)
+  items/               # one markdown file per work item (the actual memory)
+  archive/             # closed items moved out of the working set
+  prompts/             # scheduled-agent prompts (daily/weekly review)
+  DASHBOARD.md         # generated view — never edit by hand
+  SCHEMA.md            # STABLE: data model + CLI contract (rarely changes)
+  AGENTS.md            # EVOLVING: behavioral protocol for every agent
+  README.md            # this file (humans)
+  .logs/               # scheduler + hook logs (gitignored)
 ```
 
 ## The 30-second mental model
@@ -45,6 +51,16 @@ taskmem history wm-xxxxxx                                          # who did wha
 
 Requirements: `python3` (3.9+) and `git`. The CLI has zero Python
 dependencies. An AI agent can run this whole section unattended.
+
+The short way:
+
+```bash
+git clone <your-private-remote> ~/taskmem
+~/taskmem/install.sh          # symlinks, Claude Code session hooks, CLAUDE.md pointer
+~/taskmem/install.sh --cron   # …plus review agents, autosync, dashboard refresh
+```
+
+Manual equivalent (or for non-Claude runners):
 
 ```bash
 git clone <your-private-remote> ~/taskmem   # or copy the folder; any path works
@@ -145,7 +161,9 @@ a scheduler (cron only decides *when* an agent wakes, never *what matters*).
 ## Scheduling (the one manual step)
 
 The scheduler just wakes an agent with a prompt; all judgment is in the
-prompt + AGENTS.md. With Claude Code, `crontab -e` and add:
+prompt + AGENTS.md. `install.sh --cron` installs the whole marker-delimited
+crontab block (review agents via `bin/agent-brief`, 15-minute autosync,
+weekend dashboard refresh). Manually, with Claude Code, `crontab -e` and add:
 
 ```cron
 30 8 * * 1-5 WM_AGENT=daily-review  "$HOME/.local/bin/claude" -p "$(cat $HOME/taskmem/prompts/daily-review.md)"  --allowedTools "Bash" >> $HOME/taskmem/.logs/daily.log 2>&1

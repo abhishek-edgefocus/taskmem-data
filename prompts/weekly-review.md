@@ -15,8 +15,13 @@ The CLI is ~/taskmem/bin/taskmem. Read ~/taskmem/AGENTS.md first and follow its
    put it at the top of your report.
 4. Workload: group open items by people and tags (taskmem find --fields id,people,tags).
    Flag anyone/anything overloaded or starved.
-5. Write the report: taskmem new note "Weekly review YYYY-MM-DD" tags=weekly-review
+5. Audit the next-step rule: every active project (type=project) needs at
+   least one open child in next/active sized xs/s/m
+   (taskmem find --where "links~parent:<project-id>" --where status=next,active);
+   flag xl items with no children. Create the missing concrete next steps.
+6. Write the report: taskmem new note "Weekly review YYYY-MM-DD" tags=weekly-review
    --body - … with observations and concrete proposals, then
    taskmem notify "Weekly review" "<one-line headline>".
+7. Regenerate the glanceable view: ~/taskmem/bin/dashboard
 
 Propose, don't silently dispose: every state change gets a logged reason.

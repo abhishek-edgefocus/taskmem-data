@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Headless review agent for the task memory. Called from crontab.
+# Usage: agent-brief daily|weekly
+# The scheduler decides WHEN an agent wakes; the prompt + AGENTS.md decide
+# everything else. Any headless runner works — swap the `claude` line for
+# codex/gemini/your own API script without touching anything else.
+set -u
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+MODE="${1:-daily}"
+export WM_AGENT="${MODE}-review"
+LOG="$DIR/.logs/${MODE}-$(date +%F).log"
+mkdir -p "$DIR/.logs"
+
+"$DIR/bin/taskmem" sync >> "$LOG" 2>&1 || true
+
+claude -p "$(cat "$DIR/prompts/${MODE}-review.md")" < /dev/null \
+  --allowedTools "Bash" >> "$LOG" 2>&1
+
+"$DIR/bin/taskmem" sync >> "$LOG" 2>&1 || true
+find "$DIR/.logs" -name '*.log' -mtime +30 -delete 2>/dev/null || true

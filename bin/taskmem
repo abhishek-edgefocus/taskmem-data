@@ -34,9 +34,11 @@ WM_DIR = Path(os.environ.get(
 ITEMS = WM_DIR / "items"
 ARCHIVE = WM_DIR / "archive"  # closed items moved out of the scanned working set
 
-CORE_ORDER = ["id", "type", "title", "status", "priority", "due",
-              "people", "tags", "links", "created", "updated", "source"]
-LIST_FIELDS = {"people", "tags", "links"}
+CORE_ORDER = ["id", "type", "title", "status", "priority", "size", "due",
+              "scheduled", "waiting_on", "nudge", "people", "tags", "links",
+              "refs", "created", "updated", "source"]
+LIST_FIELDS = {"people", "tags", "links", "refs"}
+DATE_FIELDS = ("due", "scheduled", "nudge")
 PROTECTED = {"id", "created", "updated"}
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 KEY_RE = r"[A-Za-z_][A-Za-z0-9_-]*?"
@@ -250,12 +252,12 @@ def apply_assign(fm, assigns):
         k, op, v = m.group(1), m.group(2), m.group(3).strip()
         if k in PROTECTED:
             die("field '%s' is managed by %s and cannot be set" % (k, PROG))
-        if k == "due" and v:
+        if k in DATE_FIELDS and v:
             v = resolve_date(v)
             try:
                 datetime.strptime(v, "%Y-%m-%d")
             except ValueError:
-                die("due must be a real YYYY-MM-DD date (or today/today+N), got %r" % v)
+                die("%s must be a real YYYY-MM-DD date (or today/today+N), got %r" % (k, v))
         if op == "=":
             if v == "":
                 fm.pop(k, None)

@@ -46,10 +46,15 @@ contain commas. Files remain valid YAML for other tooling (Obsidian, pandoc…).
 | title    | agents    | Short, specific, imperative where possible. |
 | status   | agents    | Open vocabulary; see below. Default `open`. |
 | priority | agents    | `p0` (drop everything) … `p3` (someday). Optional. |
-| due      | agents    | `YYYY-MM-DD`, local-date semantics. Only if a real date exists. Validated on write; `today+N` accepted. |
+| size     | agents    | Effort: `xs` <15m · `s` <1h · `m` 2–4h · `l` ~1d · `xl` multi-day. An `xl` must be decomposed into children. Optional. |
+| due      | agents    | `YYYY-MM-DD`, local-date semantics — an external deadline. Only if a real date exists. Validated on write; `today+N` accepted. |
+| scheduled | agents   | `YYYY-MM-DD` — the day the human plans to do it (distinct from `due`). Date-validated. |
+| waiting_on | agents  | Who/what a `blocked`/`waiting` item is stuck on. |
+| nudge    | agents    | `YYYY-MM-DD` — when to ping again about a blocked/waiting item. Date-validated. |
 | people   | agents    | Humans involved (first names or handles, consistently). |
 | tags     | agents    | Lowercase, hyphenated. Use one tag per project/area. |
 | links    | taskmem/agents | Directed edges `rel:target-id` (see Links). |
+| refs     | agents    | External jump links as `label=url` (issue, PR, dashboard, Slack thread). |
 | created  | taskmem        | Immutable UTC timestamp. |
 | updated  | taskmem        | UTC timestamp, touched on every mutation. |
 | source   | agents    | Where the item came from (agent name, meeting, thread…). |
@@ -65,14 +70,26 @@ responsibility. Extend them by editing this file.
 
 - **type**: `task` `bug` `reminder` `followup` `research` `decision`
   `question` `idea` `note`
-- **status**: `open` (ready) · `active` (in progress) · `blocked` (has a named
-  blocker) · `waiting` (on a person/event; name it in `people`/body) · `done` ·
-  `dropped` (deliberately abandoned — never delete, mark dropped and log why)
+- **status**: `inbox` (captured by an agent, needs human triage) · `open`
+  (triaged, ready) · `next` (chosen next action) · `active` (in progress) ·
+  `blocked` / `waiting` (stuck — set `waiting_on`, usually `nudge`) ·
+  `someday` (parked on purpose) · `done` · `dropped` (deliberately abandoned —
+  never delete, mark dropped and log why)
 - **link rels** (read left-to-right, stored on the source item only):
   `blocks` · `parent` (source is parent of target) · `relates` ·
   `duplicate-of` · `follows` (source is a follow-up of target)
   Reverse direction is **derived at query time** (`taskmem links <id>` shows both
   directions; `taskmem find --where links~:<id>` finds inbound references).
+- **projects are items**, not a registry file: `type=project`, goal as the
+  first body line, `refs` for its dashboard/tracker links. Work items attach
+  via `taskmem link <child> parent <project-id>`; children are found with
+  `taskmem find --where "links~parent:<project-id>"`.
+
+## Generated views
+
+`DASHBOARD.md` is rendered by `bin/dashboard` (and `bin/session-context`
+feeds Claude Code session hooks). Both are deterministic renderings of the
+generic queries above — never edit `DASHBOARD.md` by hand, regenerate it.
 
 ## Body conventions
 

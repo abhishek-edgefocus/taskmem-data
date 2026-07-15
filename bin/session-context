@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+"""SessionStart/SubagentStart hook + compact digest for the shared task memory.
+
+This is a deterministic VIEW composed from the generic query grammar — it
+selects nothing by judgment (that belongs to agents, see AGENTS.md); it only
+renders mechanical state: due/overdue, scheduled, in flight, blocked with
+nudge dates, inbox, counts.
+
+Usage:
+  session-context                  # hook JSON for Claude Code SessionStart
+  session-context SubagentStart    # same, tagged for subagent starts
+  session-context --plain          # plain-text digest for humans/agents
+"""
+import json
+import os
+import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+WM_DIR = HERE.parent
+TM = str(HERE / "taskmem")
+
+
+def find(*args):
+    r = subprocess.run([TM, "find"] + list(args),
+                       capture_output=True, text=True, timeout=30)
+    return [json.loads(ln) for ln in r.stdout.splitlines() if ln.strip()]
+
+
+def fmt(it):
+    bits = [it.get("id"), "[%s]" % it.get("status", "?")]
+    for k in ("priority", "size"):
+        if it.get(k):
+            bits.append(it[k])
+    bits.append(it.get("title", ""))
+    extra = []
+    if it.get("due"):
+        extra.append("due %s" % it["due"])
+    if it.get("scheduled"):
+        extra.append("scheduled %s" % it["scheduled"])
+    if it.get("waiting_on"):
+        extra.append("waiting on %s" % it["waiting_on"])
+    if it.get("nudge") and it["nudge"] <= datetime.now().strftime("%Y-%m-%d"):
+        extra.append("NUDGE DUE")
+    return "- %s%s" % (" ".join(bits), " (%s)" % "; ".join(extra) if extra else "")
+
+
+def section(out, title, items):
+    if items:
+        out.append("%s:" % title)
+        out.extend(fmt(it) for it in items)
+
+
+def digest():
+    OPEN = ["--where", "status!=done,dropped"]
+    out = []
+    seen = set()
+
+    def take(items):
+        fresh = [it for it in items if it.get("id") not in seen]
+        seen.update(it.get("id") for it in fresh)
+        return fresh
+
+    section(out, "Due or overdue", take(find(*OPEN, "--where", "due<=today", "--sort", "due")))
+    section(out, "Scheduled for today or earlier",
+            take(find(*OPEN, "--where", "scheduled<=today", "--sort", "scheduled")))
+    section(out, "Nudge due (ping these people)",
+            take(find(*OPEN, "--where", "nudge<=today", "--sort", "nudge")))
+    section(out, "In flight", take(find("--where", "status=next,active", "--sort", "updated:desc")))
+    section(out, "Blocked / waiting",
+            take(find("--where", "status=blocked,waiting", "--sort", "updated")))
+    inbox = find("--where", "status=inbox", "--sort", "created")
+    section(out, "Inbox (untriaged)", inbox[:5])
+    if len(inbox) > 5:
+        out.append("  … and %d more in inbox" % (len(inbox) - 5))
+    total = find("--count")
+    if total:
+        out.append("Working set: %s items (this digest is mechanical state only; "
+                   "judge priorities yourself)." % total[0].get("count"))
+    return "\n".join(out)
+
+
+HEADER = (
+    "Shared task memory (%s) — current state below. You are one of its "
+    "maintainer agents: follow %s/AGENTS.md (capture commitments the moment "
+    "they come up, update items around work you do, sync before ending). "
+    "CLI: %s (WM_AGENT=<your-role> for attribution).\n\n"
+) % (WM_DIR, WM_DIR, TM)
+
+
+def main():
+    plain = "--plain" in sys.argv
+    event = next((a for a in sys.argv[1:] if not a.startswith("-")), "SessionStart")
+    text = digest()
+    if plain:
+        print(text or "(task memory is empty)")
+        return
+    if not text:
+        return
+    print(json.dumps({
+        "hookSpecificOutput": {
+            "hookEventName": event,
+            "additionalContext": HEADER + text,
+        },
+        "suppressOutput": True,
+    }))
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:  # a hook must never break session start — but never fail silently either
+        try:
+            logdir = WM_DIR / ".logs"
+            logdir.mkdir(parents=True, exist_ok=True)
+            with open(str(logdir / "hook-errors.log"), "a") as f:
+                f.write("%s session-context: %s: %s\n"
+                        % (datetime.now().isoformat(), type(e).__name__, e))
+        except Exception:
+            pass
+        sys.exit(0)
