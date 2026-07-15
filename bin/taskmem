@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
-"""wm — shared work memory for AI agents.
+"""taskmem — AI-native shared task memory (generic, deterministic plumbing).
 
-Storage:  one markdown file per work item in $WM_DIR/items/ (default ~/workmem),
+The brand name is skin-deep and replaceable: the command name comes from how
+the script is invoked, and data lives beside the script (<dir>/bin/<name>
+manages <dir>/items/) — see README "Renaming the tool". Engine identifiers
+are stable and never follow the brand: the "wm-" item-id prefix and the
+WM_DIR / WM_AGENT / WM_NO_COMMIT / WM_DEBUG env vars.
+
+Storage:  one markdown file per work item in $WM_DIR/items/,
           flat YAML-subset frontmatter + freeform markdown body.
 History:  every mutation is a git commit, authored as the acting agent.
 Contract: this tool is deterministic plumbing only (store, query, mutate, link,
@@ -22,7 +28,9 @@ import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-WM_DIR = Path(os.environ.get("WM_DIR", str(Path.home() / "workmem"))).expanduser()
+PROG = Path(sys.argv[0]).name or "taskmem"  # brand name, taken from invocation
+WM_DIR = Path(os.environ.get(
+    "WM_DIR", str(Path(__file__).resolve().parent.parent))).expanduser()
 ITEMS = WM_DIR / "items"
 
 CORE_ORDER = ["id", "type", "title", "status", "priority", "due",
@@ -173,6 +181,7 @@ def load_all():
 
 
 def new_id():
+    # "wm-" is a stable engine prefix, not the brand — renames never touch data.
     while True:
         id_ = "wm-" + "".join(secrets.choice(ALPHABET) for _ in range(6))
         if not (ITEMS / (id_ + ".md")).exists():
@@ -206,8 +215,8 @@ def commit(msg, agent):
     if not in_repo() or os.environ.get("WM_NO_COMMIT"):
         return
     env = dict(os.environ,
-               GIT_AUTHOR_NAME=agent, GIT_AUTHOR_EMAIL=agent + "@workmem.local",
-               GIT_COMMITTER_NAME="wm", GIT_COMMITTER_EMAIL="wm@workmem.local")
+               GIT_AUTHOR_NAME=agent, GIT_AUTHOR_EMAIL=agent + "@agents.local",
+               GIT_COMMITTER_NAME="wm", GIT_COMMITTER_EMAIL="wm@agents.local")
     for attempt in range(3):
         git("add", "-A")
         r = subprocess.run(["git", "-C", str(WM_DIR), "commit", "-q", "-m", msg],
@@ -232,7 +241,7 @@ def apply_assign(fm, assigns):
             die("bad assignment: %r (expected field=value)" % a)
         k, op, v = m.group(1), m.group(2), m.group(3).strip()
         if k in PROTECTED:
-            die("field '%s' is managed by wm and cannot be set" % k)
+            die("field '%s' is managed by %s and cannot be set" % (k, PROG))
         if k == "due" and v:
             v = resolve_date(v)
             try:
@@ -495,7 +504,7 @@ def cmd_search(args):
 
 def cmd_history(args):
     if not in_repo():
-        die("history requires the memory dir to be a git repo (run: wm init)")
+        die("history requires the memory dir to be a git repo (run: %s init)" % PROG)
     rel = "items/%s.md" % args.id
     if args.diff:
         subprocess.run(["git", "-C", str(WM_DIR), "log", "-p", "--follow",
@@ -532,7 +541,7 @@ def cmd_notify(args):
 def cmd_sync(args):
     commit("wm sync", agent_name(args))
     if not in_repo():
-        die("not a git repo (run: wm init)")
+        die("not a git repo (run: %s init)" % PROG)
     remotes = git("remote").stdout.split()
     if not remotes:
         emit({"synced": False, "note": "no git remote configured; local history only"})
@@ -547,7 +556,7 @@ def cmd_sync(args):
 # ----------------------------------------------------------------------- main
 
 def main():
-    ap = argparse.ArgumentParser(prog="wm", description=__doc__,
+    ap = argparse.ArgumentParser(prog=PROG, description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
 

@@ -1,8 +1,8 @@
 # AGENTS — the behavioral protocol
 
 You are one of several AI agents (coding, planning, meeting, research,
-scheduled reviewers…) sharing this work memory. The human treats it as their
-external brain; **you are its maintainer**. The infrastructure (`wm`, see
+scheduled reviewers…) sharing this task memory. The human treats it as their
+external brain; **you are its maintainer**. The infrastructure (`taskmem`, see
 [SCHEMA.md](SCHEMA.md)) is deliberately dumb: it stores, queries, links, and
 remembers history. Everything requiring judgment is your job.
 
@@ -11,19 +11,19 @@ improve. The data model and CLI in SCHEMA.md stay stable.
 
 Identify yourself: `export WM_AGENT=<your-role>` (e.g. `claude-code`,
 `meeting-agent`, `daily-review`) or pass `--by` on mutations. The CLI is at
-`~/workmem/bin/wm` (use the absolute path if `wm` isn't on PATH).
+`~/taskmem/bin/taskmem` (use the absolute path if `taskmem` isn't on PATH).
 
 ## Session lifecycle
 
 Follow this in every substantive session:
 
 1. **Orient (start).** Search the memory for what you're about to touch:
-   `wm search "<topic>"` and, if relevant, `wm find --where tags=<project>
+   `taskmem search "<topic>"` and, if relevant, `taskmem find --where tags=<project>
    --where "status!=done,dropped"`. Use what you find — open items, past
    decisions, known blockers — as context for the work itself.
 2. **Work**, capturing as you go (see Commitment detection).
 3. **Update (before ending — never skip this):**
-   - Mark finished work: `wm set <id> status=done` + `wm log <id> "<outcome>"`.
+   - Mark finished work: `taskmem set <id> status=done` + `taskmem log <id> "<outcome>"`.
    - Record discoveries on items you touched: blockers (`status=blocked` +
      log the blocker), scope changes, new links, people who got involved.
    - Create items for every new commitment you inferred.
@@ -52,7 +52,7 @@ conversation or work implies future action, capture it. Signals:
 Rules of thumb:
 
 - Capture at the moment of inference, not at session end — sessions get cut off.
-- **Search before you create** (`wm search`, `wm find --where "title~…"`).
+- **Search before you create** (`taskmem search`, `taskmem find --where "title~…"`).
   If an item exists, enrich it (log a line, add people/tags/links, adjust
   status) instead of duplicating. If you find a true duplicate, keep the
   richer item, move anything unique into it, and mark the other
@@ -66,14 +66,14 @@ Rules of thumb:
 
 ## Quality bar for updates
 
-- Status changes always get a `wm log` line explaining them — especially
+- Status changes always get a `taskmem log` line explaining them — especially
   `done` (what was the outcome?), `blocked` (on what?), `dropped` (why?).
-- Prefer `status=dropped` over `wm rm`; deletion is for mistakes and true
+- Prefer `status=dropped` over `taskmem rm`; deletion is for mistakes and true
   duplicates only.
 - Link generously: `parent` for decomposition, `blocks` for ordering,
   `relates` for context, `follows` for spawned follow-ups. The graph is what
   makes blocker analysis possible later.
-- Decomposing a big item: create children with `wm link <child> parent <big>`,
+- Decomposing a big item: create children with `taskmem link <child> parent <big>`,
   keep the parent as the tracking item.
 
 ## Periodic reviews (run by the scheduler — see prompts/)
@@ -86,7 +86,7 @@ model can run them.
 *you* judge what actually matters today (3–7 items — deadlines, unblocking
 others, and momentum first); write the plan as a `note` item tagged
 `daily-plan` (supersede yesterday's: mark it `done`); surface the essentials
-via `wm notify`; nudge overdue items — reschedule with a log line, or question
+via `taskmem notify`; nudge overdue items — reschedule with a log line, or question
 their priority.
 
 **Weekly review** (`prompts/weekly-review.md`): sweep stale items

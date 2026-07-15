@@ -41,7 +41,7 @@ contain commas. Files remain valid YAML for other tooling (Obsidian, pandoc…).
 
 | Field    | Written by | Semantics |
 |----------|-----------|-----------|
-| id       | wm        | Immutable. `wm-` + 6 chars. Filename = `<id>.md`. |
+| id       | taskmem        | Immutable. `wm-` + 6 chars. Filename = `<id>.md`. |
 | type     | agents    | Open vocabulary; see below. |
 | title    | agents    | Short, specific, imperative where possible. |
 | status   | agents    | Open vocabulary; see below. Default `open`. |
@@ -49,9 +49,9 @@ contain commas. Files remain valid YAML for other tooling (Obsidian, pandoc…).
 | due      | agents    | `YYYY-MM-DD`, local-date semantics. Only if a real date exists. Validated on write; `today+N` accepted. |
 | people   | agents    | Humans involved (first names or handles, consistently). |
 | tags     | agents    | Lowercase, hyphenated. Use one tag per project/area. |
-| links    | wm/agents | Directed edges `rel:target-id` (see Links). |
-| created  | wm        | Immutable UTC timestamp. |
-| updated  | wm        | UTC timestamp, touched on every mutation. |
+| links    | taskmem/agents | Directed edges `rel:target-id` (see Links). |
+| created  | taskmem        | Immutable UTC timestamp. |
+| updated  | taskmem        | UTC timestamp, touched on every mutation. |
 | source   | agents    | Where the item came from (agent name, meeting, thread…). |
 
 **The schema is open.** Any other `key: value` is legal and preserved —
@@ -71,37 +71,37 @@ responsibility. Extend them by editing this file.
 - **link rels** (read left-to-right, stored on the source item only):
   `blocks` · `parent` (source is parent of target) · `relates` ·
   `duplicate-of` · `follows` (source is a follow-up of target)
-  Reverse direction is **derived at query time** (`wm links <id>` shows both
-  directions; `wm find --where links~:<id>` finds inbound references).
+  Reverse direction is **derived at query time** (`taskmem links <id>` shows both
+  directions; `taskmem find --where links~:<id>` finds inbound references).
 
 ## Body conventions
 
 Free markdown. Two conventions: the body opens with enough context that a
 fresh agent (or the human, months later) understands the item without the
 originating conversation; and `## Log` is the **last** section — an
-append-only trail written via `wm log` (`- <timestamp> [<agent>] message`).
+append-only trail written via `taskmem log` (`- <timestamp> [<agent>] message`).
 
 ## CLI contract
 
 All output is JSON (JSONL for `find`/`search`) on stdout; errors are
 `{"error": …}` on stderr with exit 1. Set `WM_AGENT=<name>` (or pass `--by`)
 so mutations are attributed to you — in `## Log` lines and as the git author.
-`WM_DIR` overrides the memory location (default `~/workmem`).
+`WM_DIR` overrides the memory location (default `~/taskmem`).
 
 | Command | Purpose |
 |---------|---------|
-| `wm new <type> <title> [k=v …] [--body -\|text]` | create; prints the item with `id` |
-| `wm get <id…> [--raw]` | read (JSON or raw markdown) |
-| `wm set <id> k=v k+=v k-=v [--body …]` | update fields (`k=` clears; `+=`/`-=` edit lists) |
-| `wm log <id> <message>` | append an attributed line to `## Log` |
-| `wm link/unlink <id> <rel> <id>` | manage directed edges (validates targets) |
-| `wm links <id>` | outbound + inbound edges |
-| `wm find [--where EXPR]… [--sort k:desc,k2] [--limit N] [--offset N] [--fields a,b] [--full] [--count] [--oneline]` | generic query |
-| `wm search <text> [--limit N]` | full-text, all-tokens-match, scored |
-| `wm history <id> [--diff]` | git history of one item |
-| `wm rm <id…>` | hard delete (prefer `status=dropped`) |
-| `wm notify <title> <message>` | OS notification |
-| `wm sync` | commit; pull --rebase + push if a remote exists |
+| `taskmem new <type> <title> [k=v …] [--body -\|text]` | create; prints the item with `id` |
+| `taskmem get <id…> [--raw]` | read (JSON or raw markdown) |
+| `taskmem set <id> k=v k+=v k-=v [--body …]` | update fields (`k=` clears; `+=`/`-=` edit lists) |
+| `taskmem log <id> <message>` | append an attributed line to `## Log` |
+| `taskmem link/unlink <id> <rel> <id>` | manage directed edges (validates targets) |
+| `taskmem links <id>` | outbound + inbound edges |
+| `taskmem find [--where EXPR]… [--sort k:desc,k2] [--limit N] [--offset N] [--fields a,b] [--full] [--count] [--oneline]` | generic query |
+| `taskmem search <text> [--limit N]` | full-text, all-tokens-match, scored |
+| `taskmem history <id> [--diff]` | git history of one item |
+| `taskmem rm <id…>` | hard delete (prefer `status=dropped`) |
+| `taskmem notify <title> <message>` | OS notification |
+| `taskmem sync` | commit; pull --rebase + push if a remote exists |
 
 ### Query grammar
 
@@ -120,16 +120,16 @@ so mutations are attributed to you — in `## Log` lines and as the git author.
 Composition examples (this is how "specialized" queries are expressed):
 
 ```bash
-wm find --where "status!=done,dropped" --where "due<=today" --sort due     # due/overdue
-wm find --where status=waiting --where people=Rahul                        # waiting on Rahul
-wm find --where "status!=done,dropped" --where "updated<today-14"          # stale
-wm find --where "links~blocks:" --where "status!=done,dropped"             # blocking items
-wm find --where type=decision --sort created:desc --limit 10               # recent decisions
+taskmem find --where "status!=done,dropped" --where "due<=today" --sort due     # due/overdue
+taskmem find --where status=waiting --where people=Rahul                        # waiting on Rahul
+taskmem find --where "status!=done,dropped" --where "updated<today-14"          # stale
+taskmem find --where "links~blocks:" --where "status!=done,dropped"             # blocking items
+taskmem find --where type=decision --sort created:desc --limit 10               # recent decisions
 ```
 
 ## History
 
 Every mutation auto-commits to git with the acting agent as author, so
-`wm history` and `git log` reconstruct who changed what, when, and why —
+`taskmem history` and `git log` reconstruct who changed what, when, and why —
 without any bespoke history code. `WM_NO_COMMIT=1` batches mutations into a
-later `wm sync` commit.
+later `taskmem sync` commit.
