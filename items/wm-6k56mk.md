@@ -9,7 +9,7 @@ people: [Abhishek]
 tags: [taskmem]
 links: [relates:wm-c4vhst]
 created: 2026-07-15T15:08:25Z
-updated: 2026-07-15T15:16:04Z
+updated: 2026-07-15T17:48:28Z
 source: intake-review
 ---
 
@@ -45,3 +45,4 @@ must never modify; this is a human-only task.
 ## Log
 - 2026-07-15T15:12Z [intake-review] upgraded to pickup-ready standard (context, next steps, links)
 - 2026-07-15T15:16Z [claude-code] Planned for tonight (2026-07-15 evening block): human-only, doing first at ~21:00
+- 2026-07-15T17:48Z [claude-code] GitHub remote of the old system (abhishek-edgefocus/tasks) deleted after verification: GH HEAD == dpx HEAD 423047b, single branch, all 18 items already imported into taskmem, projects.yaml -> project items. dpx ~/tasks folder still holds full history until archived (this item's remaining step). Note: dpx agent-brief's post-run 'git push origin' will now fail silently — harmless, and moot once the crontab is removed.
