@@ -12,3 +12,6 @@ source: claude-code
 ---
 
 Official company business Aug 4–5 in Vegas. Group DM consensus: 3 nights; Aanchal suggests booking through Aug 6 given timezone difference. Thread tone: everything is last-minute — book ASAP.
+
+## Log
+- 2026-07-15T14:52Z [claude-code] Dropped per user request.
