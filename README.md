@@ -162,8 +162,12 @@ a scheduler (cron only decides *when* an agent wakes, never *what matters*).
 
 The scheduler just wakes an agent with a prompt; all judgment is in the
 prompt + AGENTS.md. `install.sh --cron` installs the whole marker-delimited
-crontab block (review agents via `bin/agent-brief`, 15-minute autosync,
-weekend dashboard refresh). Manually, with Claude Code, `crontab -e` and add:
+crontab block: the daily/weekly review agents, the **intake agent** (hourly
+on weekdays — sweeps the Linear inbox and Slack mentions/DMs/commitments
+into `status=inbox` items, dedup-anchored on `refs`), 15-minute autosync,
+and the weekend dashboard refresh — all via `bin/agent-brief`. The
+Linear/Slack legs need the claude.ai connectors authorized for the account
+running `claude`. Manually, with Claude Code, `crontab -e` and add:
 
 ```cron
 30 8 * * 1-5 WM_AGENT=daily-review  "$HOME/.local/bin/claude" -p "$(cat $HOME/taskmem/prompts/daily-review.md)"  --allowedTools "Bash" >> $HOME/taskmem/.logs/daily.log 2>&1

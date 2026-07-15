@@ -79,6 +79,7 @@ if [ "${1:-}" = "--cron" ]; then
     cat >> "$TMP" <<EOF
 $CRON_BEGIN
 30 8 * * 1-5 $DIR/bin/agent-brief daily
+0 9-18 * * 1-5 $DIR/bin/agent-brief intake
 0 17 * * 5 $DIR/bin/agent-brief weekly
 */15 * * * * $DIR/bin/taskmem sync > /dev/null 2>&1
 20 9 * * 0,6 $DIR/bin/dashboard > /dev/null 2>&1

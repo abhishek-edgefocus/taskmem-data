@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Headless review agent for the task memory. Called from crontab.
-# Usage: agent-brief daily|weekly
+# Usage: agent-brief daily|weekly|intake
 # The scheduler decides WHEN an agent wakes; the prompt + AGENTS.md decide
 # everything else. Any headless runner works — swap the `claude` line for
 # codex/gemini/your own API script without touching anything else.
@@ -14,8 +14,11 @@ mkdir -p "$DIR/.logs"
 
 "$DIR/bin/taskmem" sync >> "$LOG" 2>&1 || true
 
-claude -p "$(cat "$DIR/prompts/${MODE}-review.md")" < /dev/null \
-  --allowedTools "Bash,Read,ToolSearch,mcp__claude_ai_Linear__list_issues,mcp__claude_ai_Linear__get_issue,mcp__claude_ai_Slack__slack_send_message,mcp__claude_ai_Slack__slack_search_users" \
+PROMPT="$DIR/prompts/${MODE}.md"
+[ -f "$PROMPT" ] || PROMPT="$DIR/prompts/${MODE}-review.md"
+
+claude -p "$(cat "$PROMPT")" < /dev/null \
+  --allowedTools "Bash,Read,ToolSearch,mcp__claude_ai_Linear__list_issues,mcp__claude_ai_Linear__get_issue,mcp__claude_ai_Linear__list_comments,mcp__claude_ai_Slack__slack_send_message,mcp__claude_ai_Slack__slack_search_users,mcp__claude_ai_Slack__slack_search_public_and_private,mcp__claude_ai_Slack__slack_read_thread,mcp__claude_ai_Slack__slack_read_channel" \
   >> "$LOG" 2>&1
 
 "$DIR/bin/taskmem" sync >> "$LOG" 2>&1 || true
