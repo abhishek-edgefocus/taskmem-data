@@ -2,12 +2,12 @@
 id: wm-hek3xz
 type: task
 title: Book Vegas offsite travel (flights + hotel, ~Aug 3-6)
-status: open
+status: dropped
 priority: p1
 due: 2026-07-15
 tags: [travel, offsite]
 created: 2026-07-14T15:53:31Z
-updated: 2026-07-14T15:53:31Z
+updated: 2026-07-15T14:52:40Z
 source: claude-code
 ---
 
