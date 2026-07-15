@@ -4,6 +4,7 @@ type: task
 title: Enable task sync to GitHub (add remote + force-push main) — when ready to upload tasks
 status: someday
 tags: [taskmem]
+links: [follows:wm-c4vhst]
 created: 2026-07-15T17:38:35Z
 updated: 2026-07-15T17:38:35Z
 source: claude-code
