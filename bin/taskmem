@@ -478,21 +478,20 @@ def cmd_links(args):
 LINEAGE = ("parent", "follows")
 
 
-def cmd_thread(args):
-    """Whole-thread view: transitive parent/follows lineage in both
-    directions (every rel with --all), archived members included."""
-    load(args.id)  # validate focus exists
+def thread_nodes(focus, all_rels=False):
+    """Transitive parent/follows lineage around `focus`, both directions
+    (every rel when all_rels), archived members included."""
     items = {it["id"]: it for it in load_all(True) if it.get("id")}
     up, down = {}, {}
     for it in items.values():
         links = it.get("links") or []
         for edge in (links if isinstance(links, list) else [links]):
             rel, _, target = edge.partition(":")
-            if not args.all and rel not in LINEAGE:
+            if not all_rels and rel not in LINEAGE:
                 continue
             up.setdefault(it["id"], []).append((rel, target))
             down.setdefault(target, []).append((rel, it["id"]))
-    roots, seen, stack = [], set(), [args.id]
+    roots, seen, stack = [], set(), [focus]
     while stack:
         cur = stack.pop()
         if cur in seen:
@@ -509,7 +508,7 @@ def cmd_thread(args):
             return
         visited.add(id_)
         it = items.get(id_, {})
-        node = {"id": id_, "depth": depth, "rel": rel, "focus": id_ == args.id,
+        node = {"id": id_, "depth": depth, "rel": rel, "focus": id_ == focus,
                 "status": it.get("status"), "title": it.get("title")}
         for k in ("priority", "size", "due"):
             if it.get(k):
@@ -524,7 +523,12 @@ def cmd_thread(args):
 
     for r in sorted(set(roots)):
         walk(r, 0, None)
-    for n in out:
+    return out
+
+
+def cmd_thread(args):
+    load(args.id)  # validate focus exists
+    for n in thread_nodes(args.id, args.all):
         if args.oneline:
             rel = n.get("rel")
             prefix = "" if rel in (None, "parent") else \
@@ -535,6 +539,59 @@ def cmd_thread(args):
                                           "  ◀ focus" if n["focus"] else ""))
         else:
             emit(n)
+
+
+def cmd_story(args):
+    """Everything about one item: fields, context, lineage, and a merged
+    chronological timeline of git mutations + semantic ## Log lines."""
+    fm, body, p = load(args.id)
+    context = body.split("## Log")[0].strip()
+    events = []
+    logsec = body.split("## Log", 1)[1] if "## Log" in body else ""
+    for line in logsec.splitlines():
+        m = re.match(r"^- (\S+) \[([^\]]*)\] (.*)$", line.strip())
+        if m:
+            events.append({"time": m.group(1), "by": m.group(2),
+                           "event": m.group(3), "src": "log"})
+    if in_repo():
+        rel = str(item_path(args.id).relative_to(WM_DIR))
+        r = git("log", "--follow", "--format=%aI\t%an\t%s", "--", rel)
+        for ln in r.stdout.strip().splitlines():
+            t, an, s = ln.split("\t", 2)
+            if s.startswith("log %s:" % args.id):
+                continue  # its semantic ## Log line is already in the timeline
+            events.append({"time": t, "by": an, "event": s, "src": "git"})
+
+    def when(e):
+        try:
+            return datetime.fromisoformat(e["time"].replace("Z", "+00:00"))
+        except ValueError:
+            return datetime.min.replace(tzinfo=timezone.utc)
+
+    events.sort(key=when)
+    nodes = thread_nodes(args.id)
+    if not args.oneline:
+        emit(dict(fm, context=context, thread=nodes, timeline=events, path=str(p)))
+        return
+    print("%s [%s] %s" % (fm.get("id"), fm.get("status"), fm.get("title")))
+    meta = []
+    for k in ("type", "priority", "size", "due", "scheduled", "waiting_on",
+              "nudge", "people", "tags", "refs", "source"):
+        v = fm.get(k)
+        if v:
+            meta.append("%s=%s" % (k, ",".join(v) if isinstance(v, list) else v))
+    if meta:
+        print("  " + "  ".join(meta))
+    if context:
+        print("\n" + context)
+    if len(nodes) > 1:
+        print("\n── Thread ──")
+        for n in nodes:
+            print("%s%s [%s] %s%s" % ("   " * n["depth"], n["id"], n.get("status", "?"),
+                                      n.get("title", ""), "  ◀" if n["focus"] else ""))
+    print("\n── Timeline ──")
+    for e in events:
+        print("%-25s %-14s %s" % (e["time"], e["by"], e["event"]))
 
 
 def cmd_find(args):
@@ -707,6 +764,11 @@ def main():
     p.add_argument("--all", action="store_true", help="traverse every rel, not just parent/follows")
     p.add_argument("--oneline", action="store_true", help="render as an indented tree")
     p.set_defaults(fn=cmd_thread)
+
+    p = sub.add_parser("story", help="full context + lineage + merged timeline for one item")
+    p.add_argument("id")
+    p.add_argument("--oneline", action="store_true", help="human-readable story")
+    p.set_defaults(fn=cmd_story)
 
     p = sub.add_parser("find", help="query items; repeat --where to AND filters")
     p.add_argument("--where", action="append", metavar="EXPR",

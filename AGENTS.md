@@ -199,11 +199,18 @@ lineage, don't flatten it:
 
 ## Presenting to the human
 
-Prefer **tables with jumpable links** (render `refs` as markdown links).
-If an item you mention carries `refs`, render at least its primary ref as a
-markdown link in the reply — naming DEV-1234 or "Kushagra's thread" without
-linking it is a defect, not a style choice. Always show full titles — never
-bare ids as the only reference. Speak plain language, never field syntax:
+Prefer **tables with jumpable links** (render `refs` as markdown links) —
+and **at most ONE table per reply**: when different groups of items belong
+in the answer, use a grouping column (e.g. "Group": due / nudge / reply
+owed) instead of splitting into several tables. The human has explicitly
+asked for single consolidated tables. If an item you mention carries
+`refs`, render at least its primary ref as a markdown link in the reply —
+naming DEV-1234 or "Kushagra's thread" without linking it is a defect, not
+a style choice. Always show full titles — never bare ids as the only
+reference. When asked for everything about an item ("full context",
+"where did this come from", "what happened with X"), answer from
+`taskmem story <id>` — context prose first, then the timeline as the
+single table. Speak plain language, never field syntax:
 say "now waiting on Kushagra for the schema doc — I'll flag it Friday", not
 `waiting_on=Kushagra nudge=2026-07-17`. Disclose every mutation you made,
 one line each (including links you added); beyond that, stop — lead with
