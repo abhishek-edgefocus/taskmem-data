@@ -5,7 +5,7 @@ title: Work memory v1: markdown files + git + generic CLI
 status: open
 tags: [taskmem]
 created: 2026-07-14T14:20:46Z
-updated: 2026-07-15T21:22:43Z
+updated: 2026-07-15T21:27:04Z
 source: bootstrap
 ---
 
@@ -24,3 +24,4 @@ Chose flat-frontmatter markdown per item, git for history, one generic zero-depe
 - 2026-07-15T20:32Z [claude-code] archive policy tightened per user review: closed items now archive after 30 days untouched (was 90); model unchanged — status is lifecycle truth, folder is temperature
 - 2026-07-15T21:03Z [claude-code] views and replies now surface the next ACTION, not just the title: deterministic first-step extraction from ## Next steps in digest and dashboard, Action column in the daily brief, presenting rule in AGENTS.md
 - 2026-07-15T21:22Z [claude-code] presentation simplification: internal codes (p0-p3, xs-xl) now translate to plain words in digest/dashboard/briefs/replies (urgent-high-low, ~15m..multi-day); storage vocabulary unchanged
+- 2026-07-15T21:27Z [claude-code] response tables standardized: ID always its own column, new From column (origin = lineage root, derived not stored) in dashboard/briefs/agent replies, alongside the existing Next action column
