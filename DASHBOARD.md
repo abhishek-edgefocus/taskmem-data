@@ -4,24 +4,24 @@
 
 ## Scheduled (today or slipped)
 
-| id | status | pri | size | task | due | links |
-|---|---|---|---|---|---|---|
-| wm-drehnk | next | p1 | m | Inventory NorthPond monitoring panels; map each query to its Snowflake source |  |  |
+| id | pri | task | next action | due | links |
+|---|---|---|---|---|---|
+| wm-drehnk | p1 | Inventory NorthPond monitoring panels; map each query to its Snowflake source | — |  |  |
 
 ## In flight
 
-| id | status | pri | size | task | due | links |
-|---|---|---|---|---|---|---|
-| wm-j9jxpc | next |  | s | Check missing statement files for NorthPond and confirm in Kushagra's thread (before Friday dev call) | 2026-07-17 | [slack](https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5) |
-| wm-3y3ckv | active |  |  | On-call / Errors backlog |  |  |
-| wm-j523sq | active |  |  | NorthPond Data Ingestion |  | [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring) |
-| wm-r45vp3 | active |  |  | AI billing to Slack (DEV-970) |  |  |
-| wm-su6q4d | active |  |  | OpenRoad Data Ingestion |  |  |
-| wm-bvqkhh | next | p1 | s | Finalize DEV-1331 OpenRoad predictions datastore-comparison notebook |  | [notebook](http://dexterplus.edgefocus.net:12053/notebooks/repos/efp/slop/dev1331_openroad_predictions_datastore_comparison.ipynb) [DEV-1331](https://linear.app/edge-focus/issue/DEV-1331) |
-| wm-gcdq6k | active | p3 | l | AI billing tracking to Slack (DEV-970) |  | [DEV-970](https://linear.app/edge-focus/issue/DEV-970/add-tracking-of-ai-billing-to-slack) |
-| wm-gxykru | active | p2 | m | Root-cause int_rate_at_purchase=0 for northpond loans (DEV-503, in progress) |  | [DEV-503](https://linear.app/edge-focus/issue/DEV-503/int-rate-at-purchase-0-for-northpond-loans-in-positions) |
-| wm-ng8g2c | next | p2 | s | Create Ramp account using the automations Google account |  |  |
-| wm-rgwdyu | active | p1 | xl | Migrate NorthPond Fund Monitoring page to Snowflake data (DEV-1395) | 2026-07-20 | [DEV-1395](https://linear.app/edge-focus/issue/DEV-1395/migrate-the-northpond-fund-monitoring-page-to-use-snowflake-data) [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring) |
+| id | pri | task | next action | due | links |
+|---|---|---|---|---|---|
+| wm-j9jxpc |  | Check missing statement files for NorthPond and confirm in Kushagra's thread (before Friday dev call) | Get the third missing date from the "Missing Platform Data" dashboard | 2026-07-17 | [slack](https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5) |
+| wm-3y3ckv |  | On-call / Errors backlog | — |  |  |
+| wm-j523sq |  | NorthPond Data Ingestion | — |  | [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring) |
+| wm-r45vp3 |  | AI billing to Slack (DEV-970) | — |  |  |
+| wm-su6q4d |  | OpenRoad Data Ingestion | — |  |  |
+| wm-bvqkhh | p1 | Finalize DEV-1331 OpenRoad predictions datastore-comparison notebook | — |  | [notebook](http://dexterplus.edgefocus.net:12053/notebooks/repos/efp/slop/dev1331_openroad_predictions_datastore_comparison.ipynb) [DEV-1331](https://linear.app/edge-focus/issue/DEV-1331) |
+| wm-gcdq6k | p3 | AI billing tracking to Slack (DEV-970) | — |  | [DEV-970](https://linear.app/edge-focus/issue/DEV-970/add-tracking-of-ai-billing-to-slack) |
+| wm-gxykru | p2 | Root-cause int_rate_at_purchase=0 for northpond loans (DEV-503, in progress) | — |  | [DEV-503](https://linear.app/edge-focus/issue/DEV-503/int-rate-at-purchase-0-for-northpond-loans-in-positions) |
+| wm-ng8g2c | p2 | Create Ramp account using the automations Google account | — |  |  |
+| wm-rgwdyu | p1 | Migrate NorthPond Fund Monitoring page to Snowflake data (DEV-1395) | — | 2026-07-20 | [DEV-1395](https://linear.app/edge-focus/issue/DEV-1395/migrate-the-northpond-fund-monitoring-page-to-use-snowflake-data) [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring) |
 
 ## Projects
 
