@@ -15,3 +15,4 @@ source: dpx-tasks #12
 ## Log
 - 2026-07-15T14:44Z [importer] imported from dpx ~/tasks #12
 - 2026-07-15T14:49Z [claude-code] wm-225chs no longer needs a reviewer name (PR #5709 merged); only wm-c39rb3 remains.
+- 2026-07-15T14:52Z [claude-code] Moot: both blocked PRs (DEV-1331, DEV-1412) have merged; no reviewer names needed.
