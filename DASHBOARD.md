@@ -23,6 +23,18 @@
 | wm-ng8g2c | p2 | Create Ramp account using the automations Google account | — |  |  |
 | wm-rgwdyu | p1 | Migrate NorthPond Fund Monitoring page to Snowflake data (DEV-1395) | — | 2026-07-20 | [DEV-1395](https://linear.app/edge-focus/issue/DEV-1395/migrate-the-northpond-fund-monitoring-page-to-use-snowflake-data) [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring) |
 
+## Replies owed
+
+| id | status | pri | size | task | due | links |
+|---|---|---|---|---|---|---|
+| wm-h3dvpa | open |  | xs | Reply to Abhijeet: confirm OPs currently use API predictions only (EDGEX EF scoring thread) | 2026-07-17 | [slack](https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G) |
+
+## Inbox — needs triage
+
+| id | status | pri | size | task | due | links |
+|---|---|---|---|---|---|---|
+| wm-c5jytx | inbox |  | l | Set up northpond model for EDGEX EF scoring — at_orig predictions into silver.predicted_cashflows |  | [slack](https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G) |
+
 ## Projects
 
 ### AI billing to Slack (DEV-970) (`wm-r45vp3`)
@@ -33,6 +45,8 @@
 ### NorthPond Data Ingestion (`wm-j523sq`) [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring)
 *Migrate NorthPond off datastores onto Snowflake (dashboards + silver tables)*
 - wm-ch9wmr [open/l] Fix cfframe capture gap: at-origination pred cashflows missing since Feb/Mar 2025 (DEV-1279)
+- wm-h3dvpa [open/xs] Reply to Abhijeet: confirm OPs currently use API predictions only (EDGEX EF scoring thread) (due 2026-07-17)
+  - wm-c5jytx [inbox/l] Set up northpond model for EDGEX EF scoring — at_orig predictions into silver.predicted_cashflows
 - wm-rgwdyu [active/xl] Migrate NorthPond Fund Monitoring page to Snowflake data (DEV-1395) (due 2026-07-20)
   - wm-drehnk [next/m] Inventory NorthPond monitoring panels; map each query to its Snowflake source
 
@@ -67,4 +81,4 @@
 | wm-fhyza8 | done | p1 |  | Install daily/weekly review crontab entries | **2026-07-16** |  |
 | wm-3tdn24 | done | p2 | s | Close 4 open missing-window alerts on northpond positions files (ERROR-1524) |  | [ERROR-1524](https://linear.app/edge-focus/issue/ERROR-1524/missing-statement-filenorthpondpositionsnorthpond-loan-positions-4) |
 
-*Working set: 20 open items. Full queries: see SCHEMA.md.*
+*Working set: 22 open items. Full queries: see SCHEMA.md.*
