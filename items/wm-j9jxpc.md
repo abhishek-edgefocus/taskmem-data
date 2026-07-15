@@ -16,3 +16,6 @@ source: intake-review
 Kushagra in #platform-data-owners (2026-07-15 14:58 IST): 'can you please confirm to me in this thread when you have checked these missing files for your platform, by the friday dev call we need to handover this to ops.'
 
 Nakula (Innovate), Sanjali (Prosper), and Abhijeet have already confirmed for their platforms; NorthPond confirmation is pending. Per the thread: check whether each missing file affects the platform or can be ignored, record it in the acknowledgment sheet, and reply in-thread. Possibly related to the earlier missing-window alerts (ERROR-1524, closed) — verify it's not the same list.
+
+## Log
+- 2026-07-15T14:56Z [intake-review] captured from Slack mention sweep (intake demo run); dedup anchor is the message permalink in refs
