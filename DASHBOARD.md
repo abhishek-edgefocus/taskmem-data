@@ -27,6 +27,7 @@
 | id | status | pri | size | task | due | links |
 |---|---|---|---|---|---|---|
 | wm-j9jxpc | inbox |  | s | Check missing statement files for NorthPond and confirm in Kushagra's thread (before Friday dev call) | 2026-07-17 | [slack](https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5) |
+| wm-6k56mk | inbox |  |  | Disable the dpx ~/tasks crontab (unattended claude runs + automated DMs, against policy) | 2026-07-16 |  |
 
 ## Projects
 
@@ -75,4 +76,4 @@
 | wm-fhyza8 | done | p1 |  | Install daily/weekly review crontab entries | 2026-07-16 |  |
 | wm-3tdn24 | done | p2 | s | Close 4 open missing-window alerts on northpond positions files (ERROR-1524) |  | [ERROR-1524](https://linear.app/edge-focus/issue/ERROR-1524/missing-statement-filenorthpondpositionsnorthpond-loan-positions-4) |
 
-*Working set: 18 open items. Full queries: see SCHEMA.md.*
+*Working set: 19 open items. Full queries: see SCHEMA.md.*
