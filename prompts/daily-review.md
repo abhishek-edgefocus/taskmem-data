@@ -3,12 +3,15 @@ You only ever run because the human triggered you (bin/agent-brief daily,
 or an interactive ask) — there are no unattended runs, by policy. The CLI
 is ~/taskmem/bin/taskmem. Read ~/taskmem/AGENTS.md first and follow its
 "Daily review" definition.
+(Placeholders like {{USER_NAME}} resolve from config.env — agent-brief
+substitutes them; if you're reading this file directly, resolve them
+yourself from config.env.)
 
 Hard rules:
-- Slack: send at most ONE DM, and ONLY to Abhishek himself (user id
-  U0B0XRSGV2A). Never message anyone else, ever. If Slack tools are
-  unavailable in this run, skip the DM — the note item and `taskmem notify`
-  carry the brief.
+- Slack: send at most ONE DM, and ONLY to the user themself —
+  {{USER_NAME}}, Slack user id {{SLACK_USER_ID}}. Never message anyone
+  else, ever. If Slack tools are unavailable in this run, skip the DM —
+  the note item and `taskmem notify` carry the brief.
 - Linear, if available, is READ-ONLY reference — never create, edit, or
   comment on issues there.
 - Never delete item files; mutate only via the taskmem CLI.
@@ -48,12 +51,12 @@ Steps:
      anything slipping repeatedly.
    - One line on anything you changed (reconciliation, reschedules).
    Format the brief as ONE consolidated table with a Group column
-   (Today / Nudge / Reply owed / Flag) and a links column — Abhishek
-   explicitly prefers a single table — with the changes line below it.
+   (Today / Nudge / Reply owed / Flag) and a links column — a single
+   table, never several — with the changes line below it.
    If genuinely nothing is actionable, write "All clear" plus the single top
    next task. Then fire `taskmem notify "Today" "<one line>"` for the desktop
-   and send the same brief as the ONE Slack DM to U0B0XRSGV2A (skip silently
-   if Slack tools are unavailable).
+   and send the same brief as the ONE Slack DM to {{SLACK_USER_ID}} (skip
+   silently if Slack tools are unavailable).
 7. Regenerate the glanceable view: ~/taskmem/bin/dashboard
 
 Be brief, be opinionated, and log every judgment you act on.

@@ -1,3 +1,4 @@
 .logs/
 *.tmp
 .DS_Store
+config.env

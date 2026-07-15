@@ -27,6 +27,22 @@ ln -sf "$DIR/bin/taskmem" "$HOME/.local/bin/$NAME"
 ln -sf "$DIR/bin/taskmem" "$HOME/.local/bin/tm"
 echo "ok: CLI -> ~/.local/bin/$NAME (and tm)"
 
+# --- 2b. user config (user-specific values live here, not in tracked files) --
+CONF="$DIR/config.env"
+if [ ! -f "$CONF" ]; then
+    NAME_DEFAULT="$(git config user.name 2>/dev/null || true)"
+    NAME_DEFAULT="${NAME_DEFAULT:-$USER}"
+    cat > "$CONF" <<EOF
+# User-specific values, substituted into prompts/ at runtime by agent-brief.
+# Gitignored — created per machine by install.sh; edit freely.
+USER_NAME=${TASKMEM_USER_NAME:-$NAME_DEFAULT}
+SLACK_USER_ID=${TASKMEM_SLACK_USER_ID:-}
+EOF
+    echo "ok: wrote config.env (set SLACK_USER_ID there for Slack briefs)"
+else
+    echo "ok: config.env exists"
+fi
+
 # --- 3. git repo -------------------------------------------------------------
 [ -d "$DIR/.git" ] || git -C "$DIR" init -q
 echo "ok: git repo"

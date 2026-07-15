@@ -11,7 +11,9 @@ read and edit it freely, but almost never have to say "create a task."
   bin/session-context  # Claude Code hook — injects task state into every session
   bin/dashboard        # regenerates DASHBOARD.md (glanceable view)
   bin/agent-brief      # headless cron runner for the review agents
-  install.sh           # idempotent machine setup (symlinks, hooks, cron)
+  install.sh           # idempotent machine setup (symlinks, hooks, cron, config)
+  config.env           # YOUR name/Slack id etc. — gitignored, written by install.sh
+  config.env.example   # documented template for it
   items/               # one markdown file per work item (the actual memory)
   archive/             # closed items moved out of the working set
   prompts/             # scheduled-agent prompts (daily/weekly review)
@@ -71,6 +73,13 @@ chmod +x ~/taskmem/bin/taskmem              # in case the clone dropped the bit
 tm find --count                             # smoke test — prints {"count": N}
 tm notify "taskmem" "setup complete"        # verify notifications fire
 ```
+
+The tool is user-agnostic: identity lives in `config.env` (gitignored),
+which `install.sh` creates — preset values via env
+(`TASKMEM_USER_NAME=… TASKMEM_SLACK_USER_ID=… ./install.sh`) or edit the
+file after; see `config.env.example`. `bin/agent-brief` substitutes these
+into the `{{PLACEHOLDER}}` tokens in `prompts/` at runtime, so tracked
+files never carry personal values.
 
 Notes for the agent doing the setup:
 

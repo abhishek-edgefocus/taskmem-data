@@ -4,11 +4,14 @@ or an interactive ask) — there are no unattended runs, by policy. The CLI
 is ~/taskmem/bin/taskmem. Read ~/taskmem/AGENTS.md first and follow its
 "Weekly review" definition.
 
+(Placeholders like {{USER_NAME}} resolve from config.env — agent-brief
+substitutes them; resolve them yourself if reading this file directly.)
+
 Hard rules:
-- Slack: send at most ONE DM, and ONLY to Abhishek himself (user id
-  U0B0XRSGV2A). Never message anyone else, ever. If Slack tools are
-  unavailable in this run, skip the DM — the weekly-review note and
-  `taskmem notify` carry the report.
+- Slack: send at most ONE DM, and ONLY to the user themself —
+  {{USER_NAME}}, Slack user id {{SLACK_USER_ID}}. Never message anyone
+  else, ever. If Slack tools are unavailable in this run, skip the DM —
+  the weekly-review note and `taskmem notify` carry the report.
 - Linear, if available, is READ-ONLY reference — never write to it.
 - Mutate only via the taskmem CLI.
 
@@ -44,8 +47,9 @@ Steps:
    tags=weekly-review --body - … with observations and concrete proposals.
 8. Deliver the report, under ~30 lines: the week plan day by day (with
    links), blocker escalations, and everything you put in inbox for
-   confirmation — as the weekly-review note, ONE Slack DM to U0B0XRSGV2A
-   (skip silently if unavailable), and `taskmem notify "Weekly review" "<headline>"`.
+   confirmation — as the weekly-review note, ONE Slack DM to
+   {{SLACK_USER_ID}} (skip silently if unavailable), and
+   `taskmem notify "Weekly review" "<headline>"`.
 9. Regenerate the glanceable view: ~/taskmem/bin/dashboard
 
 Propose, don't silently dispose: every state change gets a logged reason.

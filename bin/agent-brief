@@ -19,7 +19,28 @@ mkdir -p "$DIR/.logs"
 PROMPT="$DIR/prompts/${MODE}.md"
 [ -f "$PROMPT" ] || PROMPT="$DIR/prompts/${MODE}-review.md"
 
-claude -p "$(cat "$PROMPT")" < /dev/null \
+# Resolve {{PLACEHOLDER}} tokens from config.env (user-specific values live
+# there, never in the tracked prompt files).
+CONF="$DIR/config.env"
+if [ -f "$CONF" ]; then set -a; . "$CONF"; set +a; fi
+PROMPT_TEXT="$(python3 - "$PROMPT" <<'PY'
+import os, re, sys
+text = open(sys.argv[1]).read()
+missing = set()
+def sub(m):
+    v = os.environ.get(m.group(1), "")
+    if not v:
+        missing.add(m.group(1))
+    return v or m.group(0)
+out = re.sub(r"\{\{([A-Z_]+)\}\}", sub, text)
+if missing:
+    sys.stderr.write("WARN: unresolved placeholders (set them in config.env): %s\n"
+                     % ", ".join(sorted(missing)))
+sys.stdout.write(out)
+PY
+)"
+
+claude -p "$PROMPT_TEXT" < /dev/null \
   --allowedTools "Bash,Read,ToolSearch,mcp__claude_ai_Linear__list_issues,mcp__claude_ai_Linear__get_issue,mcp__claude_ai_Linear__list_comments,mcp__claude_ai_Slack__slack_send_message,mcp__claude_ai_Slack__slack_search_users,mcp__claude_ai_Slack__slack_search_public_and_private,mcp__claude_ai_Slack__slack_read_thread,mcp__claude_ai_Slack__slack_read_channel" \
   >> "$LOG" 2>&1
 
