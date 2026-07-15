@@ -32,6 +32,7 @@ PROG = Path(sys.argv[0]).name or "taskmem"  # brand name, taken from invocation
 WM_DIR = Path(os.environ.get(
     "WM_DIR", str(Path(__file__).resolve().parent.parent))).expanduser()
 ITEMS = WM_DIR / "items"
+ARCHIVE = WM_DIR / "archive"  # closed items moved out of the scanned working set
 
 CORE_ORDER = ["id", "type", "title", "status", "priority", "due",
               "people", "tags", "links", "created", "updated", "source"]
@@ -143,9 +144,13 @@ def dump_text(fm, body):
 # ---------------------------------------------------------------- item store
 
 def item_path(id_):
+    """Resolve an id to its file; archived items resolve transparently."""
     if not ID_RE.match(id_):
         die("invalid id: %s" % id_)
-    return ITEMS / (id_ + ".md")
+    p = ITEMS / (id_ + ".md")
+    if not p.exists() and (ARCHIVE / (id_ + ".md")).exists():
+        return ARCHIVE / (id_ + ".md")
+    return p
 
 
 def load(id_):
@@ -165,18 +170,21 @@ def save(id_, fm, body):
     return p
 
 
-def load_all():
+def load_all(include_archive=False):
     items = []
-    if not ITEMS.is_dir():
-        return items
-    for p in sorted(ITEMS.glob("*.md")):
-        try:
-            fm, body = parse_text(p.read_text(encoding="utf-8"), where=p.name)
-        except ValueError as e:
-            print(json.dumps({"warning": str(e)}), file=sys.stderr)
+    for d in [ITEMS] + ([ARCHIVE] if include_archive else []):
+        if not d.is_dir():
             continue
-        fm["body"] = body
-        items.append(fm)
+        for p in sorted(d.glob("*.md")):
+            try:
+                fm, body = parse_text(p.read_text(encoding="utf-8"), where=p.name)
+            except ValueError as e:
+                print(json.dumps({"warning": str(e)}), file=sys.stderr)
+                continue
+            fm["body"] = body
+            if d is ARCHIVE:
+                fm["archived"] = "true"
+            items.append(fm)
     return items
 
 
@@ -184,7 +192,7 @@ def new_id():
     # "wm-" is a stable engine prefix, not the brand — renames never touch data.
     while True:
         id_ = "wm-" + "".join(secrets.choice(ALPHABET) for _ in range(6))
-        if not (ITEMS / (id_ + ".md")).exists():
+        if not (ITEMS / (id_ + ".md")).exists() and not (ARCHIVE / (id_ + ".md")).exists():
             return id_
 
 
@@ -437,12 +445,16 @@ def cmd_unlink(args):
 def cmd_links(args):
     """Outbound edges from the item's own frontmatter; inbound derived by scan."""
     fm, _, _ = load(args.id)
-    all_items = {it["id"]: it for it in load_all() if it.get("id")}
+    all_items = {it["id"]: it for it in load_all(True) if it.get("id")}
 
     def describe(other_id):
         o = all_items.get(other_id)
-        return {"id": other_id, "title": o.get("title"), "status": o.get("status")} if o \
-            else {"id": other_id, "missing": True}
+        if not o:
+            return {"id": other_id, "missing": True}
+        d = {"id": other_id, "title": o.get("title"), "status": o.get("status")}
+        if o.get("archived"):
+            d["archived"] = o["archived"]
+        return d
 
     out = []
     for edge in fm.get("links", []):
@@ -453,13 +465,16 @@ def cmd_links(args):
         for edge in it.get("links", []) if isinstance(it.get("links"), list) else []:
             rel, _, target = edge.partition(":")
             if target == args.id:
-                inbound.append({"rel": rel, "id": it["id"],
-                                "title": it.get("title"), "status": it.get("status")})
+                d = {"rel": rel, "id": it["id"],
+                     "title": it.get("title"), "status": it.get("status")}
+                if it.get("archived"):
+                    d["archived"] = it["archived"]
+                inbound.append(d)
     emit({"id": args.id, "out": out, "in": inbound})
 
 
 def cmd_find(args):
-    items = apply_where(load_all(), args.where)
+    items = apply_where(load_all(args.archived), args.where)
     if args.count:
         emit({"count": len(items)})
         return
@@ -482,7 +497,7 @@ def cmd_search(args):
     if not tokens:
         die("empty query")
     results = []
-    for it in load_all():
+    for it in load_all(args.archived):
         title = str(it.get("title", "")).lower()
         tags = " ".join(it.get("tags", []) if isinstance(it.get("tags"), list) else []).lower()
         hay = json.dumps(it, ensure_ascii=False).lower()
@@ -505,7 +520,7 @@ def cmd_search(args):
 def cmd_history(args):
     if not in_repo():
         die("history requires the memory dir to be a git repo (run: %s init)" % PROG)
-    rel = "items/%s.md" % args.id
+    rel = str(item_path(args.id).relative_to(WM_DIR))
     if args.diff:
         subprocess.run(["git", "-C", str(WM_DIR), "log", "-p", "--follow",
                         "-n", str(args.limit), "--", rel])
@@ -523,6 +538,32 @@ def cmd_rm(args):
         p.unlink()
         commit("rm %s" % id_, agent_name(args))
         emit({"deleted": id_})
+
+
+def cmd_archive(args):
+    """Move items out of the scanned working set. When to archive is agent
+    policy (AGENTS.md); this is only the deterministic move."""
+    ARCHIVE.mkdir(parents=True, exist_ok=True)
+    for id_ in args.id:
+        _, _, p = load(id_)
+        if p.parent == ARCHIVE:
+            emit({"id": id_, "archived": True, "note": "already archived"})
+            continue
+        p.rename(ARCHIVE / p.name)
+        commit("archive %s" % id_, agent_name(args))
+        emit({"id": id_, "archived": True})
+
+
+def cmd_unarchive(args):
+    ITEMS.mkdir(parents=True, exist_ok=True)
+    for id_ in args.id:
+        _, _, p = load(id_)
+        if p.parent != ARCHIVE:
+            emit({"id": id_, "archived": False, "note": "not archived"})
+            continue
+        p.rename(ITEMS / p.name)
+        commit("unarchive %s" % id_, agent_name(args))
+        emit({"id": id_, "archived": False})
 
 
 def cmd_notify(args):
@@ -601,10 +642,12 @@ def main():
     p.add_argument("--full", action="store_true", help="include body")
     p.add_argument("--count", action="store_true")
     p.add_argument("--oneline", action="store_true", help="human-readable lines")
+    p.add_argument("--archived", action="store_true", help="include archive/ in the scan")
     p.set_defaults(fn=cmd_find)
 
     p = sub.add_parser("search", help="full-text search over all items")
     p.add_argument("query", nargs="+"); p.add_argument("--limit", type=int, default=20)
+    p.add_argument("--archived", action="store_true", help="include archive/ in the scan")
     p.set_defaults(fn=cmd_search)
 
     p = sub.add_parser("history", help="git history of one item")
@@ -616,6 +659,14 @@ def main():
     p.add_argument("id", nargs="+")
     p.set_defaults(fn=cmd_rm)
 
+    p = sub.add_parser("archive", help="move item(s) out of the working set into archive/")
+    p.add_argument("id", nargs="+")
+    p.set_defaults(fn=cmd_archive)
+
+    p = sub.add_parser("unarchive", help="move item(s) back from archive/ into items/")
+    p.add_argument("id", nargs="+")
+    p.set_defaults(fn=cmd_unarchive)
+
     p = sub.add_parser("notify", help="OS notification: wm notify <title> <message>")
     p.add_argument("title"); p.add_argument("message")
     p.set_defaults(fn=cmd_notify)
@@ -624,7 +675,7 @@ def main():
        .set_defaults(fn=cmd_sync)
 
     for name, sp in sub.choices.items():
-        if name in ("new", "set", "log", "link", "unlink", "rm", "sync"):
+        if name in ("new", "set", "log", "link", "unlink", "rm", "archive", "unarchive", "sync"):
             sp.add_argument("--by", help="acting agent name (default: $WM_AGENT)")
 
     args = ap.parse_args()

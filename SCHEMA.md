@@ -100,6 +100,8 @@ so mutations are attributed to you — in `## Log` lines and as the git author.
 | `taskmem search <text> [--limit N]` | full-text, all-tokens-match, scored |
 | `taskmem history <id> [--diff]` | git history of one item |
 | `taskmem rm <id…>` | hard delete (prefer `status=dropped`) |
+| `taskmem archive <id…>` | move out of the working set into `archive/` |
+| `taskmem unarchive <id…>` | move back into `items/` |
 | `taskmem notify <title> <message>` | OS notification |
 | `taskmem sync` | commit; pull --rebase + push if a remote exists |
 
@@ -126,6 +128,16 @@ taskmem find --where "status!=done,dropped" --where "updated<today-14"          
 taskmem find --where "links~blocks:" --where "status!=done,dropped"             # blocking items
 taskmem find --where type=decision --sort created:desc --limit 10               # recent decisions
 ```
+
+## Archive
+
+`archive/` holds items moved out of the working set so `find`/`search` stay
+fast as closed items accumulate. Both commands scan `items/` only unless
+passed `--archived` (archived items then carry `archived: true` in results).
+Everything id-addressed — `get`, `set`, `log`, `link`, `history`, `rm`,
+`unarchive` — resolves archived items transparently, and `links` reports
+edges into the archive instead of showing them as missing. *When* to archive
+is agent policy (see AGENTS.md); the infrastructure only provides the move.
 
 ## History
 

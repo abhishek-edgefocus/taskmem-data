@@ -120,7 +120,9 @@ Decisions that follow from the same line:
 - **Linear scan instead of an index** — at personal scale (thousands of
   items) a full scan is milliseconds. An index is a cache you have to keep
   coherent; add SQLite behind the *same* CLI surface only if scale ever
-  demands it.
+  demands it. What keeps the scan fast long-term is `taskmem archive`: closed
+  items move to `archive/`, out of the working set (weekly-review policy),
+  while staying id-addressable and searchable via `--archived`.
 - **CLI as the interface, not a library or MCP server** — every agent
   framework (Claude, Codex, Gemini, local models, cron scripts) can exec a
   command and parse JSON. This is what makes agents interchangeable clients.

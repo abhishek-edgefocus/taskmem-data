@@ -52,7 +52,8 @@ conversation or work implies future action, capture it. Signals:
 Rules of thumb:
 
 - Capture at the moment of inference, not at session end — sessions get cut off.
-- **Search before you create** (`taskmem search`, `taskmem find --where "title~…"`).
+- **Search before you create** (`taskmem search`, `taskmem find --where "title~…"`;
+  add `--archived` when checking whether something was already done before).
   If an item exists, enrich it (log a line, add people/tags/links, adjust
   status) instead of duplicating. If you find a true duplicate, keep the
   richer item, move anything unique into it, and mark the other
@@ -93,7 +94,11 @@ their priority.
 (`updated<today-14`) — revive, re-date, or drop with a log line; scan for
 duplicates and merge; walk `blocks`/`waiting` edges and flag what one action
 would unblock; check workload balance across people/projects; write a short
-`note` tagged `weekly-review` with observations and proposals.
+`note` tagged `weekly-review` with observations and proposals. Finally,
+archive old closed items so the working set stays small:
+`taskmem find --where status=done,dropped --where "updated<today-90"` →
+`taskmem archive <ids>`. Archived items stay id-addressable and searchable
+via `--archived`; the move itself is the record, no log line needed.
 
 Reviews **propose**, the human disposes: never silently drop or reprioritize
 someone's item during a review without logging the reasoning on the item.

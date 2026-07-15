@@ -5,7 +5,9 @@ The CLI is ~/taskmem/bin/taskmem. Read ~/taskmem/AGENTS.md first and follow its
 
 1. Stale sweep: taskmem find --where "status!=done,dropped" --where "updated<today-14"
    For each: revive it (log why it still matters), re-date it, or mark it
-   dropped with a log line. Never drop silently.
+   dropped with a log line. Never drop silently. Then archive old closed
+   items: taskmem find --where status=done,dropped --where "updated<today-90"
+   --fields id,title → taskmem archive <ids>.
 2. Duplicate scan: taskmem search likely-duplicate topics; merge per AGENTS.md
    (keep the richer item, link duplicate-of, drop the other).
 3. Blocker analysis: walk items with status=blocked,waiting and their links
