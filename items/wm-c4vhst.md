@@ -29,3 +29,4 @@ IMPORTANT: do NOT 'git remote add' in ~/taskmem yet — the 15-min autosync cron
 
 ## Log
 - 2026-07-15T15:43Z [claude-code] infra branch built and verified task-free (12 files, 1 commit); blocked on user: SSH key registration + repo creation (no gh/token/brew on this machine)
+- 2026-07-15T17:38Z [claude-code] DONE: private repo created at github.com/abhishek-edgefocus/taskmem (personal account, verified private:true), infra branch pushed as main — 12 infra files, zero task content, no history. gh CLI installed via direct binary + device-flow auth; git credential helper configured. No remote configured locally, so autosync cannot push tasks.
