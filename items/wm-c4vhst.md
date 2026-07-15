@@ -6,6 +6,7 @@ status: open
 priority: p2
 due: 2026-07-17
 tags: [taskmem]
+links: [relates:wm-kpyq3c]
 created: 2026-07-15T13:53:45Z
 updated: 2026-07-15T13:53:45Z
 source: claude-code
