@@ -41,6 +41,57 @@ taskmem history wm-xxxxxx                                          # who did wha
 `taskmem` is symlinked into `~/.local/bin`. For agents, the stable path is
 `~/taskmem/bin/taskmem`. More query recipes are in [SCHEMA.md](SCHEMA.md).
 
+## Setup on a fresh machine
+
+Requirements: `python3` (3.9+) and `git`. The CLI has zero Python
+dependencies. An AI agent can run this whole section unattended.
+
+```bash
+git clone <your-private-remote> ~/taskmem   # or copy the folder; any path works
+mkdir -p ~/.local/bin
+ln -sf ~/taskmem/bin/taskmem ~/.local/bin/taskmem
+ln -sf ~/taskmem/bin/taskmem ~/.local/bin/tm
+chmod +x ~/taskmem/bin/taskmem              # in case the clone dropped the bit
+tm find --count                             # smoke test — prints {"count": N}
+tm notify "taskmem" "setup complete"        # verify notifications fire
+```
+
+Notes for the agent doing the setup:
+
+- The binary is **self-locating**: it manages the `items/` directory next to
+  wherever it lives, so any clone path works without configuration. Set the
+  `WM_DIR` env var only if binary and data must live apart.
+- If `~/.local/bin` isn't on PATH, either add it
+  (`export PATH="$HOME/.local/bin:$PATH"` in the shell profile) or use the
+  absolute path — scripts and cron entries should prefer the absolute path
+  anyway.
+- Starting from nothing instead of a clone? `taskmem init` creates `items/`
+  and the git repo (docs only come with a clone).
+- `wm-` item-id prefixes and `WM_*` env vars are stable engine identifiers —
+  do not "fix" them to match the brand name (see "Renaming the tool").
+
+Then **enroll the machine's agents**. For Claude Code, add this block to
+`~/.claude/CLAUDE.md`; for other runners, put the equivalent in their
+standing-instructions file:
+
+```markdown
+# Shared task memory (~/taskmem)
+
+A shared task memory for all AI agents lives at `~/taskmem` — markdown work
+items + a generic CLI (`~/taskmem/bin/taskmem`, on PATH as `taskmem` and `tm`).
+
+- **Session start:** when beginning substantive work, check it for relevant
+  context: `tm search "<topic>"` / `tm find --where tags=<project> --where "status!=done,dropped"`.
+- **During and before ending a session:** follow the protocol in
+  `~/taskmem/AGENTS.md` — infer commitments from the conversation, create and
+  update items, log outcomes on work you touched, and mark finished things
+  done. Set `WM_AGENT=claude-code` (or pass `--by`) when mutating.
+- Data model and query grammar: `~/taskmem/SCHEMA.md`.
+```
+
+Finally, optional but recommended: install the review crontab entries from
+"Scheduling" below, and run `tm sync` once to confirm the remote round-trip.
+
 ## Architecture: what is infrastructure vs. AI, and why
 
 The dividing line: **infrastructure provides deterministic capabilities;
