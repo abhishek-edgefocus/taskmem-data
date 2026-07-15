@@ -60,7 +60,6 @@
 | wm-mnetja | open | p3 |  | Wrap taskmem as an MCP server (tools 1:1 over CLI) |  |  |
 | wm-kpyq3c | open |  |  | Work memory v1: markdown files + git + generic CLI |  |  |
 | wm-day88x | someday |  |  | Run round-2 validation eval for the AGENTS.md optimizations (on hold per Abhishek) |  |  |
-| wm-6men7j | someday |  |  | Enable task sync to GitHub (add remote + force-push main) — when ready to upload tasks |  |  |
 | wm-jpxt8v | someday |  |  | Revisit: restructure into ~/brain monorepo (taskmem/ + notes/ + context/) |  |  |
 
 ## Done this week
