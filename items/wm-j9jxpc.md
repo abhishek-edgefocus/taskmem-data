@@ -9,7 +9,7 @@ people: [Kushagra]
 tags: [northpond]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5]
 created: 2026-07-15T14:56:55Z
-updated: 2026-07-15T14:56:55Z
+updated: 2026-07-15T15:08:25Z
 source: intake-review
 ---
 
@@ -19,3 +19,4 @@ Nakula (Innovate), Sanjali (Prosper), and Abhijeet have already confirmed for th
 
 ## Log
 - 2026-07-15T14:56Z [intake-review] captured from Slack mention sweep (intake demo run); dedup anchor is the message permalink in refs
+- 2026-07-15T15:08Z [intake-review] intake re-check: Kushagra's thread still has no NorthPond confirmation from Abhishek as of this evening; Nakula/Sanjali confirmed, Abhijeet checking his refresh
