@@ -4,81 +4,81 @@
 
 ## Scheduled (today or slipped)
 
-| id | pri | task | next action | due | links |
+| id | priority | task | next action | due | links |
 |---|---|---|---|---|---|
-| wm-drehnk | p1 | Inventory NorthPond monitoring panels; map each query to its Snowflake source | — |  |  |
+| wm-drehnk | high | Inventory NorthPond monitoring panels; map each query to its Snowflake source | — |  |  |
 
 ## In flight
 
-| id | pri | task | next action | due | links |
+| id | priority | task | next action | due | links |
 |---|---|---|---|---|---|
 | wm-j9jxpc |  | Check missing statement files for NorthPond and confirm in Kushagra's thread (before Friday dev call) | Get the third missing date from the "Missing Platform Data" dashboard | 2026-07-17 | [slack](https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5) |
 | wm-3y3ckv |  | On-call / Errors backlog | — |  |  |
 | wm-j523sq |  | NorthPond Data Ingestion | — |  | [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring) |
 | wm-r45vp3 |  | AI billing to Slack (DEV-970) | — |  |  |
 | wm-su6q4d |  | OpenRoad Data Ingestion | — |  |  |
-| wm-bvqkhh | p1 | Finalize DEV-1331 OpenRoad predictions datastore-comparison notebook | — |  | [notebook](http://dexterplus.edgefocus.net:12053/notebooks/repos/efp/slop/dev1331_openroad_predictions_datastore_comparison.ipynb) [DEV-1331](https://linear.app/edge-focus/issue/DEV-1331) |
-| wm-gcdq6k | p3 | AI billing tracking to Slack (DEV-970) | — |  | [DEV-970](https://linear.app/edge-focus/issue/DEV-970/add-tracking-of-ai-billing-to-slack) |
-| wm-gxykru | p2 | Root-cause int_rate_at_purchase=0 for northpond loans (DEV-503, in progress) | — |  | [DEV-503](https://linear.app/edge-focus/issue/DEV-503/int-rate-at-purchase-0-for-northpond-loans-in-positions) |
-| wm-ng8g2c | p2 | Create Ramp account using the automations Google account | — |  |  |
-| wm-rgwdyu | p1 | Migrate NorthPond Fund Monitoring page to Snowflake data (DEV-1395) | — | 2026-07-20 | [DEV-1395](https://linear.app/edge-focus/issue/DEV-1395/migrate-the-northpond-fund-monitoring-page-to-use-snowflake-data) [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring) |
+| wm-bvqkhh | high | Finalize DEV-1331 OpenRoad predictions datastore-comparison notebook | — |  | [notebook](http://dexterplus.edgefocus.net:12053/notebooks/repos/efp/slop/dev1331_openroad_predictions_datastore_comparison.ipynb) [DEV-1331](https://linear.app/edge-focus/issue/DEV-1331) |
+| wm-gcdq6k | low | AI billing tracking to Slack (DEV-970) | — |  | [DEV-970](https://linear.app/edge-focus/issue/DEV-970/add-tracking-of-ai-billing-to-slack) |
+| wm-gxykru |  | Root-cause int_rate_at_purchase=0 for northpond loans (DEV-503, in progress) | — |  | [DEV-503](https://linear.app/edge-focus/issue/DEV-503/int-rate-at-purchase-0-for-northpond-loans-in-positions) |
+| wm-ng8g2c |  | Create Ramp account using the automations Google account | — |  |  |
+| wm-rgwdyu | high | Migrate NorthPond Fund Monitoring page to Snowflake data (DEV-1395) | — | 2026-07-20 | [DEV-1395](https://linear.app/edge-focus/issue/DEV-1395/migrate-the-northpond-fund-monitoring-page-to-use-snowflake-data) [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring) |
 
 ## Replies owed
 
-| id | status | pri | size | task | due | links |
+| id | status | priority | effort | task | due | links |
 |---|---|---|---|---|---|---|
-| wm-h3dvpa | open |  | xs | Reply to Abhijeet: confirm OPs currently use API predictions only (EDGEX EF scoring thread) | 2026-07-17 | [slack](https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G) |
+| wm-h3dvpa | open |  | ~15m | Reply to Abhijeet: confirm OPs currently use API predictions only (EDGEX EF scoring thread) | 2026-07-17 | [slack](https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G) |
 
 ## Inbox — needs triage
 
-| id | status | pri | size | task | due | links |
+| id | status | priority | effort | task | due | links |
 |---|---|---|---|---|---|---|
-| wm-c5jytx | inbox |  | l | Set up northpond model for EDGEX EF scoring — at_orig predictions into silver.predicted_cashflows |  | [slack](https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G) |
+| wm-c5jytx | inbox |  | ~1 day | Set up northpond model for EDGEX EF scoring — at_orig predictions into silver.predicted_cashflows |  | [slack](https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G) |
 
 ## Projects
 
 ### AI billing to Slack (DEV-970) (`wm-r45vp3`)
 *Visibility on AI tool spend alongside AWS in Slack*
-- wm-gcdq6k [active/l] AI billing tracking to Slack (DEV-970)
-  - wm-ng8g2c [next/s] Create Ramp account using the automations Google account
+- wm-gcdq6k [active/~1 day] AI billing tracking to Slack (DEV-970)
+  - wm-ng8g2c [next/<1h] Create Ramp account using the automations Google account
 
 ### NorthPond Data Ingestion (`wm-j523sq`) [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring)
 *Migrate NorthPond off datastores onto Snowflake (dashboards + silver tables)*
-- wm-ch9wmr [open/l] Fix cfframe capture gap: at-origination pred cashflows missing since Feb/Mar 2025 (DEV-1279)
-- wm-h3dvpa [open/xs] Reply to Abhijeet: confirm OPs currently use API predictions only (EDGEX EF scoring thread) (due 2026-07-17)
-  - wm-c5jytx [inbox/l] Set up northpond model for EDGEX EF scoring — at_orig predictions into silver.predicted_cashflows
-- wm-rgwdyu [active/xl] Migrate NorthPond Fund Monitoring page to Snowflake data (DEV-1395) (due 2026-07-20)
-  - wm-drehnk [next/m] Inventory NorthPond monitoring panels; map each query to its Snowflake source
+- wm-ch9wmr [open/~1 day] Fix cfframe capture gap: at-origination pred cashflows missing since Feb/Mar 2025 (DEV-1279)
+- wm-h3dvpa [open/~15m] Reply to Abhijeet: confirm OPs currently use API predictions only (EDGEX EF scoring thread) (due 2026-07-17)
+  - wm-c5jytx [inbox/~1 day] Set up northpond model for EDGEX EF scoring — at_orig predictions into silver.predicted_cashflows
+- wm-rgwdyu [active/multi-day] Migrate NorthPond Fund Monitoring page to Snowflake data (DEV-1395) (due 2026-07-20)
+  - wm-drehnk [next/half-day] Inventory NorthPond monitoring panels; map each query to its Snowflake source
 
 ### On-call / Errors backlog (`wm-3y3ckv`)
 *Assigned ERROR-* and data-consistency issues*
-- wm-gxykru [active/m] Root-cause int_rate_at_purchase=0 for northpond loans (DEV-503, in progress)
-- wm-qu4cr7 [open/m] Investigate 15 northpond loans missing from gateway model_responses (ERROR-1231)
+- wm-gxykru [active/half-day] Root-cause int_rate_at_purchase=0 for northpond loans (DEV-503, in progress)
+- wm-qu4cr7 [open/half-day] Investigate 15 northpond loans missing from gateway model_responses (ERROR-1231)
 
 ### OpenRoad Data Ingestion (`wm-su6q4d`)
 *OpenRoad silver ingestion + predictions validated end to end*
-- wm-bpmxnb [open/l] Ingest OpenRoad model_requests/model_responses stmt files for real credit scores (DEV-1396)
-- wm-bvqkhh [next/s] Finalize DEV-1331 OpenRoad predictions datastore-comparison notebook
+- wm-bpmxnb [open/~1 day] Ingest OpenRoad model_requests/model_responses stmt files for real credit scores (DEV-1396)
+- wm-bvqkhh [next/<1h] Finalize DEV-1331 OpenRoad predictions datastore-comparison notebook
 
 ## Independent (no project or thread, undated)
 
-| id | status | pri | size | task | due | links |
+| id | status | priority | effort | task | due | links |
 |---|---|---|---|---|---|---|
-| wm-yyb3dz | open | p3 |  | GitHub adapter: PR/issue events update linked items |  |  |
-| wm-mnetja | open | p3 |  | Wrap taskmem as an MCP server (tools 1:1 over CLI) |  |  |
+| wm-yyb3dz | open | low |  | GitHub adapter: PR/issue events update linked items |  |  |
+| wm-mnetja | open | low |  | Wrap taskmem as an MCP server (tools 1:1 over CLI) |  |  |
 | wm-kpyq3c | open |  |  | Work memory v1: markdown files + git + generic CLI |  |  |
 | wm-day88x | someday |  |  | Run round-2 validation eval for the AGENTS.md optimizations (on hold per Abhishek) |  |  |
 | wm-jpxt8v | someday |  |  | Revisit: restructure into ~/brain monorepo (taskmem/ + notes/ + context/) |  |  |
 
 ## Done this week
 
-| id | status | pri | size | task | due | links |
+| id | status | priority | effort | task | due | links |
 |---|---|---|---|---|---|---|
-| wm-6k56mk | done | p1 |  | Disable the dpx ~/tasks crontab (unattended claude runs + automated DMs, against policy) | **2026-07-16** |  |
-| wm-c4vhst | done | p2 |  | Create private GitHub repo (personal profile) and push taskmem infra branch | 2026-07-17 |  |
-| wm-c39rb3 | done | p1 | s | Land DEV-1412: Positions Daily + Realized Cashflows for NorthPond (in review) |  | [DEV-1412](https://linear.app/edge-focus/issue/DEV-1412/add-positions-daily-and-realized-cashflows-for-northpond) |
-| wm-225chs | done | p1 | s | Land DEV-1331: OpenRoad predictions ingest+validation, PR #5709 (in review) |  | [DEV-1331](https://linear.app/edge-focus/issue/DEV-1331/ingest-and-validate-predictions) |
-| wm-fhyza8 | done | p1 |  | Install daily/weekly review crontab entries | **2026-07-16** |  |
-| wm-3tdn24 | done | p2 | s | Close 4 open missing-window alerts on northpond positions files (ERROR-1524) |  | [ERROR-1524](https://linear.app/edge-focus/issue/ERROR-1524/missing-statement-filenorthpondpositionsnorthpond-loan-positions-4) |
+| wm-6k56mk | done | high |  | Disable the dpx ~/tasks crontab (unattended claude runs + automated DMs, against policy) | **2026-07-16** |  |
+| wm-c4vhst | done |  |  | Create private GitHub repo (personal profile) and push taskmem infra branch | 2026-07-17 |  |
+| wm-c39rb3 | done | high | <1h | Land DEV-1412: Positions Daily + Realized Cashflows for NorthPond (in review) |  | [DEV-1412](https://linear.app/edge-focus/issue/DEV-1412/add-positions-daily-and-realized-cashflows-for-northpond) |
+| wm-225chs | done | high | <1h | Land DEV-1331: OpenRoad predictions ingest+validation, PR #5709 (in review) |  | [DEV-1331](https://linear.app/edge-focus/issue/DEV-1331/ingest-and-validate-predictions) |
+| wm-fhyza8 | done | high |  | Install daily/weekly review crontab entries | **2026-07-16** |  |
+| wm-3tdn24 | done |  | <1h | Close 4 open missing-window alerts on northpond positions files (ERROR-1524) |  | [ERROR-1524](https://linear.app/edge-focus/issue/ERROR-1524/missing-statement-filenorthpondpositionsnorthpond-loan-positions-4) |
 
 *Working set: 22 open items. Full queries: see SCHEMA.md.*
