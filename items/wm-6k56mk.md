@@ -44,3 +44,4 @@ must never modify; this is a human-only task.
 
 ## Log
 - 2026-07-15T15:12Z [intake-review] upgraded to pickup-ready standard (context, next steps, links)
+- 2026-07-15T15:16Z [claude-code] Planned for tonight (2026-07-15 evening block): human-only, doing first at ~21:00
