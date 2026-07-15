@@ -14,6 +14,14 @@
 |---|---|---|---|---|---|---|
 | wm-c4vhst | open | p2 |  | Create private GitHub repo and connect taskmem remote | 2026-07-17 |  |
 
+## Backlog (undated)
+
+| id | status | pri | size | task | due | links |
+|---|---|---|---|---|---|---|
+| wm-yyb3dz | open | p3 |  | GitHub adapter: PR/issue events update linked items |  |  |
+| wm-mnetja | open | p3 |  | Wrap taskmem as an MCP server (tools 1:1 over CLI) |  |  |
+| wm-kpyq3c | open |  |  | Work memory v1: markdown files + git + generic CLI |  |  |
+
 ## Done this week
 
 | id | status | pri | size | task | due | links |
