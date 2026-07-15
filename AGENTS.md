@@ -199,6 +199,13 @@ lineage, don't flatten it:
 
 ## Presenting to the human
 
+**Give the action, not just the name.** Whenever you list items for the
+human (plate, plans, briefs), pair every title with its concrete next
+action — the first step from its `## Next steps` (write one first if the
+item is thin; that's the touch rule): "Reply in Kushagra's thread with the
+per-file verdicts", not just "Check missing statement files". The title
+identifies the work; the action is what they can do right now.
+
 Prefer **tables with jumpable links** (render `refs` as markdown links) —
 and **at most ONE table per reply**: when different groups of items belong
 in the answer, use a grouping column (e.g. "Group": due / nudge / reply

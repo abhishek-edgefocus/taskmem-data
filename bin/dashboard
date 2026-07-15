@@ -6,6 +6,7 @@ Deterministic rendering of generic queries; no judgment. Agents regenerate it
 """
 import json
 import os
+import re
 import subprocess
 from datetime import datetime
 from pathlib import Path
@@ -38,12 +39,31 @@ def esc(s):
     return str(s or "").replace("|", "\\|")
 
 
-def table(items, blocked=False):
+def next_action(body):
+    m = re.search(r"^## Next steps\s*$(.*?)(?=^## |\Z)", body or "", re.M | re.S)
+    if not m:
+        return ""
+    for line in m.group(1).splitlines():
+        s = re.match(r"^\s*(?:\d+[.)]|[-*])\s+(.*)", line)
+        if s:
+            a = " ".join(s.group(1).split())
+            return a[:110] + ("…" if len(a) > 110 else "")
+    return ""
+
+
+def table(items, blocked=False, action=False):
     if blocked:
         head = "| id | task | waiting on | nudge | links |\n|---|---|---|---|---|"
         rows = ["| %s | %s | %s | %s | %s |" % (
             it.get("id"), esc(it.get("title")), esc(it.get("waiting_on", "—")),
             ("**%s**" % it["nudge"] if it.get("nudge", "9") <= TODAY else it.get("nudge", "—")),
+            refs_md(it)) for it in items]
+    elif action:
+        head = "| id | pri | task | next action | due | links |\n|---|---|---|---|---|---|"
+        rows = ["| %s | %s | %s | %s | %s | %s |" % (
+            it.get("id"), it.get("priority", ""), esc(it.get("title")),
+            esc(next_action(it.get("body"))) or "—",
+            ("**%s**" % it["due"] if it.get("due", "9") <= TODAY else it.get("due", "")),
             refs_md(it)) for it in items]
     else:
         head = "| id | status | pri | size | task | due | links |\n|---|---|---|---|---|---|---|"
@@ -55,9 +75,9 @@ def table(items, blocked=False):
     return "\n".join([head] + rows)
 
 
-def section(out, title, items, blocked=False):
+def section(out, title, items, blocked=False, action=False):
     if items:
-        out += ["## %s" % title, "", table(items, blocked), ""]
+        out += ["## %s" % title, "", table(items, blocked, action), ""]
 
 
 def main():
@@ -71,10 +91,12 @@ def main():
         seen.update(it.get("id") for it in fresh)
         return fresh
 
-    section(out, "Due / overdue", take(find(*OPEN, "--where", "due<=today", "--sort", "due")))
+    section(out, "Due / overdue",
+            take(find(*OPEN, "--where", "due<=today", "--sort", "due", "--full")), action=True)
     section(out, "Scheduled (today or slipped)",
-            take(find(*OPEN, "--where", "scheduled<=today", "--sort", "scheduled")))
-    section(out, "In flight", take(find("--where", "status=next,active", "--sort", "updated:desc")))
+            take(find(*OPEN, "--where", "scheduled<=today", "--sort", "scheduled", "--full")), action=True)
+    section(out, "In flight",
+            take(find("--where", "status=next,active", "--sort", "updated:desc", "--full")), action=True)
     section(out, "Replies owed",
             take(find(*OPEN, "--where", "tags=needs-reply", "--sort", "due")))
     section(out, "Blocked / waiting",

@@ -50,9 +50,10 @@ Steps:
    - **Flags**: inbox count awaiting triage, projects without a next step,
      anything slipping repeatedly.
    - One line on anything you changed (reconciliation, reschedules).
-   Format the brief as ONE consolidated table with a Group column
-   (Today / Nudge / Reply owed / Flag) and a links column — a single
-   table, never several — with the changes line below it.
+   Format the brief as ONE consolidated table — a single table, never
+   several — with columns: Group (Today / Nudge / Reply owed / Flag),
+   Action (the literal next step, imperative — from the item's ## Next
+   steps), Item (linked title), When. The changes line goes below it.
    If genuinely nothing is actionable, write "All clear" plus the single top
    next task. Then fire `taskmem notify "Today" "<one line>"` for the desktop
    and send the same brief as the ONE Slack DM to {{SLACK_USER_ID}} (skip

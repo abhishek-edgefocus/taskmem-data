@@ -13,6 +13,7 @@ Usage:
 """
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import datetime
@@ -27,6 +28,19 @@ def find(*args):
     r = subprocess.run([TM, "find"] + list(args),
                        capture_output=True, text=True, timeout=30)
     return [json.loads(ln) for ln in r.stdout.splitlines() if ln.strip()]
+
+
+def next_action(body):
+    """First step of '## Next steps' — the thing the human can do right now."""
+    m = re.search(r"^## Next steps\s*$(.*?)(?=^## |\Z)", body or "", re.M | re.S)
+    if not m:
+        return ""
+    for line in m.group(1).splitlines():
+        s = re.match(r"^\s*(?:\d+[.)]|[-*])\s+(.*)", line)
+        if s:
+            a = " ".join(s.group(1).split())
+            return a[:100] + ("…" if len(a) > 100 else "")
+    return ""
 
 
 def fmt(it):
@@ -44,7 +58,11 @@ def fmt(it):
         extra.append("waiting on %s" % it["waiting_on"])
     if it.get("nudge") and it["nudge"] <= datetime.now().strftime("%Y-%m-%d"):
         extra.append("NUDGE DUE")
-    return "- %s%s" % (" ".join(bits), " (%s)" % "; ".join(extra) if extra else "")
+    line = "- %s%s" % (" ".join(bits), " (%s)" % "; ".join(extra) if extra else "")
+    act = next_action(it.get("body"))
+    if act:
+        line += "\n    ↳ next: %s" % act
+    return line
 
 
 def section(out, title, items):
@@ -63,14 +81,16 @@ def digest():
         seen.update(it.get("id") for it in fresh)
         return fresh
 
-    section(out, "Due or overdue", take(find(*OPEN, "--where", "due<=today", "--sort", "due")))
+    section(out, "Due or overdue",
+            take(find(*OPEN, "--where", "due<=today", "--sort", "due", "--full")))
     section(out, "Scheduled for today or earlier",
-            take(find(*OPEN, "--where", "scheduled<=today", "--sort", "scheduled")))
+            take(find(*OPEN, "--where", "scheduled<=today", "--sort", "scheduled", "--full")))
     section(out, "Nudge due (ping these people)",
-            take(find(*OPEN, "--where", "nudge<=today", "--sort", "nudge")))
+            take(find(*OPEN, "--where", "nudge<=today", "--sort", "nudge", "--full")))
     section(out, "Replies you owe",
-            take(find(*OPEN, "--where", "tags=needs-reply", "--sort", "due")))
-    section(out, "In flight", take(find("--where", "status=next,active", "--sort", "updated:desc")))
+            take(find(*OPEN, "--where", "tags=needs-reply", "--sort", "due", "--full")))
+    section(out, "In flight",
+            take(find("--where", "status=next,active", "--sort", "updated:desc", "--full")))
     section(out, "Blocked / waiting",
             take(find("--where", "status=blocked,waiting", "--sort", "updated")))
     inbox = find("--where", "status=inbox", "--sort", "created")
