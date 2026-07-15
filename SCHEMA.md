@@ -76,7 +76,8 @@ responsibility. Extend them by editing this file.
   `someday` (parked on purpose) · `done` · `dropped` (deliberately abandoned —
   never delete, mark dropped and log why)
 - **link rels** (read left-to-right, stored on the source item only):
-  `blocks` · `parent` (source is parent of target) · `relates` ·
+  `blocks` · `parent` (the target is the source's parent — children carry
+  the edge) · `relates` ·
   `duplicate-of` · `follows` (source is a follow-up of target)
   Reverse direction is **derived at query time** (`taskmem links <id>` shows both
   directions; `taskmem find --where links~:<id>` finds inbound references).
