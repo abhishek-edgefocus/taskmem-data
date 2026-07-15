@@ -16,3 +16,4 @@ source: dpx-tasks #5
 ## Log
 - 2026-07-15T14:44Z [importer] imported from dpx ~/tasks #5
 - 2026-07-15T14:44Z [importer] blocked since 2026-07-13: waiting for review of PR #5709
+- 2026-07-15T14:49Z [claude-code] PR #5709 merged; DEV-1331 ingest+validation landed. Marked done per user.
