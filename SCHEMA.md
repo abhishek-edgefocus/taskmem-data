@@ -94,10 +94,12 @@ generic queries above — never edit `DASHBOARD.md` by hand, regenerate it.
 
 ## Body conventions
 
-Free markdown. Two conventions: the body opens with enough context that a
+Free markdown. Conventions: the body opens with enough context that a
 fresh agent (or the human, months later) understands the item without the
-originating conversation; and `## Log` is the **last** section — an
-append-only trail written via `taskmem log` (`- <timestamp> [<agent>] message`).
+originating conversation; `## Next steps` and `## Links` sections make it
+pickup-ready (structure defined in AGENTS.md "Writing pickup-ready items");
+and `## Log` is the **last** section — an append-only trail written via
+`taskmem log` (`- <timestamp> [<agent>] message`).
 
 ## CLI contract
 

@@ -36,7 +36,11 @@ Overlap is fine; dedup is anchored:
      messages that promise something ("I'll…", "will do", "let me check…").
    - Real request or commitment → capture per AGENTS.md commitment
      detection: status=inbox, "refs=slack=<permalink>", people=<who>,
-     due only if actually stated, thread context summarized in the body.
+     due only if actually stated. Write the body pickup-ready (AGENTS.md
+     standard): Context paragraph summarizing the thread and who said what,
+     ## Next steps starting with the literal first action, ## Links with
+     the permalink plus EVERY url mentioned in the thread (sheets, docs,
+     PRs), so the human can act without reopening Slack.
    - Do NOT capture FYIs, banter, threads already resolved in-thread, or
      anything already tracked (check the permalink ref first).
    - Someone replied on something an item is waiting on → update that item

@@ -67,9 +67,9 @@ Rules of thumb:
 - Only set `due` when a real date is implied; don't invent deadlines.
   Only set `priority` when you have a basis; absence is honest.
 - Title = the action ("Ask Rahul about pricing API timeline", not "Rahul").
-  Body = enough context to act months later without this conversation.
-  Set `source` to where it came from. Log a first line saying what you
-  inferred it from.
+  Body = pickup-ready (see the section below — this is a hard requirement,
+  not a nicety). Set `source` to where it came from. Log a first line
+  saying what you inferred it from.
 - **Micro-tasks are first-class.** "Ping X", "address PR comments",
   "schedule the call" → capture with `size=xs` (and `due=today` when it's a
   today-thing). Small things forgotten are the whole reason this exists.
@@ -83,6 +83,31 @@ Rules of thumb:
 - **Give every item a jumpable ref** when one exists:
   `refs+=DEV-1234=https://…` (issue, PR, dashboard, Slack thread). The human
   should never have to hunt for the thing an item points at.
+
+## Writing pickup-ready items
+
+Write every item so the human can start it **cold** — navigating from the
+item alone, without the originating conversation. Body structure:
+
+- **Context** (opening paragraph, always): what this is, why it matters,
+  where it came from, what's already been decided or tried, constraints,
+  who's involved and what they said.
+- **`## Next steps`** — 2–5 concrete, verb-first steps starting with the
+  literal first action ("open the sheet", "reply in the thread", "ssh dp").
+  Sketch the likely approach if you can see it; where something is unknown,
+  make finding out the step ("ask Kushagra where the acknowledgment sheet
+  lives"). If writing this section surfaces several distinct work items,
+  decompose into children instead of a long list.
+- **`## Links`** — every jumpable pointer you have, one per line with a
+  word on what it is: source thread/message, issue/PR, dashboard, sheet,
+  doc, file path, related item ids. Duplicate the most important ones into
+  `refs` (those render in DASHBOARD.md, briefs, and session digests).
+- **`## Log`** — stays last, as always.
+
+Skip a section only when it's genuinely empty; Context plus at least the
+source link is the floor. Never invent links or steps — an honest "unknown,
+ask X" beats a plausible guess. When you touch an existing thin item,
+upgrade it to this standard as part of the touch.
 
 ## Quality bar for updates
 
