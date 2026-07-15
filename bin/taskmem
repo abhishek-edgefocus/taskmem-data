@@ -511,6 +511,9 @@ def cmd_thread(args):
         it = items.get(id_, {})
         node = {"id": id_, "depth": depth, "rel": rel, "focus": id_ == args.id,
                 "status": it.get("status"), "title": it.get("title")}
+        for k in ("priority", "size", "due"):
+            if it.get(k):
+                node[k] = it[k]
         if it.get("archived"):
             node["archived"] = it["archived"]
         if not it:
@@ -526,9 +529,10 @@ def cmd_thread(args):
             rel = n.get("rel")
             prefix = "" if rel in (None, "parent") else \
                 ("↩ " if rel == "follows" else "(%s) " % rel)
-            print("%s%s%s [%s] %s%s" % ("   " * n["depth"], prefix, n["id"],
-                                        n.get("status", "?"), n.get("title", ""),
-                                        "  ◀ focus" if n["focus"] else ""))
+            print("%s%s%s [%s] %s%s%s" % ("   " * n["depth"], prefix, n["id"],
+                                          n.get("status", "?"), n.get("title", ""),
+                                          " (due %s)" % n["due"] if n.get("due") else "",
+                                          "  ◀ focus" if n["focus"] else ""))
         else:
             emit(n)
 

@@ -33,6 +33,10 @@ Steps:
    (taskmem find --where "links~parent:<project-id>" --where status=next,active);
    flag xl items with no children. Create the missing concrete next steps
    as status=inbox so the human confirms them.
+   Also sweep unfiled items (taskmem find --where "links!~parent:" --where
+   "links!~follows:" --where type!=project --where "status!=done,dropped"): where several clearly
+   belong to a project or an existing thread, PROPOSE the attachment in
+   your report — never silently reparent; true one-offs are fine as-is.
 6. Propose the week: distribute top items across Mon–Fri via
    taskmem set <id> scheduled=<date>, respecting due dates and blockers.
    Don't schedule more than ~1 l-sized or ~3 m-sized items per day.

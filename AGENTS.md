@@ -117,6 +117,26 @@ item leaves it exactly as unpickable as before. The one exception is
 another agent's item you are only cross-referencing — there, a log line
 suffices.
 
+## Where an item lives
+
+Three organizing containers, freely composable — and "none" is valid:
+
+- **Project** (`type=project` item): a durable stream of work with a goal.
+  Attach members with `taskmem link <item> parent <project-id>`; nested
+  decomposition is normal (project → xl container → subtasks).
+- **Thread** (next section): a lineage rooted at an origin — a Slack
+  thread, a meeting, an issue. A thread can itself live under a project
+  (link its anchor to the project). A needs-reply mention is just a thread
+  member like any other.
+- **Independent**: no lineage edges at all — correct for one-offs, errands,
+  reminders. Query them:
+  `taskmem find --where "links!~parent:" --where "links!~follows:" --where type!=project --where "status!=done,dropped"`
+
+Attach at creation time when the project or thread is obvious
+(`links=parent:<id>` on `new`, or `link` right after). When unsure, leave
+it independent — the weekly review sweeps unfiled items and *proposes*
+filing; nothing gets silently reparented.
+
 ## Threads of work
 
 Most real work is a thread: it starts somewhere (a Slack thread, a meeting,

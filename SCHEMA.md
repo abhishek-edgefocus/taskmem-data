@@ -157,6 +157,8 @@ taskmem find --where status=waiting --where people=Rahul                        
 taskmem find --where "status!=done,dropped" --where "updated<today-14"          # stale
 taskmem find --where "links~blocks:" --where "status!=done,dropped"             # blocking items
 taskmem find --where type=decision --sort created:desc --limit 10               # recent decisions
+taskmem find --where "links!~parent:" --where "links!~follows:" --where type!=project --where "status!=done,dropped"  # independent items
+taskmem find --where "links~parent:wm-xxxxxx" --where "status!=done,dropped"    # direct members of a project/thread
 ```
 
 ## Archive

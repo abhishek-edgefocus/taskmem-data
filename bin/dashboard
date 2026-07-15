@@ -21,6 +21,11 @@ def find(*args):
     return [json.loads(ln) for ln in r.stdout.splitlines() if ln.strip()]
 
 
+def thread(id_):
+    r = subprocess.run([TM, "thread", id_], capture_output=True, text=True, timeout=30)
+    return [json.loads(ln) for ln in r.stdout.splitlines() if ln.strip()]
+
+
 def refs_md(it):
     out = []
     for ref in it.get("refs") or []:
@@ -87,23 +92,41 @@ def main():
                                             " " + links if links else ""))
             if goal:
                 out.append("*%s*" % esc(goal))
-            kids = find("--where", "links~parent:%s" % p["id"],
-                        "--where", "status!=done,dropped", "--sort", "status")
-            if kids:
-                out.extend("- %s [%s%s] %s%s" % (
-                    k.get("id"), k.get("status"),
-                    "/" + k["size"] if k.get("size") else "",
-                    esc(k.get("title")),
-                    " (due %s)" % k["due"] if k.get("due") else "")
-                    for k in kids)
-            else:
+            nodes = thread(p["id"])[1:]  # full nested lineage, minus the project row
+            child_idx = {i: [] for i in range(len(nodes))}
+            stack = []
+            for i, n in enumerate(nodes):
+                while stack and nodes[stack[-1]]["depth"] >= n["depth"]:
+                    stack.pop()
+                if stack:
+                    child_idx[stack[-1]].append(i)
+                stack.append(i)
+            keep = [False] * len(nodes)
+            for i in range(len(nodes) - 1, -1, -1):  # keep open members + closed ancestors of open ones
+                open_ = nodes[i].get("status") not in ("done", "dropped") and not nodes[i].get("archived")
+                keep[i] = open_ or any(keep[c] for c in child_idx[i])
+            shown = False
+            for i, n in enumerate(nodes):
+                if not keep[i]:
+                    continue
+                shown = True
+                seen.add(n["id"])
+                out.append("%s- %s%s [%s%s] %s%s" % (
+                    "  " * (n["depth"] - 1),
+                    "↩ " if n.get("rel") == "follows" else "",
+                    n["id"], n.get("status"),
+                    "/" + n["size"] if n.get("size") else "",
+                    esc(n.get("title")),
+                    " (due %s)" % n["due"] if n.get("due") else ""))
+            if not shown:
                 out.append("- *(no open items — needs a next step)*")
             out.append("")
 
     upcoming = take(find(*OPEN, "--where", "due>today", "--sort", "due"))
     section(out, "Upcoming (dated)", upcoming)
-    backlog = take(find(*OPEN, "--where", "type!=project", "--sort", "priority,updated:desc"))
-    section(out, "Backlog (undated)", backlog)
+    backlog = take(find(*OPEN, "--where", "type!=project", "--where", "links!~follows:",
+                        "--sort", "priority,updated:desc"))
+    section(out, "Independent (no project or thread, undated)", backlog)
     done = find("--where", "status=done", "--where", "updated>=today-7", "--sort", "updated:desc")
     section(out, "Done this week", done)
 
