@@ -34,6 +34,16 @@ Overlap is fine; dedup is anchored:
 2. Slack:
    - Search messages that concern me: @-mentions, my DMs, and my own recent
      messages that promise something ("I'll…", "will do", "let me check…").
+   - **Unanswered mentions**: for each @-mention that asks something of
+     Abhishek, read the thread. If he has NOT replied after the mention →
+     capture type=followup, tags=needs-reply, due=today+1 (or the stated
+     deadline), refs=slack=<permalink>. If he HAS replied → don't capture;
+     and if an open needs-reply item exists for that thread, mark it done
+     with a log line noting his reply.
+   - **Thread the captures**: if any item (including archived) already
+     carries this thread's permalink, attach new captures to that anchor
+     (parent or follows) instead of floating them — check with
+     taskmem thread <anchor-id> first.
    - Real request or commitment → capture per AGENTS.md commitment
      detection: status=inbox, "refs=slack=<permalink>", people=<who>,
      due only if actually stated. Write the body pickup-ready (AGENTS.md

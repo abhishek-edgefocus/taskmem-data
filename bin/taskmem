@@ -475,6 +475,64 @@ def cmd_links(args):
     emit({"id": args.id, "out": out, "in": inbound})
 
 
+LINEAGE = ("parent", "follows")
+
+
+def cmd_thread(args):
+    """Whole-thread view: transitive parent/follows lineage in both
+    directions (every rel with --all), archived members included."""
+    load(args.id)  # validate focus exists
+    items = {it["id"]: it for it in load_all(True) if it.get("id")}
+    up, down = {}, {}
+    for it in items.values():
+        links = it.get("links") or []
+        for edge in (links if isinstance(links, list) else [links]):
+            rel, _, target = edge.partition(":")
+            if not args.all and rel not in LINEAGE:
+                continue
+            up.setdefault(it["id"], []).append((rel, target))
+            down.setdefault(target, []).append((rel, it["id"]))
+    roots, seen, stack = [], set(), [args.id]
+    while stack:
+        cur = stack.pop()
+        if cur in seen:
+            continue
+        seen.add(cur)
+        parents = [t for _, t in up.get(cur, []) if t in items]
+        if not parents:
+            roots.append(cur)
+        stack.extend(parents)
+    out, visited = [], set()
+
+    def walk(id_, depth, rel):
+        if id_ in visited:
+            return
+        visited.add(id_)
+        it = items.get(id_, {})
+        node = {"id": id_, "depth": depth, "rel": rel, "focus": id_ == args.id,
+                "status": it.get("status"), "title": it.get("title")}
+        if it.get("archived"):
+            node["archived"] = it["archived"]
+        if not it:
+            node["missing"] = True
+        out.append(node)
+        for r, child in sorted(down.get(id_, [])):
+            walk(child, depth + 1, r)
+
+    for r in sorted(set(roots)):
+        walk(r, 0, None)
+    for n in out:
+        if args.oneline:
+            rel = n.get("rel")
+            prefix = "" if rel in (None, "parent") else \
+                ("↩ " if rel == "follows" else "(%s) " % rel)
+            print("%s%s%s [%s] %s%s" % ("   " * n["depth"], prefix, n["id"],
+                                        n.get("status", "?"), n.get("title", ""),
+                                        "  ◀ focus" if n["focus"] else ""))
+        else:
+            emit(n)
+
+
 def cmd_find(args):
     items = apply_where(load_all(args.archived), args.where)
     if args.count:
@@ -639,6 +697,12 @@ def main():
     p = sub.add_parser("links", help="show outbound and inbound edges for an item")
     p.add_argument("id")
     p.set_defaults(fn=cmd_links)
+
+    p = sub.add_parser("thread", help="show the whole parent/follows lineage an item belongs to")
+    p.add_argument("id")
+    p.add_argument("--all", action="store_true", help="traverse every rel, not just parent/follows")
+    p.add_argument("--oneline", action="store_true", help="render as an indented tree")
+    p.set_defaults(fn=cmd_thread)
 
     p = sub.add_parser("find", help="query items; repeat --where to AND filters")
     p.add_argument("--where", action="append", metavar="EXPR",

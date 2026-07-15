@@ -18,6 +18,7 @@ Steps:
    - Due or overdue:  taskmem find --where "status!=done,dropped" --where "due<=today" --sort due
    - Scheduled:       taskmem find --where "status!=done,dropped" --where "scheduled<=today" --sort scheduled
    - Nudges due:      taskmem find --where "status!=done,dropped" --where "nudge<=today"
+   - Replies owed:    taskmem find --where "status!=done,dropped" --where tags=needs-reply --sort due
    - Inbox to triage: taskmem find --where status=inbox --sort created
    - Blocked/waiting: taskmem find --where status=blocked,waiting --sort updated
    - Recent momentum: taskmem find --where "updated>=today-2" --sort updated:desc
@@ -41,6 +42,8 @@ Steps:
    - **Today**: top 3 things (overdue → due today → scheduled → p0/p1),
      with refs rendered as links.
    - **Nudge**: "Ping <who> about <what> (blocked Nd)" per due nudge.
+   - **Replies you owe**: each open needs-reply item with who asked, where
+     (linked), and how old the ask is.
    - **Flags**: inbox count awaiting triage, projects without a next step,
      anything slipping repeatedly.
    - One line on anything you changed (reconciliation, reschedules).

@@ -54,6 +54,7 @@ conversation or work implies future action, capture it. Signals:
 | "We should look into X someday." | `idea` or `research`, `priority=p3` |
 | "Why does Y behave like this?" (unresolved) | `question` |
 | We chose A over B (and why) | `decision` — record the why in the body |
+| Someone @-mentions the human with an ask and they haven't replied | `followup`, tag `needs-reply`, `due=today+1` (or the stated deadline), ref = message permalink |
 | Test/bug discovered but out of scope right now | `bug`, linked to the current task |
 | PR merged / implementation finished | `set status=done` on the matching item + log |
 
@@ -115,6 +116,30 @@ is always in scope, never out-of-scope collateral: a field change on a bare
 item leaves it exactly as unpickable as before. The one exception is
 another agent's item you are only cross-referencing — there, a log line
 suffices.
+
+## Threads of work
+
+Most real work is a thread: it starts somewhere (a Slack thread, a meeting,
+an issue) and grows sub-tasks and follow-ups over time. Represent the
+lineage, don't flatten it:
+
+- The first item captured from an origin is the **thread anchor** and
+  carries the origin ref. Every later capture from the same origin
+  attaches: sub-tasks via `taskmem link <child> parent <anchor>`, successor
+  work via `taskmem link <new> follows <old>`. Never leave an
+  obviously-related item floating — attachment is what makes the memory
+  navigable months later.
+- Before creating from a known origin, look for the anchor
+  (`taskmem find --archived --where "refs~<permalink-or-issue>"`, or
+  search), then `taskmem thread <anchor> --oneline` to see the existing
+  lineage before deciding: child, follow-up, or just a log line on an
+  existing member.
+- When the human asks "where did this come from?" or "what's left of X?",
+  answer from `taskmem thread`, not from a flat find.
+- **`needs-reply` lifecycle**: capture unanswered mentions per the table
+  above; on later sweeps, if the human's reply is now visible, mark the
+  item done with a log line linking the reply. A needs-reply item in a
+  thread that already has an anchor attaches to it like any other member.
 
 ## Quality bar for updates
 

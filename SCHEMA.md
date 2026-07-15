@@ -85,6 +85,15 @@ responsibility. Extend them by editing this file.
   first body line, `refs` for its dashboard/tracker links. Work items attach
   via `taskmem link <child> parent <project-id>`; children are found with
   `taskmem find --where "links~parent:<project-id>"`.
+- **threads are lineages**, not a new construct: the first item captured
+  from an origin (Slack thread, meeting, issue) is the thread anchor and
+  carries the origin ref; later work attaches via `parent` (decomposition)
+  or `follows` (successor work). `taskmem thread <id>` walks the transitive
+  lineage in both directions (archived members included); `--oneline`
+  renders it as a tree, `--all` traverses every rel.
+- **`needs-reply` tag**: an @-mention or question addressed to the human
+  that they haven't answered yet. Views (digest, dashboard, briefs) show
+  these as "Replies you owe"; agents close them when the reply is observed.
 
 ## Generated views
 
@@ -116,6 +125,7 @@ so mutations are attributed to you — in `## Log` lines and as the git author.
 | `taskmem log <id> <message>` | append an attributed line to `## Log` |
 | `taskmem link/unlink <id> <rel> <id>` | manage directed edges (validates targets) |
 | `taskmem links <id>` | outbound + inbound edges |
+| `taskmem thread <id> [--all] [--oneline]` | transitive parent/follows lineage, both directions |
 | `taskmem find [--where EXPR]… [--sort k:desc,k2] [--limit N] [--offset N] [--fields a,b] [--full] [--count] [--oneline]` | generic query |
 | `taskmem search <text> [--limit N]` | full-text, all-tokens-match, scored |
 | `taskmem history <id> [--diff]` | git history of one item |

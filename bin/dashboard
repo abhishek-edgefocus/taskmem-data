@@ -70,6 +70,8 @@ def main():
     section(out, "Scheduled (today or slipped)",
             take(find(*OPEN, "--where", "scheduled<=today", "--sort", "scheduled")))
     section(out, "In flight", take(find("--where", "status=next,active", "--sort", "updated:desc")))
+    section(out, "Replies owed",
+            take(find(*OPEN, "--where", "tags=needs-reply", "--sort", "due")))
     section(out, "Blocked / waiting",
             take(find("--where", "status=blocked,waiting", "--sort", "nudge")), blocked=True)
     section(out, "Inbox — needs triage", take(find("--where", "status=inbox", "--sort", "created")))
