@@ -15,7 +15,8 @@ mkdir -p "$DIR/.logs"
 "$DIR/bin/taskmem" sync >> "$LOG" 2>&1 || true
 
 claude -p "$(cat "$DIR/prompts/${MODE}-review.md")" < /dev/null \
-  --allowedTools "Bash" >> "$LOG" 2>&1
+  --allowedTools "Bash,Read,ToolSearch,mcp__claude_ai_Linear__list_issues,mcp__claude_ai_Linear__get_issue,mcp__claude_ai_Slack__slack_send_message,mcp__claude_ai_Slack__slack_search_users" \
+  >> "$LOG" 2>&1
 
 "$DIR/bin/taskmem" sync >> "$LOG" 2>&1 || true
 find "$DIR/.logs" -name '*.log' -mtime +30 -delete 2>/dev/null || true

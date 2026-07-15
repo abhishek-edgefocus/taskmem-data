@@ -112,6 +112,11 @@ Prefer **tables with jumpable links** (render `refs` as markdown links).
 Always show full titles — never bare ids as the only reference. Lead with
 what needs a decision or is slipping; don't recite the whole working set.
 
+Notification channels: `taskmem notify` reaches the desktop of the machine
+you're on; scheduled review agents additionally send ONE Slack DM per run —
+only ever to the human themself (see the hard rules in prompts/), never to
+anyone else, and never more than one DM per run.
+
 ## Periodic reviews (run by the scheduler — see prompts/)
 
 These are agent behaviors, not infrastructure. Definitions live here so any
