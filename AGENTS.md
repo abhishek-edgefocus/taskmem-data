@@ -240,12 +240,14 @@ briefs. When asked for everything about an item ("full context",
 "where did this come from", "what happened with X"), answer from
 `taskmem story <id>` — context prose first, then the timeline as the
 single table. When asked to "delegate this" / "give me a prompt for X",
-run `taskmem delegate <id> --copy` — that puts the prompt on the human's
-clipboard — and ALSO include it in your reply inside ONE fenced code block
-(``` … ```): only a code block gets the UI's copy control; loose prose
-does not. Tell the human it's already on their clipboard. Adjust the
-prompt only if they add constraints; if a delegated agent later reports
-back, record the outcome on the item. Speak plain language, never field syntax:
+run `taskmem delegate <id> --copy --fenced` and paste the stdout into your
+reply VERBATIM. The `--copy` puts the raw prompt on the human's clipboard
+(tell them so); the `--fenced` wraps the display in a ````text fence so
+none of the prompt's own markdown renders — bullets, `#` headers, and
+backticks must reach the human as literal characters, byte-identical to
+the CLI output, or their copy comes out mangled. Never print the prompt
+as loose prose. Adjust it only if the human adds constraints; if a
+delegated agent later reports back, record the outcome on the item. Speak plain language, never field syntax:
 say "now waiting on Kushagra for the schema doc — I'll flag it Friday", not
 `waiting_on=Kushagra nudge=2026-07-17`. Disclose every mutation you made,
 one line each (including links you added); beyond that, stop — lead with

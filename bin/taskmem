@@ -662,7 +662,10 @@ def cmd_delegate(args):
         "context above and report your outcome back to %s so their agents can record it." % user,
     ]
     text = "\n".join(out)
-    print(text)
+    if args.fenced:  # display form: nothing renders, copy stays byte-identical
+        print("````text\n%s\n````" % text)
+    else:
+        print(text)
     if args.copy:
         for cmd in (["pbcopy"], ["xclip", "-selection", "clipboard"], ["wl-copy"]):
             if shutil.which(cmd[0]):
@@ -851,7 +854,8 @@ def main():
 
     p = sub.add_parser("delegate", help="copy-paste prompt to hand this item to any AI agent")
     p.add_argument("id")
-    p.add_argument("--copy", action="store_true", help="also put the prompt on the clipboard")
+    p.add_argument("--copy", action="store_true", help="also put the prompt on the clipboard (raw, unfenced)")
+    p.add_argument("--fenced", action="store_true", help="wrap stdout in a ````text fence for chat display")
     p.set_defaults(fn=cmd_delegate)
 
     p = sub.add_parser("find", help="query items; repeat --where to AND filters")
