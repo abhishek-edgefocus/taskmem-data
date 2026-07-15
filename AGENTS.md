@@ -112,15 +112,19 @@ Prefer **tables with jumpable links** (render `refs` as markdown links).
 Always show full titles — never bare ids as the only reference. Lead with
 what needs a decision or is slipping; don't recite the whole working set.
 
-Notification channels: `taskmem notify` reaches the desktop of the machine
-you're on; scheduled review agents additionally send ONE Slack DM per run —
-only ever to the human themself (see the hard rules in prompts/), never to
-anyone else, and never more than one DM per run.
+Notification channels: `taskmem notify` (desktop), the daily-brief /
+weekly-review note items, DASHBOARD.md, and — from human-triggered review
+runs — ONE Slack DM per run, only ever to the human themself, never anyone
+else. **Agents are never invoked unattended (user policy):** a human starts
+every run, so every action traces to a human trigger; cron only runs
+deterministic scripts and reminder notifications.
 
-## Periodic reviews (run by the scheduler — see prompts/)
+## Periodic reviews (human-triggered — see prompts/)
 
 These are agent behaviors, not infrastructure. Definitions live here so any
-model can run them.
+model can run them. Cron reminds the human when a review is due; the human
+triggers the run (`bin/agent-brief daily|intake|weekly`, or by asking an
+interactive session) — never the scheduler itself.
 
 **Daily review** (`prompts/daily-review.md`): pull due/overdue
 (`due<=today`), scheduled (`scheduled<=today`), nudge-due blockers

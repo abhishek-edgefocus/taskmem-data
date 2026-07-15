@@ -78,9 +78,10 @@ if [ "${1:-}" = "--cron" ]; then
     { crontab -l 2>/dev/null | sed "/^$CRON_BEGIN\$/,/^$CRON_END\$/d"; } > "$TMP" || true
     cat >> "$TMP" <<EOF
 $CRON_BEGIN
-30 8 * * 1-5 $DIR/bin/agent-brief daily
-0 9-18 * * 1-5 $DIR/bin/agent-brief intake
-0 17 * * 5 $DIR/bin/agent-brief weekly
+# Reminders only — cron never invokes claude itself (user policy).
+30 8 * * 1-5 $DIR/bin/taskmem notify "taskmem" "Morning brief: run  agent-brief daily" > /dev/null 2>&1
+0 14 * * 1-5 $DIR/bin/taskmem notify "taskmem" "Inbox sweep: run  agent-brief intake" > /dev/null 2>&1
+0 17 * * 5 $DIR/bin/taskmem notify "taskmem" "Weekly review: run  agent-brief weekly" > /dev/null 2>&1
 */15 * * * * $DIR/bin/taskmem sync > /dev/null 2>&1
 20 9 * * 0,6 $DIR/bin/dashboard > /dev/null 2>&1
 $CRON_END

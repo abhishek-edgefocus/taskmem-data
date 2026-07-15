@@ -158,26 +158,29 @@ corruption when one side is hand-edited); default filters like "hide done"
 (even defaults are policy — agents pass their own filters); business rules in
 a scheduler (cron only decides *when* an agent wakes, never *what matters*).
 
-## Scheduling (the one manual step)
+## Scheduling (reminder-based — no unattended AI runs)
 
-The scheduler just wakes an agent with a prompt; all judgment is in the
-prompt + AGENTS.md. `install.sh --cron` installs the whole marker-delimited
-crontab block: the daily/weekly review agents, the **intake agent** (hourly
-on weekdays — sweeps the Linear inbox and Slack mentions/DMs/commitments
-into `status=inbox` items, dedup-anchored on `refs`), 15-minute autosync,
-and the weekend dashboard refresh — all via `bin/agent-brief`. The
-Linear/Slack legs need the claude.ai connectors authorized for the account
-running `claude`. Manually, with Claude Code, `crontab -e` and add:
+**Policy: cron never invokes claude.** Every agent run is human-triggered;
+the scheduler's only jobs are deterministic scripts and reminding you.
+`install.sh --cron` installs the marker-delimited block:
 
-```cron
-30 8 * * 1-5 WM_AGENT=daily-review  "$HOME/.local/bin/claude" -p "$(cat $HOME/taskmem/prompts/daily-review.md)"  --allowedTools "Bash" >> $HOME/taskmem/.logs/daily.log 2>&1
-0 17 * * 5   WM_AGENT=weekly-review "$HOME/.local/bin/claude" -p "$(cat $HOME/taskmem/prompts/weekly-review.md)" --allowedTools "Bash" >> $HOME/taskmem/.logs/weekly.log 2>&1
-```
+- **Reminders** (desktop notifications): morning brief (weekdays 08:30),
+  inbox sweep (14:00), weekly review (Fri 17:00). When one fires, run the
+  agent yourself:
 
-(Adjust the `claude` path — `which claude` — and permission flags to taste.
-Any headless runner works the same way: `codex exec`, `gemini`, or a script
-that calls a model API and executes the returned commands. Claude Code cloud
-"routines" are an alternative to local cron.)
+  ```bash
+  ~/taskmem/bin/agent-brief daily     # or: intake | weekly (logs in .logs/)
+  ```
+
+  …or just tell any interactive Claude Code session "run the daily review".
+- **Deterministic automation** (no AI involved): `taskmem sync` every
+  15 minutes, `bin/dashboard` refresh on weekend mornings.
+
+The agents' behavior (prompts/) is unchanged — only the trigger is manual.
+The intake agent sweeps your Linear inbox and Slack mentions/DMs into
+`status=inbox` items, dedup-anchored on `refs`; its Linear/Slack legs need
+the claude.ai connectors authorized. If the policy ever changes, swapping a
+reminder line for a direct `bin/agent-brief` invocation is the only edit.
 
 ## Multi-host / multi-environment sync
 

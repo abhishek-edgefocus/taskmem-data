@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Headless review agent for the task memory. Called from crontab.
+# Headless review agent for the task memory. USER-TRIGGERED ONLY — cron
+# must never call this (user policy: no unattended claude runs); cron only
+# reminds the human to run it.
 # Usage: agent-brief daily|weekly|intake
 # The scheduler decides WHEN an agent wakes; the prompt + AGENTS.md decide
 # everything else. Any headless runner works — swap the `claude` line for
