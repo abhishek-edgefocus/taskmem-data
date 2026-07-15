@@ -5,7 +5,7 @@ title: Work memory v1: markdown files + git + generic CLI
 status: open
 tags: [taskmem]
 created: 2026-07-14T14:20:46Z
-updated: 2026-07-15T14:05:20Z
+updated: 2026-07-15T14:39:50Z
 source: bootstrap
 ---
 
@@ -14,3 +14,4 @@ Chose flat-frontmatter markdown per item, git for history, one generic zero-depe
 ## Log
 - 2026-07-15T13:33Z [claude-code] renamed tool workmem -> taskmem; brand is replaceable (see README 'Renaming the tool'), wm- ids and WM_* env vars are stable engine identifiers
 - 2026-07-15T14:05Z [claude-code] ported from dpx ~/tasks tool: session-start context injection, DASHBOARD.md, install.sh, agent-brief, size/scheduled/waiting_on/nudge/refs fields, inbox/next/someday statuses, next-step rule. Kept taskmem philosophy: views are deterministic, judgment stays in prompts. Rejected: sequential ids, projects.yaml, plan-in-code.
+- 2026-07-15T14:39Z [claude-code] ported dpx notification system: review agents send ONE structured Slack DM (Today/Nudge/Flags, only to Abhishek U0B0XRSGV2A), tm notify as desktop/fallback; Linear read-only reconciliation in review prompts. Test DM delivered.
