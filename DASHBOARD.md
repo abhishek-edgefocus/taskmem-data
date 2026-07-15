@@ -12,7 +12,12 @@
 
 | id | status | pri | size | task | due | links |
 |---|---|---|---|---|---|---|
-| wm-fhyza8 | open | p1 |  | Install daily/weekly review crontab entries | 2026-07-16 |  |
 | wm-c4vhst | open | p2 |  | Create private GitHub repo and connect taskmem remote | 2026-07-17 |  |
 
-*Working set: 6 open items. Full queries: see SCHEMA.md.*
+## Done this week
+
+| id | status | pri | size | task | due | links |
+|---|---|---|---|---|---|---|
+| wm-fhyza8 | done | p1 |  | Install daily/weekly review crontab entries | 2026-07-16 |  |
+
+*Working set: 5 open items. Full queries: see SCHEMA.md.*
