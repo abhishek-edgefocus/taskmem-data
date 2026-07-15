@@ -13,3 +13,6 @@ source: bootstrap
 ---
 
 Cron lines are ready to paste in ~/taskmem/README.md under 'Scheduling'. Adjust the claude binary path (which claude) and permission flags.
+
+## Log
+- 2026-07-15T14:05Z [claude-code] done via install.sh --cron: daily 08:30 + weekly Fri 17:00 review agents, 15-min autosync, weekend dashboard refresh
