@@ -12,6 +12,8 @@
 
 | id | status | pri | size | task | due | links |
 |---|---|---|---|---|---|---|
+| wm-j9jxpc | next |  | s | Check missing statement files for NorthPond and confirm in Kushagra's thread (before Friday dev call) | 2026-07-17 | [slack](https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5) |
+| wm-6k56mk | next | p1 |  | Disable the dpx ~/tasks crontab (unattended claude runs + automated DMs, against policy) | 2026-07-16 |  |
 | wm-3y3ckv | active |  |  | On-call / Errors backlog |  |  |
 | wm-j523sq | active |  |  | NorthPond Data Ingestion |  | [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring) |
 | wm-r45vp3 | active |  |  | AI billing to Slack (DEV-970) |  |  |
@@ -21,13 +23,6 @@
 | wm-gxykru | active | p2 | m | Root-cause int_rate_at_purchase=0 for northpond loans (DEV-503, in progress) |  | [DEV-503](https://linear.app/edge-focus/issue/DEV-503/int-rate-at-purchase-0-for-northpond-loans-in-positions) |
 | wm-ng8g2c | next | p2 | s | Create Ramp account using the automations Google account |  |  |
 | wm-rgwdyu | active | p1 | xl | Migrate NorthPond Fund Monitoring page to Snowflake data (DEV-1395) | 2026-07-20 | [DEV-1395](https://linear.app/edge-focus/issue/DEV-1395/migrate-the-northpond-fund-monitoring-page-to-use-snowflake-data) [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring) |
-
-## Inbox — needs triage
-
-| id | status | pri | size | task | due | links |
-|---|---|---|---|---|---|---|
-| wm-j9jxpc | inbox |  | s | Check missing statement files for NorthPond and confirm in Kushagra's thread (before Friday dev call) | 2026-07-17 | [slack](https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5) |
-| wm-6k56mk | inbox |  |  | Disable the dpx ~/tasks crontab (unattended claude runs + automated DMs, against policy) | 2026-07-16 |  |
 
 ## Projects
 
@@ -50,12 +45,6 @@
 - wm-bvqkhh [next/s] Finalize DEV-1331 OpenRoad predictions datastore-comparison notebook
 - wm-bpmxnb [open/l] Ingest OpenRoad model_requests/model_responses stmt files for real credit scores (DEV-1396)
 
-## Upcoming (dated)
-
-| id | status | pri | size | task | due | links |
-|---|---|---|---|---|---|---|
-| wm-c4vhst | open | p2 |  | Create private GitHub repo and connect taskmem remote | 2026-07-17 |  |
-
 ## Backlog (undated)
 
 | id | status | pri | size | task | due | links |
@@ -65,15 +54,18 @@
 | wm-qu4cr7 | open | p2 | m | Investigate 15 northpond loans missing from gateway model_responses (ERROR-1231) |  | [ERROR-1231](https://linear.app/edge-focus/issue/ERROR-1231/northpond-issued-missing-gateway-responses-15-issued-northpond-loans) |
 | wm-yyb3dz | open | p3 |  | GitHub adapter: PR/issue events update linked items |  |  |
 | wm-mnetja | open | p3 |  | Wrap taskmem as an MCP server (tools 1:1 over CLI) |  |  |
+| wm-6men7j | someday |  |  | Enable task sync to GitHub (add remote + force-push main) — when ready to upload tasks |  |  |
+| wm-jpxt8v | someday |  |  | Revisit: restructure into ~/brain monorepo (taskmem/ + notes/ + context/) |  |  |
 | wm-kpyq3c | open |  |  | Work memory v1: markdown files + git + generic CLI |  |  |
 
 ## Done this week
 
 | id | status | pri | size | task | due | links |
 |---|---|---|---|---|---|---|
+| wm-c4vhst | done | p2 |  | Create private GitHub repo (personal profile) and push taskmem infra branch | 2026-07-17 |  |
 | wm-c39rb3 | done | p1 | s | Land DEV-1412: Positions Daily + Realized Cashflows for NorthPond (in review) |  | [DEV-1412](https://linear.app/edge-focus/issue/DEV-1412/add-positions-daily-and-realized-cashflows-for-northpond) |
 | wm-225chs | done | p1 | s | Land DEV-1331: OpenRoad predictions ingest+validation, PR #5709 (in review) |  | [DEV-1331](https://linear.app/edge-focus/issue/DEV-1331/ingest-and-validate-predictions) |
 | wm-fhyza8 | done | p1 |  | Install daily/weekly review crontab entries | 2026-07-16 |  |
 | wm-3tdn24 | done | p2 | s | Close 4 open missing-window alerts on northpond positions files (ERROR-1524) |  | [ERROR-1524](https://linear.app/edge-focus/issue/ERROR-1524/missing-statement-filenorthpondpositionsnorthpond-loan-positions-4) |
 
-*Working set: 19 open items. Full queries: see SCHEMA.md.*
+*Working set: 20 open items. Full queries: see SCHEMA.md.*
