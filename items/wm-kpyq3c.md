@@ -5,7 +5,7 @@ title: Work memory v1: markdown files + git + generic CLI
 status: open
 tags: [taskmem]
 created: 2026-07-14T14:20:46Z
-updated: 2026-07-15T19:48:58Z
+updated: 2026-07-15T19:55:52Z
 source: bootstrap
 ---
 
@@ -19,3 +19,4 @@ Chose flat-frontmatter markdown per item, git for history, one generic zero-depe
 - 2026-07-15T18:09Z [claude-code] agent-behavior eval round 1: 6 sandboxed scenarios, graded 9.30/10 overall; 5 protocol fixes shipped in AGENTS.md (commit 8dba059). Round-2 validation on hold per Abhishek, tracked separately.
 - 2026-07-15T19:36Z [claude-code] added thread lineage view (tm thread), thread-anchor conventions, and needs-reply lifecycle for unanswered mentions (intake captures them, auto-closes on observed reply; surfaced as 'Replies you owe' in digest/dashboard/daily brief)
 - 2026-07-15T19:48Z [claude-code] organization model made explicit: project / thread / independent as composable containers; dashboard renders full nested project lineages via tm thread; independent = no parent+no follows outbound; weekly review proposes filing, never silently reparents
+- 2026-07-15T19:55Z [claude-code] added tm story (context + thread + merged git/log timeline per item) and the one-consolidated-table presentation rule (user preference, also saved to assistant memory)
