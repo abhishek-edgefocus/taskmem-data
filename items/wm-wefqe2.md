@@ -2,7 +2,7 @@
 id: wm-wefqe2
 type: task
 title: probe: blocked flow
-status: waiting
+status: inbox
 size: s
 scheduled: 2026-07-15
 waiting_on: Rahul
