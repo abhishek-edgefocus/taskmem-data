@@ -16,3 +16,4 @@ source: dpx-tasks #3
 ## Log
 - 2026-07-15T14:44Z [importer] imported from dpx ~/tasks #3
 - 2026-07-15T14:44Z [importer] blocked since 2026-07-13: waiting for review + approval of DEV-1412 PR
+- 2026-07-15T14:52Z [claude-code] DEV-1412 done — Positions Daily + Realized Cashflows PR merged. Marked done per user.
