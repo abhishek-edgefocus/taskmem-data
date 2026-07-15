@@ -39,6 +39,20 @@ def esc(s):
     return str(s or "").replace("|", "\\|")
 
 
+PRI = {"p0": "urgent", "p1": "high", "p2": "", "p3": "low"}
+SIZE = {"xs": "~15m", "s": "<1h", "m": "half-day", "l": "~1 day", "xl": "multi-day"}
+
+
+def pri(it):
+    v = it.get("priority", "")
+    return PRI.get(v, v)
+
+
+def size(it):
+    v = it.get("size", "")
+    return SIZE.get(v, v)
+
+
 def next_action(body):
     m = re.search(r"^## Next steps\s*$(.*?)(?=^## |\Z)", body or "", re.M | re.S)
     if not m:
@@ -59,16 +73,16 @@ def table(items, blocked=False, action=False):
             ("**%s**" % it["nudge"] if it.get("nudge", "9") <= TODAY else it.get("nudge", "—")),
             refs_md(it)) for it in items]
     elif action:
-        head = "| id | pri | task | next action | due | links |\n|---|---|---|---|---|---|"
+        head = "| id | priority | task | next action | due | links |\n|---|---|---|---|---|---|"
         rows = ["| %s | %s | %s | %s | %s | %s |" % (
-            it.get("id"), it.get("priority", ""), esc(it.get("title")),
+            it.get("id"), pri(it), esc(it.get("title")),
             esc(next_action(it.get("body"))) or "—",
             ("**%s**" % it["due"] if it.get("due", "9") <= TODAY else it.get("due", "")),
             refs_md(it)) for it in items]
     else:
-        head = "| id | status | pri | size | task | due | links |\n|---|---|---|---|---|---|---|"
+        head = "| id | status | priority | effort | task | due | links |\n|---|---|---|---|---|---|---|"
         rows = ["| %s | %s | %s | %s | %s | %s | %s |" % (
-            it.get("id"), it.get("status"), it.get("priority", ""), it.get("size", ""),
+            it.get("id"), it.get("status"), pri(it), size(it),
             esc(it.get("title")),
             ("**%s**" % it["due"] if it.get("due", "9") <= TODAY else it.get("due", "")),
             refs_md(it)) for it in items]
@@ -137,7 +151,7 @@ def main():
                     "  " * (n["depth"] - 1),
                     "↩ " if n.get("rel") == "follows" else "",
                     n["id"], n.get("status"),
-                    "/" + n["size"] if n.get("size") else "",
+                    "/" + SIZE.get(n["size"], n["size"]) if n.get("size") else "",
                     esc(n.get("title")),
                     " (due %s)" % n["due"] if n.get("due") else ""))
             if not shown:

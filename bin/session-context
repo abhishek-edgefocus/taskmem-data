@@ -43,11 +43,16 @@ def next_action(body):
     return ""
 
 
+PRI = {"p0": "URGENT", "p1": "high", "p2": "", "p3": "low"}
+SIZE = {"xs": "~15m", "s": "<1h", "m": "half-day", "l": "~1 day", "xl": "multi-day"}
+
+
 def fmt(it):
     bits = [it.get("id"), "[%s]" % it.get("status", "?")]
-    for k in ("priority", "size"):
-        if it.get(k):
-            bits.append(it[k])
+    for k, m in (("priority", PRI), ("size", SIZE)):
+        v = it.get(k)
+        if v and m.get(v, v):
+            bits.append(m.get(v, v))
     bits.append(it.get("title", ""))
     extra = []
     if it.get("due"):

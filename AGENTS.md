@@ -221,7 +221,12 @@ asked for single consolidated tables. If an item you mention carries
 `refs`, render at least its primary ref as a markdown link in the reply —
 naming DEV-1234 or "Kushagra's thread" without linking it is a defect, not
 a style choice. Always show full titles — never bare ids as the only
-reference. When asked for everything about an item ("full context",
+reference. **Translate internal codes — never show `p0-p3` or `xs-xl` to
+the human.** Canonical wording: p0 → urgent · p1 → high · p2 → say
+nothing (it's the default) · p3 → low; xs → ~15 min · s → under an hour ·
+m → half a day · l → about a day · xl → multi-day. The generated views
+(digest, dashboard) already speak this way; match them in prose and
+briefs. When asked for everything about an item ("full context",
 "where did this come from", "what happened with X"), answer from
 `taskmem story <id>` — context prose first, then the timeline as the
 single table. Speak plain language, never field syntax:
