@@ -10,7 +10,7 @@ tags: [northpond, needs-reply]
 links: [parent:wm-j523sq]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-15T21:14:10Z
-updated: 2026-07-15T21:14:10Z
+updated: 2026-07-15T21:14:11Z
 source: claude-code
 ---
 
@@ -23,3 +23,6 @@ Abhijeet in #north-pond-tech (2026-07-15 23:54 IST), re the upcoming EDGEX deal:
 ## Links
 - Abhijeet's ask (thread): https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G
 - Project: wm-j523sq (NorthPond Data Ingestion)
+
+## Log
+- 2026-07-15T21:14Z [claude-code] captured retroactively: a prior session read Abhijeet's messages but did not track this unanswered ask — protocol gap now fixed in AGENTS.md (reading messages counts as intake)
