@@ -10,7 +10,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-3tdn24, relates:wm-qu4cr7]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5]
 created: 2026-07-15T14:56:55Z
-updated: 2026-07-16T13:06:38Z
+updated: 2026-07-16T18:09:10Z
 source: intake-review
 label: Kushagra missing files
 ---
@@ -71,3 +71,4 @@ Sanjali/Prosper pattern (ignorable → acknowledgment sheet), but verify.
 - 2026-07-16T13:06Z [claude-code] ANSWERED Abhishek's challenge: did we BUY loans on the gap dates? NO. This mattered because autofill only forward-fills loans with a PRIOR row — a loan purchased ON a missing date would be silently ABSENT (not stale), which autofill cannot mask. Verified via silver.transfers: the only Aug-2024 northpond purchases were 2024-08-01 (OLV12562549) and 2024-08-05 (OLV12562550). Nothing on 08-09, 08-28 or 08-29. So the missing tapes hide no purchase.
 - 2026-07-16T13:06Z [claude-code] Applied Abhishek's before/after loan-set test on the RAW tape. 08-28/08-29 gap: 08-27 and 08-30 both show the identical 4 loans (547/548/549/550) -> clean, nothing happened across the gap. 08-09 gap: 08-08 has 3 loans, 08-10 has 4 (OLV12562550 added) -> set DIFFERS, but the missing file is NOT the cause: OLV12562550 was purchased 08-05 and is absent from the 08-06, 08-07 and 08-08 tapes too, which all DID arrive. It first appears 08-10 (5-day platform reporting lag). An arriving 08-09 tape would almost certainly not have contained it either.
 - 2026-07-16T13:06Z [claude-code] Side-finding captured as wm-k3wt84 (inbox): NorthPond purchase -> first-appearance lag of 2-8 days in early portfolio, independent of missing files; may affect Fund Monitoring migration (wm-rgwdyu) if any panel reports point-in-time holdings.
+- 2026-07-16T18:09Z [claude-code] DONE (2026-07-16, per Abhishek): both remaining actions completed — 3 rows added to the Acknowledgements tab (northpond/positions, 08-09, 08-28, 08-29, single-date so ACK_START_DATE==ACK_END_DATE) and confirmed in Kushagra's thread ahead of the 07-17 dev call. Verdict as analysed: ignorable (full-state daily snapshot self-heals; snapshot stale for 3 old 2024 days, ~10k exposure, all current).
