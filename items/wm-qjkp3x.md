@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [parent:wm-c5jytx]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-16T12:16:49Z
-updated: 2026-07-16T12:32:18Z
+updated: 2026-07-16T18:09:22Z
 source: claude-code
 ---
 
@@ -24,3 +24,4 @@ Agenda + full context drafted in chat; see parent wm-c5jytx logs for the verifie
 
 ## Log
 - 2026-07-16T12:32Z [claude-code] Call SET — Abhishek replied in-thread 2026-07-16 18:00 IST (ts 1784205038.678439): 'I have just setup a call later today with Nate and folks on this thread to discuss the same. We can then mutually decide on how will we receive Oliv OP's.' Call is today (2026-07-16), attendees = Nate + thread participants (Abhijeet, Trishit, Nakula, Abhishek). Stated purpose matches agenda item 1: decide how we receive Oliv's OPs/ANL. Scheduling half of this item is discharged; running it + capturing decisions remains.
+- 2026-07-16T18:09Z [claude-code] DONE (2026-07-16, per Abhishek): the Nate call happened. Scheduling + running are both discharged. NOTE: decisions from the call are NOT yet captured here — the two questions it existed to settle (how Oliv's ANL/OPs reach us, and whether the 'store the OPs' half of Abhijeet's ask survives Oliv's architecture) still need their outcome recorded on parent wm-c5jytx. Asked Abhishek for the outcome; do not assume it was decided either way.
