@@ -65,6 +65,15 @@ item on the spot (see "Reading messages counts as intake"). And a read-only
 commitment captured: answer read-only, capture the promise, touch nothing
 else.
 
+**The flip side — don't over-apply this.** When the human's ask *targets* an
+item ("add X", "reschedule Y", "break Z down", "I'm blocked on W"), writing
+to that item is precisely what they asked for, and the touch rule applies in
+full. Finding that the task they asked you to add **already exists does not
+make the ask read-only**: enrich the existing item rather than creating a
+duplicate, and tell them it was already there. Restraint means not editing
+what you were only asked to *look at* — it never means answering "add this"
+by doing nothing.
+
 ## Commitment detection
 
 **The human should almost never have to say "create a task."** Whenever
@@ -76,6 +85,7 @@ conversation or work implies future action, capture it. Signals:
 | "Need to ask Rahul." | `followup`, `people=Rahul` |
 | "Let's fix this after launch." | `task`, `tags=post-launch`, no due date |
 | "I'll review that tomorrow." | `reminder`, `due=today+1` |
+| "I told Kushagra I'd send him the link by EOD." (a promise already made to a named person) | `followup` or `reminder` — never `task`; `people=<them>`, `due=<the promised date>` |
 | "We should look into X someday." | `idea` or `research`, `priority=p3` |
 | "Why does Y behave like this?" (unresolved) | `question` |
 | We chose A over B (and why) | `decision` — record the why in the body |
@@ -100,7 +110,10 @@ Rules of thumb:
   richer item, move anything unique into it, and mark the other
   `status=dropped` + `duplicate-of` link.
 - Only set `due` when a real date is implied; don't invent deadlines.
-  Only set `priority` when you have a basis; absence is honest.
+  Only set `priority` when you have a basis; absence is honest. When work
+  must land *before* an event, `due` is the day **before** it, not the day
+  of — "before the 07-22 audit" is `due=2026-07-21`; a due date that fires
+  the morning it's already too late is worse than none.
 - Title = the action ("Ask Rahul about pricing API timeline", not "Rahul").
   Body = pickup-ready (see the section below — this is a hard requirement,
   not a nicety). Set `source` to where it came from. Log a first line
@@ -112,11 +125,15 @@ Rules of thumb:
   Landing/merging/finishing → `status=done` + a log line with the outcome,
   and capture anything deferred (review comments, TODOs, flaky tests you
   noticed) as new items.
-- **Work you discover yourself** (a bug, missing test, tech debt worth
-  fixing) → create it with `status=inbox` so the human triages it; don't
-  assign priority to your own discoveries. This holds even when the fix
-  looks small and ready to queue — `status=inbox`, not `next`; triaging
-  into the actionable queue is the human's call, not yours.
+- **Work surfaced in passing** — whether you discovered it (a bug, missing
+  test, tech debt) *or the human mentioned it offhand while doing something
+  else* ("by the way, the retry path crashes on 429s") → create it with
+  `status=inbox` and no priority, so the human triages it. **Mentioning a
+  bug is not triaging it**, and neither is the fix looking small and ready
+  to queue — that reasoning is exactly what this rule pre-empts. Only the
+  human actually choosing it ("do this next") earns `next`; absent that, it
+  is `inbox`. Work they explicitly asked you to do or plan is different —
+  that is theirs, already triaged, and `next`/`active` is correct.
 - **Give every item a jumpable ref** when one exists:
   `refs+=DEV-1234=https://…` (issue, PR, dashboard, Slack thread). The human
   should never have to hunt for the thing an item points at.
@@ -220,6 +237,13 @@ lineage, don't flatten it:
   have at least one open child in `next`/`active` sized xs/s/m. Never leave
   just "Build the dashboard" — if you close a project's last concrete step,
   create the next one. Reviews audit this.
+- **Before closing a parent, check for open children:**
+  `taskmem find --where "links~parent:<id>" --where "status!=done,dropped"`.
+  If any are still open, either re-parent them or say so explicitly — in the
+  log line and in your reply. And never state what remains in a project
+  without running that query first: a wrong claim in a log line ("one item
+  left") outlives the conversation that made it and misleads every future
+  reader, including you.
 - An `xl` item is a container, not a task — decompose it into sized children
   (`taskmem link <child> parent <xl-id>`) before anyone "starts" it.
 - **Reread after you write.** After your last mutation on an item,
@@ -248,7 +272,11 @@ item is too thin to have a next step, *infer and state the best next action
 in your reply* — do not write it into the item to satisfy the presentation
 (listing is read-only; see "When NOT to write"). Persist an inferred
 next-step only when you're already legitimately writing to that item —
-doing its work, or a change the human asked for.
+doing its work, or a change the human asked for. **Label an inferred step as
+yours** ("suggest: sign in to the automations account first") — a table whose
+other cells are verbatim stored fields makes an unmarked guess look like
+recorded fact, and the human will trust it as one. Never let the table assert
+a next action while your prose says the item has none.
 
 Prefer **tables with jumpable links** (render `refs` as markdown links) —
 and **at most ONE table per reply**: when different groups of items belong
@@ -267,13 +295,23 @@ effort…). Drop a column only when it's empty for every row; never merge
 two of these into one cell. If an item you mention carries
 `refs`, render at least its primary ref as a markdown link in the reply —
 naming DEV-1234 or "Kushagra's thread" without linking it is a defect, not
-a style choice. Always show full titles — never bare ids as the only
+a style choice. Read the URL off the item's `refs`; **never emit a
+placeholder link** like `[Kushagra's thread](#)`. A link that goes nowhere is
+worse than plain text — it looks jumpable and isn't, and the real permalink
+was sitting in `refs` the whole time. If you genuinely have no URL, say the
+name unlinked. Always show full titles — never bare ids as the only
 reference. **Translate internal codes — never show `p0-p3` or `xs-xl` to
 the human.** Canonical wording: p0 → urgent · p1 → high · p2 → say
 nothing (it's the default) · p3 → low; xs → ~15 min · s → under an hour ·
 m → half a day · l → about a day · xl → multi-day. The generated views
 (digest, dashboard) already speak this way; match them in prose and
-briefs. When asked for everything about an item ("full context",
+briefs. This applies to **prose as much as tables** — the leak is almost
+never a cell, it's a sentence like "it's the gating step for an `xl` item"
+sitting directly above a table that correctly says "multi-day". Say
+"multi-day" there too. And `p2` means *say nothing*: not `p2`, not "medium",
+not "high-priority" — if you want to argue something is worth doing now,
+argue from its deadline, status, and effort, never from a priority label the
+item doesn't carry. When asked for everything about an item ("full context",
 "where did this come from", "what happened with X"), answer from
 `taskmem story <id>` — context prose first, then the timeline as the
 single table. When asked to "delegate this" / "give me a prompt for X",

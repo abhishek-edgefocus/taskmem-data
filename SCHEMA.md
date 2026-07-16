@@ -108,7 +108,10 @@ fresh agent (or the human, months later) understands the item without the
 originating conversation; `## Next steps` and `## Links` sections make it
 pickup-ready (structure defined in AGENTS.md "Writing pickup-ready items");
 and `## Log` is the **last** section — an append-only trail written via
-`taskmem log` (`- <timestamp> [<agent>] message`).
+`taskmem log` (`- <timestamp> [<agent>] message`). Append-only is enforced,
+not merely conventional: `set --body` swaps the context above it and carries
+the stored log through untouched, and a `## Log` passed inside `--body` is
+ignored with a note on stderr. History can only grow, via `taskmem log`.
 
 ## CLI contract
 
@@ -121,7 +124,7 @@ so mutations are attributed to you — in `## Log` lines and as the git author.
 |---------|---------|
 | `taskmem new <type> <title> [k=v …] [--body -\|text]` | create; prints the item with `id` |
 | `taskmem get <id…> [--raw]` | read (JSON or raw markdown) |
-| `taskmem set <id> k=v k+=v k-=v [--body …]` | update fields (`k=` clears; `+=`/`-=` edit lists) |
+| `taskmem set <id> k=v k+=v k-=v [--body …]` | update fields (`k=` clears; `+=`/`-=` edit lists); `--body` replaces the context but **never** the `## Log` section — that is preserved automatically |
 | `taskmem log <id> <message>` | append an attributed line to `## Log` |
 | `taskmem link/unlink <id> <rel> <id>` | manage directed edges (validates targets) |
 | `taskmem links <id>` | outbound + inbound edges |

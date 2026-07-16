@@ -393,13 +393,32 @@ def cmd_get(args):
             emit(dict(fm, body=body, path=str(p)))
 
 
+def replace_body(old, new, id_):
+    """Swap an item's context while preserving its append-only ## Log section.
+
+    ## Log is the one part of a body that must never be rewritten (SCHEMA.md), but
+    --body replaces the whole body — so an agent enriching a thin item silently
+    destroyed its history. The stored log always wins; a ## Log passed in via
+    --body is dropped with a note. Items without a log behave exactly as before.
+    """
+    kept = old.split("## Log", 1)[1] if "## Log" in old else ""
+    if "## Log" in new:
+        new = new.split("## Log", 1)[0]
+        print("note: ignored the ## Log section in --body; the stored log is preserved "
+              "(append to it with `%s log %s ...`)" % (PROG, id_), file=sys.stderr)
+    new = new.rstrip("\n")
+    if not kept:
+        return new
+    return (new + "\n\n## Log" + kept) if new else ("## Log" + kept)
+
+
 def cmd_set(args):
     if not args.assign and args.body is None:
         die("nothing to do: pass field=value assignments and/or --body")
     fm, body, _ = load(args.id)
     apply_assign(fm, args.assign)
     if args.body is not None:
-        body = read_body(args.body)
+        body = replace_body(body, read_body(args.body), args.id)
     fm["updated"] = now_ts()
     p = save(args.id, fm, body)
     commit("set %s: %s" % (args.id, " ".join(args.assign) or "body"), agent_name(args))
