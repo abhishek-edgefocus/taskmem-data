@@ -5,7 +5,7 @@ title: Raise sshd MaxSessions on dpx to prevent VSCode Remote-SSH channel satura
 status: dropped
 tags: [dpx, infra]
 created: 2026-07-14T16:09:11Z
-updated: 2026-07-15T13:46:04Z
+updated: 2026-07-16T17:52:18Z
 source: claude-code
 ---
 
@@ -18,3 +18,4 @@ source: claude-code
 - 2026-07-15T12:31Z [claude-code] Further findings 2026-07-15: mssfix directive in AWS VPN profiles is stripped by the AWS VPN Client (root-owned sanitized temp config). Mumbai vs Ohio endpoint makes no difference — packet drops are on Abhishek's local ISP leg (fragmented/oversize UDP), so bulk TCP through the tunnel crawls (~27KB/s incompressible) regardless of endpoint. Compressible data OK (~1MB/s effective; 3.6MB Claude transcript loads in ~28s via compressed ssh). No user-level fix exists without privileges. Escalation options: (a) Mac admin grants/runs sudo ifconfig utunN mtu 1400 after VPN connect; (b) dpx admin adds iptables -t mangle -A PREROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1360 (fixes all VPN users). VSCode extension activates fine now; large session loads are just slow (~30s).
 - 2026-07-15T12:40Z [claude-code] Deeper finding: throughput is direction-asymmetric — Mac→dpx 365KB/s, dpx→Mac 28KB/s per flow (parallel flows each get ~25KB/s, so it scales per-connection). MTU fix applied but not the limiter. Loss/policing is on the ISP downstream leg for sustained UDP, evening-correlated (onset ~18:38 IST both days; mornings fine). dpx TCP config normal (cubic, wscale on). Pending test: phone-hotspot A/B to convict home ISP. Durable fix candidates: TCP-transport Client VPN endpoint (IT), different uplink, ISP complaint. Sessions DO load now via compressed tunnel (~30s for 3.6MB); terminal claude unaffected.
 - 2026-07-15T13:46Z [claude-code] archived during archive-feature verification
+- 2026-07-16T17:52Z [claude-code] 2026-07-16 ~23:20 IST: recurred exactly as predicted after user's VSCode 1.129.0 update — new server downloaded fine server-side, exthost starts, 0 activations, tunnel at 25KB/s (evening throttle window). Confirmed not install-order related (user speculation): openLast-not-found is just the unactivated-extension symptom. Guidance: dpx extension mornings only until IT provides TCP-transport Client VPN endpoint; evenings → Coder workspace (TCP tunnel, set up 2026-07-15 with extension+CLI+creds) or dpx terminal claude --resume.
