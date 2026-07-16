@@ -5,8 +5,6 @@ title: Reply to Abhijeet: confirm OPs currently use API predictions only (EDGEX 
 status: done
 size: xs
 due: 2026-07-17
-waiting_on: Abhishek
-nudge: 2026-07-17
 people: [Abhijeet]
 tags: [northpond, needs-reply]
 links: [parent:wm-j523sq]
