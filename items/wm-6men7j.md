@@ -26,3 +26,4 @@ Note: adding the remote WITHOUT the force-push leaves autosync failing on unrela
 
 ## Log
 - 2026-07-16T10:35Z [device2] sync test from a fresh clone (device 2)
+- 2026-07-16T10:35Z [claude-code] done, with a better design than planned: instead of pushing task data over the shared tool repo, created private github.com/abhishek-edgefocus/taskmem-data and wired it as origin via the new install.sh --remote flag. Verified: seed push, round-trip sync, fresh clone (33 items, no config.env leak), two-way sync from a second clone. The 15-min autosync cron now converges devices automatically; new machine = clone taskmem-data + install.sh.
