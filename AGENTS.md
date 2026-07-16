@@ -40,6 +40,31 @@ Follow this in every substantive session:
 If your session produced no commitments and touched no tracked work, updating
 nothing is correct — don't manufacture items.
 
+## When NOT to write (read-only asks)
+
+Many asks are questions *about* the memory, not work *on* it: "what's on my
+plate today," "where did DEV-1395 come from," "what's left of X," "give me a
+delegation prompt for this," "walk me through it," "how is `due` stored."
+**Answering these is read-only — the correct number of item mutations is
+ZERO.** Opening an item to read, list, quote, present, or delegate it is
+**not** a touch and licenses no write. Do not reschedule a slipped date, add
+a ref, or rewrite a thin body just because you had the item open to answer.
+When you notice a stale date or a bare body while answering, surface it in
+your reply as an observation and an offer — "the panels inventory was
+scheduled for 07-14 and has slipped two days; want me to move it or drop its
+priority?" — and let the human decide. Write only when the human asked you to
+change something, or when you actually did the item's work. When unsure
+whether an ask is read-only, default to not writing and offer. (A session-end
+`taskmem sync` with no item changes is fine — that is not a mutation.)
+
+This is about reading the **memory**. Reading inbound **messages** is the
+opposite — it is intake, and every unanswered ask you read still becomes an
+item on the spot (see "Reading messages counts as intake"). And a read-only
+*question* that also carries a genuine new commitment ("what's on my plate?
+— oh, and I promised Rahul the schema doc by Friday") still gets that one
+commitment captured: answer read-only, capture the promise, touch nothing
+else.
+
 ## Commitment detection
 
 **The human should almost never have to say "create a task."** Whenever
@@ -54,7 +79,7 @@ conversation or work implies future action, capture it. Signals:
 | "We should look into X someday." | `idea` or `research`, `priority=p3` |
 | "Why does Y behave like this?" (unresolved) | `question` |
 | We chose A over B (and why) | `decision` — record the why in the body |
-| Someone asks the human something — @-mention, DM, thread, email — and they haven't replied | `followup`, tag `needs-reply`, `due=today+1` (or the stated deadline), ref = message permalink; if the ask also implies real work, a second linked work item |
+| Someone asks the human something — @-mention, DM, thread, email — and they haven't replied | **always `type=followup`** (never `task`), tag `needs-reply`, `due=today+1` (or the stated deadline), ref = message permalink; if the ask also implies real work, a second linked work item |
 | Test/bug discovered but out of scope right now | `bug`, linked to the current task |
 | PR merged / implementation finished | `set status=done` on the matching item + log |
 
@@ -89,7 +114,9 @@ Rules of thumb:
   noticed) as new items.
 - **Work you discover yourself** (a bug, missing test, tech debt worth
   fixing) → create it with `status=inbox` so the human triages it; don't
-  assign priority to your own discoveries.
+  assign priority to your own discoveries. This holds even when the fix
+  looks small and ready to queue — `status=inbox`, not `next`; triaging
+  into the actionable queue is the human's call, not yours.
 - **Give every item a jumpable ref** when one exists:
   `refs+=DEV-1234=https://…` (issue, PR, dashboard, Slack thread). The human
   should never have to hunt for the thing an item points at.
@@ -118,11 +145,14 @@ Skip a section only when it's genuinely empty; Context plus at least the
 source link is the floor. Never invent links or steps — an honest "unknown,
 ask X" beats a plausible guess. **Any mutation counts as a touch** — a
 `set`, a `log` line, a link, a reschedule. If the item's body is thin when
-you touch it, upgrading it to this standard is part of the same touch and
-is always in scope, never out-of-scope collateral: a field change on a bare
-item leaves it exactly as unpickable as before. The one exception is
-another agent's item you are only cross-referencing — there, a log line
-suffices.
+you touch it *because you are doing its work, decomposing it, logging real
+progress, or making a change the human asked for*, upgrading it to this
+standard is part of the same touch and is always in scope, never
+out-of-scope collateral: a field change on a bare item leaves it exactly as
+unpickable as before. But opening an item only to read, list, quote,
+present, or delegate it is **not** such a touch and licenses no write — see
+"When NOT to write" above. The one exception on the write side is another
+agent's item you are only cross-referencing — there, a log line suffices.
 
 ## Where an item lives
 
@@ -172,6 +202,9 @@ lineage, don't flatten it:
 
 - Status changes always get a `taskmem log` line explaining them — especially
   `done` (what was the outcome?), `blocked` (on what?), `dropped` (why?).
+  Write log messages as plain text: the CLI stamps `[<agent>]` on every line
+  automatically, so never hand-add your own `[claude-code]` tag into the
+  message.
 - **Blocking is structured.** Marking `blocked`/`waiting` means setting
   `waiting_on=<person/thing>` and `nudge=<date to ping again>` (default
   `today+2`), plus a log line saying what exactly you're waiting for. After
@@ -208,10 +241,14 @@ lineage, don't flatten it:
 
 **Give the action, not just the name.** Whenever you list items for the
 human (plate, plans, briefs), pair every title with its concrete next
-action — the first step from its `## Next steps` (write one first if the
-item is thin; that's the touch rule): "Reply in Kushagra's thread with the
-per-file verdicts", not just "Check missing statement files". The title
-identifies the work; the action is what they can do right now.
+action — the first step from its `## Next steps`: "Reply in Kushagra's thread
+with the per-file verdicts", not just "Check missing statement files". The
+title identifies the work; the action is what they can do right now. If an
+item is too thin to have a next step, *infer and state the best next action
+in your reply* — do not write it into the item to satisfy the presentation
+(listing is read-only; see "When NOT to write"). Persist an inferred
+next-step only when you're already legitimately writing to that item —
+doing its work, or a change the human asked for.
 
 Prefer **tables with jumpable links** (render `refs` as markdown links) —
 and **at most ONE table per reply**: when different groups of items belong
@@ -247,9 +284,16 @@ none of the prompt's own markdown renders — bullets, `#` headers, and
 backticks must reach the human as literal characters, byte-identical to
 the CLI output, or their copy comes out mangled. Never print the prompt
 as loose prose. Adjust it only if the human adds constraints; if a
-delegated agent later reports back, record the outcome on the item. Speak plain language, never field syntax:
+delegated agent later reports back, record the outcome on the item.
+Generating a delegation prompt is a read-only export — it is never a reason
+to enrich, re-ref, or reschedule the underlying item; leave it untouched
+unless the human asks. Speak plain language, never field syntax:
 say "now waiting on Kushagra for the schema doc — I'll flag it Friday", not
-`waiting_on=Kushagra nudge=2026-07-17`. Disclose every mutation you made,
+`waiting_on=Kushagra nudge=2026-07-17`. Any weekday or
+"yesterday/today/tomorrow" you put in a reply or log line must be derived
+from the digest's actual date, never guessed; describe a slip from the
+item's *original* scheduled date, not just its last bump ("scheduled 07-14,
+slipped two days", not "missed it yesterday"). Disclose every mutation you made,
 one line each (including links you added); beyond that, stop — lead with
 what needs a decision or is slipping, and don't recite item bodies or the
 whole working set unasked.
