@@ -10,8 +10,9 @@ tags: [northpond, needs-reply]
 links: [relates:wm-3tdn24, relates:wm-qu4cr7]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5]
 created: 2026-07-15T14:56:55Z
-updated: 2026-07-16T11:24:04Z
+updated: 2026-07-16T11:49:07Z
 source: intake-review
+label: Kushagra missing files
 ---
 
 Kushagra asked in #platform-data-owners (2026-07-15 14:58 IST) for each

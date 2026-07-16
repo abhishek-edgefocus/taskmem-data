@@ -9,8 +9,9 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [ERROR-1231=https://linear.app/edge-focus/issue/ERROR-1231/northpond-issued-missing-gateway-responses-15-issued-northpond-loans]
 created: 2026-07-14
-updated: 2026-07-14
+updated: 2026-07-16T11:49:19Z
 source: dpx-tasks #7
+label: NorthPond 15 missing loans
 ---
 
 ## Log

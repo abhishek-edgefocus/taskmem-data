@@ -633,6 +633,25 @@ def cmd_story(args):
         print("%-25s %-14s %s" % (e["time"], e["by"], e["event"]))
 
 
+LABEL_STOP = {"a", "an", "the", "to", "for", "of", "in", "on", "and", "with", "from",
+              "into", "at", "by", "its", "my", "their", "this", "that", "each", "as",
+              "is", "are", "be", "using", "via", "over", "per", "so"}
+
+
+def short_label(title):
+    """Fallback chat label when an item has no `label`: first clause, <=5 words.
+
+    Deliberately dumb — picking the keywords that matter (person, project, core
+    issue) is judgment, so agents write `label` (AGENTS.md). This just keeps a
+    label-less item from naming a chat after a whole sentence.
+    """
+    t = re.split(r"\s+[—–]\s+|\s+-\s+|[:;(]", title or "", 1)[0]
+    w = t.split()[:5]
+    while w and w[-1].lower().strip(",.") in LABEL_STOP:
+        w.pop()
+    return " ".join(w).strip(" ,.;:—-") or (title or "")[:40]
+
+
 def cmd_delegate(args):
     """Render a copy-paste prompt that hands this item to any AI agent:
     inline context (self-contained) + pointers to the underlying item."""
@@ -657,17 +676,19 @@ def cmd_delegate(args):
         ("scheduled: %s" % fm["scheduled"]) if fm.get("scheduled") else "",
         ("people: %s" % ", ".join(people)) if isinstance(people, list) and people else "",
     ) if x]
-    # Lead with the item title. Chat clients auto-name a conversation from the
-    # opening of the pasted prompt, so identical boilerplate on line 1 made every
-    # delegated chat name look the same — indistinguishable when two are open.
-    # Title first => the chat names itself after the actual task.
-    out = ["# %s — %s" % (fm["id"], fm.get("title", ""))]
+    # Line 1 is a few keywords, nothing else. Chat clients auto-name a
+    # conversation from the opening of the pasted prompt: boilerplate made every
+    # delegated chat identical, and a full title/id makes a tab you can't skim.
+    # Keywords first => the chat names itself something you can glance at.
+    out = ["# %s" % (fm.get("label") or short_label(fm.get("title", ""))), ""]
+    out.append("**%s**" % fm.get("title", ""))
     if facts:
         out.append("(%s)" % " · ".join(facts))
     out += ["", "You are being delegated this work item from %s's shared task "
                 "memory. If your client lets you name this conversation, name it "
-                "after the title above — %s often has several delegated chats "
-                "open at once and needs to tell them apart." % (user, user), ""]
+                "after the heading above — %s often has several delegated chats "
+                "open at once and needs to tell them apart at a glance."
+            % (user, user), ""]
     if context:
         out += [context, ""]
     refs = fm.get("refs") or []

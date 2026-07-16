@@ -10,8 +10,9 @@ tags: [northpond, needs-reply]
 links: [parent:wm-j523sq]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-15T21:14:10Z
-updated: 2026-07-16T11:34:49Z
+updated: 2026-07-16T11:49:07Z
 source: claude-code
+label: Abhijeet EDGEX reply
 ---
 
 Abhijeet in #north-pond-tech (2026-07-15 23:54 IST), re the upcoming EDGEX deal: EF scoring and stored OPs must come from the final northpond model, disregarding API predictions. He asked Abhishek directly: (a) is it correct that the current setup only uses API predictions for the OPs? (b) once the northpond model is ready, set it up for the EF score calculation. Thread since: Nakula — pipeline will likely need dedup preferring source='s3' over source='api'; Trishit — the model is ready to provide EF grades, but ANL computation is owned by Eric's team, so grades come via them. Abhishek has not replied yet.

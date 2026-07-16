@@ -6,8 +6,9 @@ status: active
 tags: [northpond]
 refs: [Grafana=https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring]
 created: 2026-07-15T14:44Z
-updated: 2026-07-15T14:44Z
+updated: 2026-07-16T11:49:07Z
 source: dpx-tasks import
+label: NorthPond ingestion project
 ---
 
 Migrate NorthPond off datastores onto Snowflake (dashboards + silver tables)

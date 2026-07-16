@@ -9,8 +9,9 @@ tags: [ai-billing]
 links: [parent:wm-r45vp3]
 refs: [DEV-970=https://linear.app/edge-focus/issue/DEV-970/add-tracking-of-ai-billing-to-slack]
 created: 2026-07-14
-updated: 2026-07-14
+updated: 2026-07-16T11:49:07Z
 source: dpx-tasks #10
+label: AI billing to Slack
 ---
 
 ## Log

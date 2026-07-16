@@ -44,6 +44,7 @@ contain commas. Files remain valid YAML for other tooling (Obsidian, pandoc…).
 | id       | taskmem        | Immutable. `wm-` + 6 chars. Filename = `<id>.md`. |
 | type     | agents    | Open vocabulary; see below. |
 | title    | agents    | Short, specific, imperative where possible. |
+| label    | agents    | 3–5 keywords for glanceable naming — person, project, and/or core issue ("Abhijeet EDGEX reply", "NorthPond panels inventory"). Used as the heading of `delegate` prompts, so a delegated chat names itself something skimmable. No ids, no sentences. Optional; `delegate` falls back to truncating the title. |
 | status   | agents    | Open vocabulary; see below. Default `open`. |
 | priority | agents    | `p0` (drop everything) … `p3` (someday). Optional. |
 | size     | agents    | Effort: `xs` <15m · `s` <1h · `m` 2–4h · `l` ~1d · `xl` multi-day. An `xl` must be decomposed into children. Optional. |

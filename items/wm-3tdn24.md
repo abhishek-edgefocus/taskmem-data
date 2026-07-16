@@ -9,8 +9,9 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [ERROR-1524=https://linear.app/edge-focus/issue/ERROR-1524/missing-statement-filenorthpondpositionsnorthpond-loan-positions-4]
 created: 2026-07-14
-updated: 2026-07-16T11:23:58Z
+updated: 2026-07-16T11:49:19Z
 source: dpx-tasks #8
+label: NorthPond missing-window alerts
 ---
 
 - **2026-07-15** (morning-brief-agent): Linear ERROR-1524 moved to Done 2026-07-14; closing local twin during morning reconciliation.

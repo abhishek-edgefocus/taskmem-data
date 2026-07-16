@@ -6,8 +6,9 @@ status: done
 tags: [taskmem]
 links: [follows:wm-c4vhst]
 created: 2026-07-15T17:38:35Z
-updated: 2026-07-16T10:35:40Z
+updated: 2026-07-16T11:49:08Z
 source: claude-code
+label: Cross-device task sync
 ---
 
 The private repo github.com/abhishek-edgefocus/taskmem currently holds ONLY infrastructure (task-free 'infra' snapshot as main). Abhishek explicitly excluded task content for now. When he decides to sync tasks:

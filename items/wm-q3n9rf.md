@@ -6,9 +6,10 @@ status: next
 tags: [oncall, northpond, experian]
 links: [parent:wm-3y3ckv]
 created: 2026-07-16T07:05:03Z
-updated: 2026-07-16T07:05:14Z
+updated: 2026-07-16T11:49:07Z
 source: claude-code
 estimate: <1h
+label: Experian OAuth timeout
 ---
 
 Debugged 2026-07-16 (investigation only, no code changes). Root cause of today's two #errors alerts.

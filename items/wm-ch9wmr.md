@@ -9,8 +9,9 @@ tags: [northpond]
 links: [parent:wm-j523sq]
 refs: [DEV-1279=https://linear.app/edge-focus/issue/DEV-1279/at-origination-predicted-cashflows-not-generated-for-loans-originated]
 created: 2026-07-14
-updated: 2026-07-14
+updated: 2026-07-16T11:49:19Z
 source: dpx-tasks #4
+label: cfframe capture gap
 ---
 
 ## Log

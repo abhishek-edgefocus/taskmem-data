@@ -126,6 +126,13 @@ Rules of thumb:
   Body = pickup-ready (see the section below — this is a hard requirement,
   not a nicety). Set `source` to where it came from. Log a first line
   saying what you inferred it from.
+- **Also set `label`: 3–5 keywords** — the person, project, and/or core issue,
+  the way you'd name a browser tab: "Abhijeet EDGEX reply", "Ramp account
+  setup", "NorthPond panels inventory". No ids, no sentences, not just the
+  truncated title — pick the words that make it recognizable at a glance among
+  a dozen others. It becomes the heading of `taskmem delegate` prompts, so a
+  delegated chat names itself something the human can skim. Only you can do
+  this well; the CLI's fallback just chops the title.
 - **Micro-tasks are first-class.** "Ping X", "address PR comments",
   "schedule the call" → capture with `size=xs` (and `due=today` when it's a
   today-thing). Small things forgotten are the whole reason this exists.

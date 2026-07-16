@@ -4,8 +4,9 @@ type: task
 title: Decide + implement v1/v2 (TU/Experian) breakdown for NorthPond gold cashflow metrics
 status: open
 created: 2026-07-16T11:22:33Z
-updated: 2026-07-16T11:22:33Z
+updated: 2026-07-16T11:49:19Z
 source: claude
+label: TU/Experian breakdown decision
 ---
 
 Follow-on from DEV-1395 / PR #5884 (which shipped the v1/v2 filter for the

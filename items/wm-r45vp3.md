@@ -5,8 +5,9 @@ title: AI billing to Slack (DEV-970)
 status: active
 tags: [ai-billing]
 created: 2026-07-15T14:44Z
-updated: 2026-07-15T14:44Z
+updated: 2026-07-16T11:49:07Z
 source: dpx-tasks import
+label: AI billing project
 ---
 
 Visibility on AI tool spend alongside AWS in Slack

@@ -6,8 +6,9 @@ status: someday
 tags: [taskmem]
 links: [relates:wm-c4vhst]
 created: 2026-07-15T15:37:16Z
-updated: 2026-07-15T15:37:16Z
+updated: 2026-07-16T11:49:08Z
 source: claude-code
+label: Brain monorepo restructure
 ---
 
 Deferred on 2026-07-15 — attempted, rolled back cleanly at Abhishek's request; taskmem stays independent at ~/taskmem for now. The dry run proved the plan works, so this is cheap to redo.

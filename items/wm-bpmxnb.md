@@ -9,8 +9,9 @@ tags: [openroad]
 links: [parent:wm-su6q4d]
 refs: [DEV-1396=https://linear.app/edge-focus/issue/DEV-1396/ingest-openroad-model-requestsmodel-responses-statement-files-for-real]
 created: 2026-07-14
-updated: 2026-07-14
+updated: 2026-07-16T11:49:19Z
 source: dpx-tasks #6
+label: OpenRoad model_requests ingest
 ---
 
 ## Log

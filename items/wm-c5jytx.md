@@ -9,8 +9,9 @@ tags: [northpond]
 links: [parent:wm-h3dvpa]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-15T21:14:11Z
-updated: 2026-07-16T11:35:05Z
+updated: 2026-07-16T11:49:07Z
 source: claude-code
+label: EDGEX EF scoring setup
 ---
 
 From Abhijeet's EDGEX ask (thread below): once the final northpond model is ready, EF score calculation must use it instead of API predictions, storing the secondary-model predictions with prediction_type='at_orig' in silver.predicted_cashflows — similar to the forward-flow prediction pipeline used for other programs. Thread facts: Trishit says the model is ready for EF grades but ANL computation is owned by Eric's team (grades delivered via them); Nakula flags that the pipeline will need dedup preferring source='s3' over source='api'. Design can start now; execution depends on the grades-delivery path from Eric's team.
