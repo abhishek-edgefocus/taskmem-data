@@ -10,7 +10,7 @@ tags: [northpond]
 links: [relates:wm-3tdn24, relates:wm-qu4cr7]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5]
 created: 2026-07-15T14:56:55Z
-updated: 2026-07-16T18:11:24Z
+updated: 2026-07-16T19:32:22Z
 source: intake-review
 label: Kushagra missing files
 ---
@@ -73,3 +73,4 @@ Sanjali/Prosper pattern (ignorable → acknowledgment sheet), but verify.
 - 2026-07-16T13:06Z [claude-code] Side-finding captured as wm-k3wt84 (inbox): NorthPond purchase -> first-appearance lag of 2-8 days in early portfolio, independent of missing files; may affect Fund Monitoring migration (wm-rgwdyu) if any panel reports point-in-time holdings.
 - 2026-07-16T18:09Z [claude-code] DONE (2026-07-16, per Abhishek): both remaining actions completed — 3 rows added to the Acknowledgements tab (northpond/positions, 08-09, 08-28, 08-29, single-date so ACK_START_DATE==ACK_END_DATE) and confirmed in Kushagra's thread ahead of the 07-17 dev call. Verdict as analysed: ignorable (full-state daily snapshot self-heals; snapshot stale for 3 old 2024 days, ~10k exposure, all current).
 - 2026-07-16T18:11Z [claude-code] Cross-platform 2024-08-29 note (innovate transactions missing the same date as northpond, logged 11:24Z as worth raising at the Friday dev call): DECLINED by Abhishek 2026-07-16 — deliberately not tracked and not being raised. Do not re-surface this as a missed commitment on future intake passes; it was considered and dropped, not overlooked.
+- 2026-07-16T19:32Z [claude-code] Found prior analysis from a dpx session (b865d863, 2026-07-16): all 3 NorthPond missing positions dates identified and PROD-verified — 2024-08-09, 2024-08-28, 2024-08-29 (not just 2 as originally noted; third was truncated in the dashboard screenshot). Verdict: all ignorable — silver.positions has full coverage via autofill_gaps() forward-fill, portfolio was only 3-4 loans at the time. Bonus: acking these also resolves ERROR-1524 (same 3 dates); Innovate transactions also missing 2024-08-29, suggesting a platform-wide delivery outage that day, not NorthPond-specific. As of that session (last activity 2026-07-16 17:32 IST) the two remaining manual actions -- 3 rows in the acknowledgement sheet, reply in Kushagra's thread -- were still marked outstanding, no session evidence either was done since. I have no tool to read/write the Google Sheet (no MCP connector, WebFetch 401s on it, and the internal efp google_sheets.py service-account credential isn't provisioned on dpx -- gitignored, environment-specific). Cannot independently verify sheet state; asked Abhishek to confirm.
