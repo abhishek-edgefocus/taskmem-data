@@ -4,6 +4,7 @@ type: task
 title: Experian credit pull: Sentry EFP-ERRORS-AW masks the real error (non-200 body discarded)
 status: next
 tags: [oncall, northpond, experian]
+links: [parent:wm-3y3ckv]
 created: 2026-07-16T06:54:43Z
 updated: 2026-07-16T06:54:49Z
 source: claude-code
