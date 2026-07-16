@@ -12,7 +12,7 @@ tags: [northpond, needs-reply]
 links: [parent:wm-j523sq]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-15T21:14:10Z
-updated: 2026-07-16T11:33:58Z
+updated: 2026-07-16T11:34:49Z
 source: claude-code
 ---
 
@@ -35,3 +35,4 @@ Abhijeet in #north-pond-tech (2026-07-15 23:54 IST), re the upcoming EDGEX deal:
 - 2026-07-16T11:29Z [claude-code] Why api and s3 rows coexist rather than dedup: silver.predicted_cashflows view dedups at_orig by MAX(GENERATION_TS) per (EFP_ID, AS_OF_DATE, PREDICTION_TYPE, S3_BASE) — partition INCLUDES S3_BASE. Verified in PROD that api rows have S3_BASE fully populated (1,967,774/1,967,774 non-null), and it is a different namespace entirely: northpond api S3_BASE = 's3://efp-raw/statements/northpond/issuance/2024/10/issuance_20241009.csv' vs s3 predictions at 's3://efp-raw/predictions/{platform}/{channel}/{prediction_type}/{date}/'. Different S3_BASE => different partition => BOTH survive the view => the live positions ANL (view path, earliest_generation_only=False) blends them. CONFIRMED: populate_predicted_cashflows.py never references SOURCE at all.
 - 2026-07-16T11:29Z [claude-code] Draft's other claims verified OK: s3 path convention 's3://efp-raw/predictions/northpond/...' matches ingest_prediction_files.py S3_PREFIX + layout {platform}/{channel}/{prediction_type}/{date}/{ns_timestamp}.parquet; S3Predictions is platform-generic (source='s3', driven by bronze.prediction_files) so no new northpond transform needed — but note prediction_type comes from the FILE, so the producer must emit at_orig (S3Predictions does not 'mark' it); '*_secondary_predictions is deprecated' is consistent — those live only in legacy lib/efp/ + bin/, while the modern framework edgefocus/modeling/predictions/ has base/pipeline/run + per-platform dirs (happymoney, marlette, prosper, sofi, upgrade) and no northpond dir yet.
 - 2026-07-16T11:33Z [claude-code] DONE — Abhishek posted the one-liner in Abhijeet's thread 2026-07-16 17:02 IST (ts 1784201552.842729), confirming NorthPond OPs are api-only with no model/S3 path wired. Question (a) answered; the implementation ask (b) continues under wm-c5jytx.
+- 2026-07-16T11:34Z [claude-code] OUTCOME: Abhishek replied in-thread 2026-07-16 17:02 IST (ts 1784201552.842729) confirming NorthPond OPs come only from API/gateway predictions (source='api'), no model/S3 path wired up. Independently verified against PROD before the reply landed — matches exactly. Reply owed is discharged; closing.
