@@ -2,14 +2,14 @@
 id: wm-c5jytx
 type: task
 title: Set up northpond model for EDGEX EF scoring — at_orig predictions into silver.predicted_cashflows
-status: inbox
+status: next
 size: l
-people: [Abhijeet, Trishit, Nakula]
+people: [Abhijeet, Trishit, Nakula, Eric]
 tags: [northpond]
 links: [parent:wm-h3dvpa]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-15T21:14:11Z
-updated: 2026-07-16T11:35:01Z
+updated: 2026-07-16T11:35:05Z
 source: claude-code
 ---
 
