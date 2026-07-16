@@ -6,7 +6,8 @@ status: active
 priority: p1
 size: s
 tags: [northpond]
+links: [parent:wm-j523sq]
 created: 2026-07-16T12:53:08Z
-updated: 2026-07-16T12:53:08Z
+updated: 2026-07-16T12:53:24Z
 source: claude-code
 ---
