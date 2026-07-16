@@ -32,3 +32,6 @@ Why it matters: during the lag window we own the loan but silver.positions does 
 
 ## Provenance
 Query: silver.transfers (EVENT_TYPE='purchase') joined to MIN(AS_OF_DATE) from silver.positions, PLATFORM='northpond'. Verified read-only against PROD 2026-07-16.
+
+## Log
+- 2026-07-16T19:13Z [claude-code] DONE 2026-07-17 per Abhishek (closed straight from inbox, no triage). Closing on the early-portfolio-artifact reading: the 2-8 day purchase->first-appearance lags are all from the 4 earliest loans (Jul-Aug 2024), confirmed platform-side (intervening tapes arrived and lacked the loan), and loans from 2025-10 onward show a consistent 1-day lag = normal T+1 reporting. NOT VERIFIED: step 1 of the original next-steps (widen the lag query past 2024 across the current book) was offered and declined — so 'the multi-day lag never recurs after the early portfolio' remains an inference from the 2025-10+ spot check, not a proven fact. If a Fund Monitoring panel (wm-rgwdyu / DEV-1395) is later found to report point-in-time holdings or exposure, revisit: during any lag window we own the loan but silver.positions does not show it, understating portfolio. silver.transfers holds the true purchase date if a backfill is ever wanted.
