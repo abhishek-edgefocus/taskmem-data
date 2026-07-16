@@ -10,7 +10,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-3tdn24, relates:wm-qu4cr7]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5]
 created: 2026-07-15T14:56:55Z
-updated: 2026-07-16T12:43:55Z
+updated: 2026-07-16T13:06:06Z
 source: intake-review
 label: Kushagra missing files
 ---
@@ -68,3 +68,4 @@ Sanjali/Prosper pattern (ignorable → acknowledgment sheet), but verify.
 - 2026-07-16T12:43Z [claude-code] CORRECTION + hardened evidence (earlier 'immaterial' claim was asserted before it was fully checked; now actually verified). Autofill confirmed with real values: gap rows carry AUTOFILL_REASON='dropout', AUTOFILL_DAYS=1 for 08-09 (from 08-08) and AUTOFILL_DAYS=1,2 for 08-28/08-29 (both from 08-27). All 4 loans STATUS=current, DPD=0.
 - 2026-07-16T12:43Z [claude-code] The REAL reason the 3 files are ignorable: the loan tape is a FULL-STATE DAILY SNAPSHOT (every outstanding loan every day), not an event/delta feed. So a missing day self-heals — the next tape carries complete true state — and no data is permanently lost. Verified economics are intact independently: a payment on OLV12562548 (37.98 prin + 12.02 int, PLATFORM_TRANSACTION_DATE=2024-08-08) and one on OLV12562550 (34.80 prin, PLATFORM_TRANSACTION_DATE=2024-08-09 — the missing day itself) BOTH landed in silver.transactions via the 2024-08-10 file. ITD/cashflows therefore correct.
 - 2026-07-16T12:43Z [claude-code] Residual cost, stated honestly: the daily positions SNAPSHOT is stale on those 3 dates — forward-fill carries prior-day PRINCIPAL and ACCRUED_INTEREST, so e.g. 08-09 shows OLV12562548 principal 1050.00 when the 08-08 payment had already reduced it to 1012.02, and accrued interest is understated on every autofilled row. Impact bounded: 3-4 loans, ~10k total exposure, all current, Aug 2024, northpond funds are NOT in FUNDS_NEEDING_VALUATION (no manager marks). Ignorable stands, but it is 'snapshot stale for 3 old days', NOT 'no effect whatsoever'.
+- 2026-07-16T13:06Z [claude-code] ANSWERED Abhishek's challenge: did we BUY loans on the gap dates? NO. This mattered because autofill only forward-fills loans with a PRIOR row — a loan purchased ON a missing date would be silently ABSENT (not stale), which autofill cannot mask. Verified via silver.transfers: the only Aug-2024 northpond purchases were 2024-08-01 (OLV12562549) and 2024-08-05 (OLV12562550). Nothing on 08-09, 08-28 or 08-29. So the missing tapes hide no purchase.
