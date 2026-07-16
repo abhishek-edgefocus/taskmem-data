@@ -13,6 +13,7 @@
 | id | from | priority | task | next action | due | links |
 |---|---|---|---|---|---|---|
 | wm-3y3ckv | oncall |  | On-call / Errors backlog | — |  |  |
+| wm-q3n9rf | On-call / Errors backlog |  | Experian OAuth connect: 0.5s connect timeout + IPv6 AAAA fallback mislabels blips as 'Network is unreachable' | — |  |  |
 | wm-5qpdn3 | On-call / Errors backlog |  | Experian credit pull: Sentry EFP-ERRORS-AW masks the real error (non-200 body discarded) | — |  |  |
 | wm-j9jxpc | northpond |  | Check missing statement files for NorthPond and confirm in Kushagra's thread (before Friday dev call) | Get the third missing date from the "Missing Platform Data" dashboard | 2026-07-17 | [slack](https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5) |
 | wm-j523sq | northpond |  | NorthPond Data Ingestion | — |  | [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring) |
@@ -55,6 +56,7 @@
 *Assigned ERROR-* and data-consistency issues*
 - wm-5qpdn3 [next] Experian credit pull: Sentry EFP-ERRORS-AW masks the real error (non-200 body discarded)
 - wm-gxykru [active/half-day] Root-cause int_rate_at_purchase=0 for northpond loans (DEV-503, in progress)
+- wm-q3n9rf [next] Experian OAuth connect: 0.5s connect timeout + IPv6 AAAA fallback mislabels blips as 'Network is unreachable'
 - wm-qu4cr7 [open/half-day] Investigate 15 northpond loans missing from gateway model_responses (ERROR-1231)
 
 ### OpenRoad Data Ingestion (`wm-su6q4d`)
@@ -75,6 +77,7 @@
 
 | id | from | status | priority | effort | task | due | links |
 |---|---|---|---|---|---|---|---|
+| wm-z7x857 | Run rounds 2-3 of the taskmem agent-beha… | done |  |  | Validate the round-3 taskmem fixes with a round-4 eval |  |  |
 | wm-day88x | taskmem | done |  |  | Run rounds 2-3 of the taskmem agent-behavior eval and ship the fixes |  |  |
 | wm-6k56mk | taskmem | done | high |  | Disable the dpx ~/tasks crontab (unattended claude runs + automated DMs, against policy) | **2026-07-16** |  |
 | wm-c4vhst | taskmem | done |  |  | Create private GitHub repo (personal profile) and push taskmem infra branch | 2026-07-17 |  |
