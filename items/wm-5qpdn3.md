@@ -28,3 +28,6 @@ Evidence (CloudWatch northpond_loan_fl/production/gateway, 7d):
 SEPARATE, ALREADY RESOLVED: Kabeer's 07-13 OAuth 401 "Your account is in invalid state" (user edgefocus_api). Token 401s by day: 07-09..07-11 = 0, 07-12 = 32, 07-13 = 247 (vs 58 ok), 07-14/15/16 = 0. Account-state issue at Experian, fixed after Kabeer escalated to Nate. Not today's alert.
 
 Suggested (NOT implemented): surface experian_response["errors"] in error_msg so the alert names the real failure; consider a token refresh margin + single 401-retry.
+
+## Log
+- 2026-07-16T19:11Z [claude-code] DROPPED 2026-07-17 per Abhishek: he responded on this and called it discardable. Investigation stands on the record above (EFP-ERRORS-AW is a catch-all that discards experian_response['errors'][*]['message']; ~8 non-200/7d = the ~1/day alert). No code change was made — the suggested fixes (surface the real Experian error in error_msg, token refresh margin, single 401-retry) remain unimplemented by choice.
