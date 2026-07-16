@@ -77,6 +77,7 @@
 
 | id | from | status | priority | effort | task | due | links |
 |---|---|---|---|---|---|---|---|
+| wm-6men7j | Create private GitHub repo (personal pro… | done |  |  | Enable cross-device task sync via a private data repo |  |  |
 | wm-z7x857 | Run rounds 2-3 of the taskmem agent-beha… | done |  |  | Validate the round-3 taskmem fixes with a round-4 eval |  |  |
 | wm-day88x | taskmem | done |  |  | Run rounds 2-3 of the taskmem agent-behavior eval and ship the fixes |  |  |
 | wm-6k56mk | taskmem | done | high |  | Disable the dpx ~/tasks crontab (unattended claude runs + automated DMs, against policy) | **2026-07-16** |  |
@@ -86,4 +87,4 @@
 | wm-fhyza8 | Work memory v1: markdown files + git + g… | done | high |  | Install daily/weekly review crontab entries | **2026-07-16** |  |
 | wm-3tdn24 | On-call / Errors backlog | done |  | <1h | Close 4 open missing-window alerts on northpond positions files (ERROR-1524) |  | [ERROR-1524](https://linear.app/edge-focus/issue/ERROR-1524/missing-statement-filenorthpondpositionsnorthpond-loan-positions-4) |
 
-*Working set: 23 open items. Full queries: see SCHEMA.md.*
+*Working set: 22 open items. Full queries: see SCHEMA.md.*
