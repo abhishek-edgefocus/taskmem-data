@@ -2,14 +2,14 @@
 id: wm-3tdn24
 type: task
 title: Close 4 open missing-window alerts on northpond positions files (ERROR-1524)
-status: done
+status: next
 priority: p2
 size: s
 tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [ERROR-1524=https://linear.app/edge-focus/issue/ERROR-1524/missing-statement-filenorthpondpositionsnorthpond-loan-positions-4]
 created: 2026-07-14
-updated: 2026-07-15
+updated: 2026-07-16T11:23:58Z
 source: dpx-tasks #8
 ---
 
