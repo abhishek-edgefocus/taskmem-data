@@ -2,11 +2,11 @@
 id: wm-k3wt84
 type: task
 title: NorthPond purchased loans take 2-8 days to appear in silver.positions (portfolio understated after each purchase)
-status: inbox
+status: done
 tags: [northpond, data-quality]
 links: [relates:wm-j9jxpc, relates:wm-rgwdyu]
 created: 2026-07-16T13:06:33Z
-updated: 2026-07-16T13:06:38Z
+updated: 2026-07-16T19:13:27Z
 source: claude-code
 ---
 
