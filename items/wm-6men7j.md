@@ -6,7 +6,7 @@ status: someday
 tags: [taskmem]
 links: [follows:wm-c4vhst]
 created: 2026-07-15T17:38:35Z
-updated: 2026-07-15T17:38:35Z
+updated: 2026-07-16T10:35:16Z
 source: claude-code
 ---
 
@@ -23,3 +23,6 @@ Note: adding the remote WITHOUT the force-push leaves autosync failing on unrela
 ## Links
 - Repo: https://github.com/abhishek-edgefocus/taskmem
 - Predecessor: wm-c4vhst (repo creation, done 2026-07-15)
+
+## Log
+- 2026-07-16T10:35Z [device2] sync test from a fresh clone (device 2)
