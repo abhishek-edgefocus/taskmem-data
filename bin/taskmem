@@ -657,11 +657,17 @@ def cmd_delegate(args):
         ("scheduled: %s" % fm["scheduled"]) if fm.get("scheduled") else "",
         ("people: %s" % ", ".join(people)) if isinstance(people, list) and people else "",
     ) if x]
-    out = ["You are being delegated a work item from %s's shared task memory." % user, "",
-           "# %s — %s" % (fm["id"], fm.get("title", ""))]
+    # Lead with the item title. Chat clients auto-name a conversation from the
+    # opening of the pasted prompt, so identical boilerplate on line 1 made every
+    # delegated chat name look the same — indistinguishable when two are open.
+    # Title first => the chat names itself after the actual task.
+    out = ["# %s — %s" % (fm["id"], fm.get("title", ""))]
     if facts:
         out.append("(%s)" % " · ".join(facts))
-    out.append("")
+    out += ["", "You are being delegated this work item from %s's shared task "
+                "memory. If your client lets you name this conversation, name it "
+                "after the title above — %s often has several delegated chats "
+                "open at once and needs to tell them apart." % (user, user), ""]
     if context:
         out += [context, ""]
     refs = fm.get("refs") or []
