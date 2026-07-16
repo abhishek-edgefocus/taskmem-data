@@ -10,7 +10,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-3tdn24, relates:wm-qu4cr7]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5]
 created: 2026-07-15T14:56:55Z
-updated: 2026-07-16T11:49:07Z
+updated: 2026-07-16T12:43:55Z
 source: intake-review
 label: Kushagra missing files
 ---
@@ -65,3 +65,4 @@ Sanjali/Prosper pattern (ignorable → acknowledgment sheet), but verify.
 - 2026-07-16T11:23Z [claude-code] No overlap with ERROR-1524/wm-3tdn24 double-reporting concern: ERROR-1524 IS the same 3 dates (same rule fingerprint), not a separate set. Nothing to de-dupe — acking the 3 dates resolves both.
 - 2026-07-16T11:23Z [claude-code] Discovered: ERROR-1524 reopened 2026-07-15T16:04Z; wm-3tdn24 reopened from done. Stateless alerting means the ack sheet — not Linear state — is what actually silences it.
 - 2026-07-16T11:24Z [claude-code] Analysis complete; remaining work is Abhishek-only (2 actions): (1) add 3 rows to the ack sheet, (2) reply in Kushagra's thread. Per Abhishek's instruction this run did NOT post to Slack. Cross-platform note for the Friday dev call: innovate transactions is ALSO missing 2024-08-29 (same date as northpond) — two platforms missing the same day points at a delivery/ingestion outage on 2024-08-29, not a platform-side issue; worth raising with Nakula/Kushagra rather than each owner acking it in isolation.
+- 2026-07-16T12:43Z [claude-code] CORRECTION + hardened evidence (earlier 'immaterial' claim was asserted before it was fully checked; now actually verified). Autofill confirmed with real values: gap rows carry AUTOFILL_REASON='dropout', AUTOFILL_DAYS=1 for 08-09 (from 08-08) and AUTOFILL_DAYS=1,2 for 08-28/08-29 (both from 08-27). All 4 loans STATUS=current, DPD=0.
