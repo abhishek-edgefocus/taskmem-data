@@ -54,25 +54,39 @@ taskmem history wm-xxxxxx                                          # who did wha
 Requirements: `python3` (3.9+) and `git`. The CLI has zero Python
 dependencies. An AI agent can run this whole section unattended.
 
+Two repos, two jobs — **the tool is shared, the items are yours**:
+
+- **Tool repo** (this code, no task data) — where everyone starts.
+- **Your data repo** (private, under your own profile) — your entire memory:
+  items *and* the tool that manages them, one working tree. Created once via
+  `install.sh --remote`; every machine after that clones *it*, not the tool.
+
 **The one-prompt way** — paste this into a fresh Claude Code session on the
 new machine (fill in the repo URL and your identity):
 
 > Set up my shared task memory on this machine. Clone
-> `https://github.com/<you>/taskmem.git` to `~/taskmem` — if the clone hits
-> an auth wall, walk me through `gh auth login` (device flow) first. Then
-> run `TASKMEM_USER_NAME="<name>" TASKMEM_SLACK_USER_ID="<slack-id>"
+> `https://github.com/<me>/taskmem-data.git` (my private data repo — if I
+> don't have one yet, clone the tool repo instead and pass
+> `--remote <a new empty private repo>` below) to `~/taskmem` — if the clone
+> hits an auth wall, walk me through `gh auth login` (device flow) first.
+> Then run `TASKMEM_USER_NAME="<name>" TASKMEM_SLACK_USER_ID="<slack-id>"
 > ~/taskmem/install.sh --cron` and verify: `tm find --count` answers,
-> `~/taskmem/bin/session-context --plain` prints a digest, and the crontab
-> block exists. Then read `~/taskmem/AGENTS.md` — from now on you are one
-> of this memory's maintainer agents. Finish by showing me the memory's
-> current state.
+> `~/taskmem/bin/session-context --plain` prints a digest, the crontab
+> block exists, and `tm sync` round-trips. Then read `~/taskmem/AGENTS.md` —
+> from now on you are one of this memory's maintainer agents. Finish by
+> showing me the memory's current state.
 
 The short way:
 
 ```bash
-git clone <your-private-remote> ~/taskmem
-~/taskmem/install.sh          # symlinks, Claude Code session hooks, CLAUDE.md pointer
-~/taskmem/install.sh --cron   # …plus review agents, autosync, dashboard refresh
+# first machine ever (no data repo yet): start from the tool, plug in yours
+git clone <tool-repo> ~/taskmem
+~/taskmem/install.sh --remote git@github.com:<you>/taskmem-data.git   # seeds it
+
+# every machine after that: your data repo IS the memory
+git clone git@github.com:<you>/taskmem-data.git ~/taskmem
+~/taskmem/install.sh          # symlinks, session hooks, CLAUDE.md pointer
+~/taskmem/install.sh --cron   # …plus reminder crons, autosync, dashboard refresh
 ```
 
 Manual equivalent (or for non-Claude runners):
@@ -206,15 +220,21 @@ reminder line for a direct `bin/agent-brief` invocation is the only edit.
 
 ## Multi-host / multi-environment sync
 
-One git remote is the sync bus for every host, dev environment, and agent
-type. One-time setup, from any machine that already has the memory:
+One git remote — **your private data repo** — is the sync bus for every
+host, dev environment, and agent type. One-time setup, from any machine
+that already has the memory:
 
 ```bash
-# 1. create a PRIVATE repo under your personal profile
-#    (https://github.com/new, or: gh repo create taskmem --private)
-# 2. wire it up and push:
-cd ~/taskmem && git remote add origin git@github.com:<you>/taskmem.git && taskmem sync
+# 1. create an EMPTY private repo under your personal profile
+#    (https://github.com/new, or: gh repo create taskmem-data --private)
+# 2. plug it in (sets origin; seeds it if empty, syncs if not):
+~/taskmem/install.sh --remote git@github.com:<you>/taskmem-data.git
 ```
+
+Keep task data out of the shared tool repo — items belong only in your
+private data repo. (Publishing tool changes back is a separate, deliberate
+act: snapshot the non-data files onto the tool repo, never `push` your
+working history to it.)
 
 Every additional host, container, or dev environment just follows "Setup on
 a fresh machine" above. From then on `taskmem sync` (commit → pull --rebase →

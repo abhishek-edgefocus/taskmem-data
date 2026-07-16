@@ -1,8 +1,21 @@
 #!/usr/bin/env bash
 # Idempotent setup for the task memory on a new (or this) machine.
-# Usage: git clone <remote> ~/taskmem && ~/taskmem/install.sh [--cron]
-#   --cron  also install the crontab block (review agents, autosync, dashboard)
+# Usage: git clone <your-data-repo> ~/taskmem && ~/taskmem/install.sh [--cron]
+#   --cron          also install the crontab block (reminders, autosync, dashboard)
+#   --remote <url>  plug in YOUR private data repo as origin (env: TASKMEM_REMOTE).
+#                   Empty remote -> pushes this memory up; existing -> syncs down.
 set -euo pipefail
+
+CRON=0
+REMOTE="${TASKMEM_REMOTE:-}"
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --cron) CRON=1 ;;
+        --remote) REMOTE="${2:?--remote needs a URL}"; shift ;;
+        *) echo "ERROR: unknown argument: $1 (known: --cron, --remote <url>)"; exit 1 ;;
+    esac
+    shift
+done
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NAME="$(basename "$DIR")"
@@ -43,9 +56,38 @@ else
     echo "ok: config.env exists"
 fi
 
-# --- 3. git repo -------------------------------------------------------------
+# --- 3. git repo + personal data remote ---------------------------------------
+# The tool repo is shared; your ITEMS are yours. Each user plugs in their own
+# private data repo — after this, `taskmem sync` (and the cron autosync)
+# converges every machine against it.
 [ -d "$DIR/.git" ] || git -C "$DIR" init -q
 echo "ok: git repo"
+if [ -n "$REMOTE" ]; then
+    if git -C "$DIR" remote get-url origin >/dev/null 2>&1; then
+        git -C "$DIR" remote set-url origin "$REMOTE"
+    else
+        git -C "$DIR" remote add origin "$REMOTE"
+    fi
+    BRANCH="$(git -C "$DIR" rev-parse --abbrev-ref HEAD 2>/dev/null)"
+    [ "$BRANCH" = "HEAD" ] || [ -z "$BRANCH" ] && BRANCH=main
+    if [ -z "$(git -C "$DIR" ls-remote --heads origin "$BRANCH" 2>/dev/null)" ]; then
+        # empty data repo: first push seeds it with this machine's memory
+        git -C "$DIR" push -qu origin "$BRANCH"
+        echo "ok: seeded empty data repo $REMOTE with this memory"
+    elif "$DIR/bin/taskmem" sync >/dev/null 2>&1; then
+        echo "ok: origin -> $REMOTE (synced)"
+    else
+        echo "WARN: origin set to $REMOTE but sync failed. If this machine started"
+        echo "      from the TOOL repo while your DATA repo already has items, wipe"
+        echo "      and clone the data repo instead:  git clone $REMOTE ~/$NAME"
+        exit 1
+    fi
+elif git -C "$DIR" remote get-url origin >/dev/null 2>&1; then
+    echo "ok: origin -> $(git -C "$DIR" remote get-url origin)"
+else
+    echo "note: no data remote — memory is local-only. Plug in your private repo"
+    echo "      any time with:  $DIR/install.sh --remote <url>"
+fi
 
 # --- 4. Claude Code hooks: inject task state into every session --------------
 mkdir -p "$CLAUDE_DIR"
@@ -89,7 +131,7 @@ else
 fi
 
 # --- 6. crontab (only with --cron; marker-delimited, replaced wholesale) -----
-if [ "${1:-}" = "--cron" ]; then
+if [ "$CRON" = 1 ]; then
     TMP="$(mktemp)"
     { crontab -l 2>/dev/null | sed "/^$CRON_BEGIN\$/,/^$CRON_END\$/d"; } > "$TMP" || true
     cat >> "$TMP" <<EOF
