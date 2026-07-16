@@ -2,14 +2,15 @@
 id: wm-qjkp3x
 type: task
 title: Schedule + run EDGEX EF scoring alignment meeting (Oliv ANL delivery + OPs scope)
-status: next
+status: active
 size: s
+scheduled: 2026-07-16
 people: [Abhijeet, Trishit, Nakula, Eric]
 tags: [northpond, edgex]
 links: [parent:wm-c5jytx]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-16T12:16:49Z
-updated: 2026-07-16T12:32:17Z
+updated: 2026-07-16T12:32:18Z
 source: claude-code
 ---
 
