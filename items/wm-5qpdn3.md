@@ -2,11 +2,11 @@
 id: wm-5qpdn3
 type: task
 title: Experian credit pull: Sentry EFP-ERRORS-AW masks the real error (non-200 body discarded)
-status: next
+status: dropped
 tags: [oncall, northpond, experian]
 links: [parent:wm-3y3ckv]
 created: 2026-07-16T06:54:43Z
-updated: 2026-07-16T11:49:07Z
+updated: 2026-07-16T19:11:57Z
 source: claude-code
 estimate: <1h
 label: Experian Sentry error masking
