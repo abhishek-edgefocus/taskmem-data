@@ -2,11 +2,11 @@
 id: wm-q3n9rf
 type: task
 title: Experian OAuth connect: 0.5s connect timeout + IPv6 AAAA fallback mislabels blips as 'Network is unreachable'
-status: next
+status: dropped
 tags: [oncall, northpond, experian]
 links: [parent:wm-3y3ckv]
 created: 2026-07-16T07:05:03Z
-updated: 2026-07-16T11:49:07Z
+updated: 2026-07-16T19:11:55Z
 source: claude-code
 estimate: <1h
 label: Experian OAuth timeout
