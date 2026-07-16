@@ -2,15 +2,17 @@
 id: wm-h3dvpa
 type: followup
 title: Reply to Abhijeet: confirm OPs currently use API predictions only (EDGEX EF scoring thread)
-status: active
+status: waiting
 size: xs
 due: 2026-07-17
+waiting_on: Abhishek
+nudge: 2026-07-17
 people: [Abhijeet]
 tags: [northpond, needs-reply]
 links: [parent:wm-j523sq]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-15T21:14:10Z
-updated: 2026-07-16T11:19:58Z
+updated: 2026-07-16T11:20:03Z
 source: claude-code
 ---
 
