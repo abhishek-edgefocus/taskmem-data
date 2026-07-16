@@ -12,8 +12,9 @@
 
 | id | from | priority | task | next action | due | links |
 |---|---|---|---|---|---|---|
-| wm-j9jxpc | northpond |  | Check missing statement files for NorthPond and confirm in Kushagra's thread (before Friday dev call) | Get the third missing date from the "Missing Platform Data" dashboard | 2026-07-17 | [slack](https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5) |
 | wm-3y3ckv | oncall |  | On-call / Errors backlog | — |  |  |
+| wm-5qpdn3 | On-call / Errors backlog |  | Experian credit pull: Sentry EFP-ERRORS-AW masks the real error (non-200 body discarded) | — |  |  |
+| wm-j9jxpc | northpond |  | Check missing statement files for NorthPond and confirm in Kushagra's thread (before Friday dev call) | Get the third missing date from the "Missing Platform Data" dashboard | 2026-07-17 | [slack](https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5) |
 | wm-j523sq | northpond |  | NorthPond Data Ingestion | — |  | [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring) |
 | wm-r45vp3 | ai-billing |  | AI billing to Slack (DEV-970) | — |  |  |
 | wm-su6q4d | openroad |  | OpenRoad Data Ingestion | — |  |  |
@@ -52,6 +53,7 @@
 
 ### On-call / Errors backlog (`wm-3y3ckv`)
 *Assigned ERROR-* and data-consistency issues*
+- wm-5qpdn3 [next] Experian credit pull: Sentry EFP-ERRORS-AW masks the real error (non-200 body discarded)
 - wm-gxykru [active/half-day] Root-cause int_rate_at_purchase=0 for northpond loans (DEV-503, in progress)
 - wm-qu4cr7 [open/half-day] Investigate 15 northpond loans missing from gateway model_responses (ERROR-1231)
 
@@ -67,13 +69,13 @@
 | wm-yyb3dz | integration | open | low |  | GitHub adapter: PR/issue events update linked items |  |  |
 | wm-mnetja | integration | open | low |  | Wrap taskmem as an MCP server (tools 1:1 over CLI) |  |  |
 | wm-kpyq3c | taskmem | open |  |  | Work memory v1: markdown files + git + generic CLI |  |  |
-| wm-day88x | taskmem | someday |  |  | Run round-2 validation eval for the AGENTS.md optimizations (on hold per Abhishek) |  |  |
 | wm-jpxt8v | taskmem | someday |  |  | Revisit: restructure into ~/brain monorepo (taskmem/ + notes/ + context/) |  |  |
 
 ## Done this week
 
 | id | from | status | priority | effort | task | due | links |
 |---|---|---|---|---|---|---|---|
+| wm-day88x | taskmem | done |  |  | Run rounds 2-3 of the taskmem agent-behavior eval and ship the fixes |  |  |
 | wm-6k56mk | taskmem | done | high |  | Disable the dpx ~/tasks crontab (unattended claude runs + automated DMs, against policy) | **2026-07-16** |  |
 | wm-c4vhst | taskmem | done |  |  | Create private GitHub repo (personal profile) and push taskmem infra branch | 2026-07-17 |  |
 | wm-c39rb3 | NorthPond Data Ingestion | done | high | <1h | Land DEV-1412: Positions Daily + Realized Cashflows for NorthPond (in review) |  | [DEV-1412](https://linear.app/edge-focus/issue/DEV-1412/add-positions-daily-and-realized-cashflows-for-northpond) |
@@ -81,4 +83,4 @@
 | wm-fhyza8 | Work memory v1: markdown files + git + g… | done | high |  | Install daily/weekly review crontab entries | **2026-07-16** |  |
 | wm-3tdn24 | On-call / Errors backlog | done |  | <1h | Close 4 open missing-window alerts on northpond positions files (ERROR-1524) |  | [ERROR-1524](https://linear.app/edge-focus/issue/ERROR-1524/missing-statement-filenorthpondpositionsnorthpond-loan-positions-4) |
 
-*Working set: 22 open items. Full queries: see SCHEMA.md.*
+*Working set: 23 open items. Full queries: see SCHEMA.md.*
