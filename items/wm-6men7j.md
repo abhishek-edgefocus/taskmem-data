@@ -1,12 +1,12 @@
 ---
 id: wm-6men7j
 type: task
-title: Enable task sync to GitHub (add remote + force-push main) — when ready to upload tasks
-status: someday
+title: Enable cross-device task sync via a private data repo
+status: done
 tags: [taskmem]
 links: [follows:wm-c4vhst]
 created: 2026-07-15T17:38:35Z
-updated: 2026-07-16T10:35:16Z
+updated: 2026-07-16T10:35:40Z
 source: claude-code
 ---
 
