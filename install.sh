@@ -109,8 +109,14 @@ for event, argv in [("SessionStart", cmd), ("SubagentStart", cmd + " SubagentSta
             "type": "command", "command": argv, "timeout": 15,
             "statusMessage": "Loading task memory...",
         }]})
+# Attribution must not depend on an agent remembering to export it: a shell
+# export dies with the session, so mutations silently lose their author.
+# setdefault -> never override a role this machine deliberately chose.
+env = settings.setdefault("env", {})
+env.setdefault("WM_AGENT", "claude-code")
 path.write_text(json.dumps(settings, indent=2) + "\n")
-print("ok: SessionStart/SubagentStart hooks in", path)
+print("ok: SessionStart/SubagentStart hooks + WM_AGENT=%s in %s"
+      % (env["WM_AGENT"], path))
 PY
 
 # --- 5. global CLAUDE.md points at the protocol -------------------------------

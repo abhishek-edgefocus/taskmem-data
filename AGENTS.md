@@ -13,6 +13,14 @@ Identify yourself: `export WM_AGENT=<your-role>` (e.g. `claude-code`,
 `meeting-agent`, `daily-review`) or pass `--by` on mutations. The CLI is at
 `~/taskmem/bin/taskmem` (use the absolute path if `taskmem` isn't on PATH).
 
+`WM_` is correct and is **not** a typo for `TM_`: `WM_*` env vars and the
+`wm-` item-id prefix are fixed engine identifiers that never track the brand
+name, so renaming the tool touches zero data (see README, "Renaming the
+tool"). Don't "fix" them. On a machine set up by `install.sh`, `WM_AGENT` is
+already pinned in `~/.claude/settings.json`, so a per-session export is
+usually redundant — check before adding one, and use `--by` when a single
+mutation belongs to a different role.
+
 ## Session lifecycle
 
 Follow this in every substantive session:
