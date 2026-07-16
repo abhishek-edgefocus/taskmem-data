@@ -10,7 +10,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-3tdn24, relates:wm-qu4cr7]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5]
 created: 2026-07-15T14:56:55Z
-updated: 2026-07-16T11:23:49Z
+updated: 2026-07-16T11:23:58Z
 source: intake-review
 ---
 
@@ -62,3 +62,4 @@ Sanjali/Prosper pattern (ignorable → acknowledgment sheet), but verify.
 - 2026-07-16T11:23Z [claude-code] IMPACT = none / ignorable. Gaps are real at bronze+statement-rows layer (no file in bronze.statement_files under any status; no rows in silver.northpond_stmt_positions for the 3 dates). But silver.positions has FULL coverage: autofill_gaps() forward-fills, and AUTOFILL_LAST_SEEN_DATE proves it (08-09 carried from 08-08; 08-28 and 08-29 both carried from 08-27). Forward-fill of missing-file days is designed behaviour, not an accident. Portfolio was only 3-4 loans, all STATUS=current, 1-2 day carry -> immaterial. Verdict: ignorable -> acknowledgement sheet (the Sanjali/Prosper pattern).
 - 2026-07-16T11:23Z [claude-code] Acknowledgement sheet FOUND (was listed as unknown): Google Sheet id 1gkWKElqMkgr7goxKS-s_L6xPNlAjGnr_3LhfgRMc7gY, tab 'Acknowledgements' — hardcoded as ACKNOWLEDGEMENT_SHEET_ID in edgefocus/monitoring/statement_file_acknowledgements.py. Columns: PLATFORM, STATEMENT_TYPE, ACK_START_DATE, ACK_END_DATE, ACKNOWLEDGED_BY, UPDATE_DATE, REASON. Single missing date => ACK_START_DATE == ACK_END_DATE, so northpond needs 3 rows.
 - 2026-07-16T11:23Z [claude-code] No overlap with ERROR-1524/wm-3tdn24 double-reporting concern: ERROR-1524 IS the same 3 dates (same rule fingerprint), not a separate set. Nothing to de-dupe — acking the 3 dates resolves both.
+- 2026-07-16T11:23Z [claude-code] Discovered: ERROR-1524 reopened 2026-07-15T16:04Z; wm-3tdn24 reopened from done. Stateless alerting means the ack sheet — not Linear state — is what actually silences it.
