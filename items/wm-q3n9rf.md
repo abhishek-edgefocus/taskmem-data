@@ -45,3 +45,6 @@ SUGGESTED (NOT implemented):
 - Optionally force AF_INET (no IPv6 route exists) so the misleading ENETUNREACH stops masking the true error.
 
 NOTE: OAuth usernames in prod logs are `northpond_api2` and `cashflow_api`, NOT `edgefocus_api` (the account Kabeer cited on 07-13). Worth confirming which account Kabeer's 401 issue actually referred to.
+
+## Log
+- 2026-07-16T19:11Z [claude-code] DROPPED 2026-07-17 per Abhishek: he responded on this and called it discardable. Investigation stands on the record above (IPv6 AAAA fallback masking a 0.5s IPv4 connect timeout; 1 event in 30 days, fully recovered). No code change was made — the suggested fixes (raise OAuth connect timeout 0.5s->3-5s, add backoff_factor, optionally force AF_INET) remain unimplemented by choice.
