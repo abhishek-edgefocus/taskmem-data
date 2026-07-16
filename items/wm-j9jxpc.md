@@ -10,7 +10,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-3tdn24, relates:wm-qu4cr7]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5]
 created: 2026-07-15T14:56:55Z
-updated: 2026-07-16T13:06:06Z
+updated: 2026-07-16T13:06:38Z
 source: intake-review
 label: Kushagra missing files
 ---
@@ -70,3 +70,4 @@ Sanjali/Prosper pattern (ignorable → acknowledgment sheet), but verify.
 - 2026-07-16T12:43Z [claude-code] Residual cost, stated honestly: the daily positions SNAPSHOT is stale on those 3 dates — forward-fill carries prior-day PRINCIPAL and ACCRUED_INTEREST, so e.g. 08-09 shows OLV12562548 principal 1050.00 when the 08-08 payment had already reduced it to 1012.02, and accrued interest is understated on every autofilled row. Impact bounded: 3-4 loans, ~10k total exposure, all current, Aug 2024, northpond funds are NOT in FUNDS_NEEDING_VALUATION (no manager marks). Ignorable stands, but it is 'snapshot stale for 3 old days', NOT 'no effect whatsoever'.
 - 2026-07-16T13:06Z [claude-code] ANSWERED Abhishek's challenge: did we BUY loans on the gap dates? NO. This mattered because autofill only forward-fills loans with a PRIOR row — a loan purchased ON a missing date would be silently ABSENT (not stale), which autofill cannot mask. Verified via silver.transfers: the only Aug-2024 northpond purchases were 2024-08-01 (OLV12562549) and 2024-08-05 (OLV12562550). Nothing on 08-09, 08-28 or 08-29. So the missing tapes hide no purchase.
 - 2026-07-16T13:06Z [claude-code] Applied Abhishek's before/after loan-set test on the RAW tape. 08-28/08-29 gap: 08-27 and 08-30 both show the identical 4 loans (547/548/549/550) -> clean, nothing happened across the gap. 08-09 gap: 08-08 has 3 loans, 08-10 has 4 (OLV12562550 added) -> set DIFFERS, but the missing file is NOT the cause: OLV12562550 was purchased 08-05 and is absent from the 08-06, 08-07 and 08-08 tapes too, which all DID arrive. It first appears 08-10 (5-day platform reporting lag). An arriving 08-09 tape would almost certainly not have contained it either.
+- 2026-07-16T13:06Z [claude-code] Side-finding captured as wm-k3wt84 (inbox): NorthPond purchase -> first-appearance lag of 2-8 days in early portfolio, independent of missing files; may affect Fund Monitoring migration (wm-rgwdyu) if any panel reports point-in-time holdings.
