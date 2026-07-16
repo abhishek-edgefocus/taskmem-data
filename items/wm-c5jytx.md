@@ -9,7 +9,7 @@ tags: [northpond]
 links: [parent:wm-h3dvpa]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-15T21:14:11Z
-updated: 2026-07-16T11:33:58Z
+updated: 2026-07-16T11:33:59Z
 source: claude-code
 ---
 
@@ -28,3 +28,4 @@ From Abhijeet's EDGEX ask (thread below): once the final northpond model is read
 ## Log
 - 2026-07-15T21:14Z [claude-code] implementation ask split out from the needs-reply anchor wm-h3dvpa
 - 2026-07-16T11:33Z [claude-code] DESIGN ASSUMPTION INVALIDATED by the thread on 2026-07-16 (Trishit's breakdown, ts 1784201333.620249). This item assumed: northpond secondary model -> at_orig cashflow predictions -> S3 -> silver.predictions(source='s3') -> predicted_cashflows -> ANL -> EF score, i.e. the forward-flow template. Actual architecture per Trishit: EFP runs its model on 200-250 Experian attributes and produces only a CREDIT GRADE, sent to Oliv via API. Oliv holds data we never see, combines their score with ours in an integrated model, and computes the final loss score. The ANL is calculated ON OLIV'S END as a scalar multiple of their score, and that ANL is what gets fed to the EF Grade function. Trishit: 'we don't have even the decisions in our pipeline'; an environment with Eric's team could change this but 'there's nothing that would provide us decisions/losses on application flow immediately', and co-locating it is explicitly 'not in scope for this deal'.
+- 2026-07-16T11:33Z [claude-code] Consequence — the fork to resolve before any build. (A) If Eric/Oliv deliver per-loan per-period CASHFLOW CURVES: the existing S3 path works as designed (S3Predictions is platform-generic), Nakula's s3-over-api dedup IS required, and the ef_scores earliest-generation lock must also be dealt with (see wm-h3dvpa log: MIN(GENERATION_TS) means the pre-existing api generation from 2024-10-09 wins for all 773 loans). (B) If Oliv delivers only an ANL SCALAR (what Trishit actually describes): there is no cashflow curve to ingest, so silver.predictions / predicted_cashflows / populate_ef_scores do NOT fit at all — that whole chain exists to DERIVE ANL from curves (NET_LOSS*12/WEIGHTED_PRIN). Under (B) Nakula's dedup is moot (no s3 prediction rows would ever exist) and so is the generation-lock issue. Good news: generate_ef_score_sql(anl_column) in positions_utils.py is a pure ANL->E1..E6 bucketing function, reusable as-is against a supplied ANL; it needs no cashflows. So (B) = a direct ANL->EF_SCORE ingest path, NOT the forward-flow template.
