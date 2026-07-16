@@ -27,3 +27,6 @@ Rounds are paused per Abhishek after round 3; round-3's own fixes are therefore 
 - Round-3 results: /private/tmp/claude-501/-Users-abhishek/088d1f15-3a94-4724-af92-ec8b8c72ceb9/tasks/wz0u6lk9h.output
 - Harness scripts: scratchpad/eval-r2/eval-round2.js, scratchpad/eval-r3/eval-round3.js
 - Commits: 6446616 (read-only boundary), daeddfe (CLI log preservation + round-3 fixes)
+
+## Log
+- 2026-07-16T06:59Z [claude-code] done: rounds 2-3 complete. R2 9.14/10 found one real defect (over-mutation on read-only asks); fixed in 6446616. R3 proved it landed (updates 2/7/7 -> 10/10/10, zero mutations, no over-correction on the s11 guard) and surfaced a CLI data-loss bug: set --body destroyed ## Log. Fixed in daeddfe; append-only now enforced by the CLI. Rounds paused after 3 per Abhishek.
