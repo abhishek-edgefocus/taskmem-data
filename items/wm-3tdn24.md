@@ -2,7 +2,7 @@
 id: wm-3tdn24
 type: task
 title: Close 4 open missing-window alerts on northpond positions files (ERROR-1524)
-status: next
+status: done
 priority: p2
 size: s
 tags: [oncall]
