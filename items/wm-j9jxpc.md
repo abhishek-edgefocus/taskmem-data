@@ -10,7 +10,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-3tdn24, relates:wm-qu4cr7]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5]
 created: 2026-07-15T14:56:55Z
-updated: 2026-07-16T11:19:01Z
+updated: 2026-07-16T11:23:49Z
 source: intake-review
 ---
 
@@ -58,3 +58,4 @@ Sanjali/Prosper pattern (ignorable → acknowledgment sheet), but verify.
 - 2026-07-15T15:16Z [claude-code] Planned for tonight: unblock only — find/ask for the missing-files list in-thread; per-file analysis tomorrow
 - 2026-07-15T15:23Z [claude-code] Corrected: no blocker on Kushagra — list is the dashboard screenshot in the thread parent (F0BJACCTJU8). NorthPond = 3 missing daily positions files (2024-08-09, 2024-08-28, +1 truncated). Rewrote next steps accordingly.
 - 2026-07-15T19:36Z [claude-code] tagged needs-reply: Kushagra's @-mention in #platform-data-owners is still unanswered; Nakula/Sanjali/Abhijeet have replied
+- 2026-07-16T11:23Z [claude-code] VERIFIED against PROD (read-only). Third truncated date = 2024-08-29. NorthPond gaps are exactly 3 single dates, all 2024: 08-09, 08-28, 08-29 (rule northpond_loan_positions, daily since 2024-07-10). Source of truth PROD.GOLD.STATEMENT_FILES_MISSING, refreshed 2026-07-15 16:05 PT (newer than Kushagra's 07-12 screenshot; prosper row already dropped off after Sanjali's ack, intex 5->4).
