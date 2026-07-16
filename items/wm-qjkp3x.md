@@ -6,9 +6,10 @@ status: next
 size: s
 people: [Abhijeet, Trishit, Nakula, Eric]
 tags: [northpond, edgex]
+links: [parent:wm-c5jytx]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-16T12:16:49Z
-updated: 2026-07-16T12:16:54Z
+updated: 2026-07-16T12:16:58Z
 source: claude-code
 ---
 
