@@ -1,22 +1,29 @@
 ---
 id: wm-day88x
 type: task
-title: Run round-2 validation eval for the AGENTS.md optimizations (on hold per Abhishek)
-status: someday
+title: Run rounds 2-3 of the taskmem agent-behavior eval and ship the fixes
+status: done
 tags: [taskmem]
 created: 2026-07-15T18:09:33Z
-updated: 2026-07-15T18:09:33Z
+updated: 2026-07-16T06:59:48Z
 source: claude-code
 ---
 
-Round 1 of the agent-behavior eval ran 2026-07-15 (6 scenarios, sandboxed; overall 9.30/10) and produced 5 AGENTS.md fixes, applied in commit 8dba059: active-vs-waiting decision test, any-mutation-counts-as-touch, reread-after-write, mandatory ref links + plain language in replies, observable sync mention, no scratch files in repo. Round 2 (same scenarios, fresh sandboxes, A/B against round-1 scores) was prepared but Abhishek asked to hold new sub-agent rounds.
+Rounds 2 and 3 ran 2026-07-16 (sandboxed, WM_DIR-jailed, one sandbox per scenario; real memory verified untouched by a HEAD tripwire both rounds). Harness added an adversarial-verify stage: every grader failure was re-checked against the git diff, so false positives never drove a contract edit.
+
+ROUND 2 (10 grounded scenarios, overall 9.14/10): capture 9.7, bodies 9.3, response 9.3, hygiene 9.1 — but updates 8.3, and the whole gap was ONE pattern: over-mutation on read-only asks (s1 'what's on my plate' silently rescheduled wm-drehnk and committed a stray drehnk-body.md scratch file; s2 delegate and s4 story rewrote bodies). Root cause was the unscoped 'thin body is always in scope to upgrade' touch rule from round 1. Fixed in commit 6446616: new 'When NOT to write (read-only asks)' section, scoped touch rule, delegate marked a read-only export, give-the-action rule reconciled, plus a disambiguation guard so the boundary can't suppress real intake.
+
+ROUND 3 (regression, same 10 + s11 buried-commitment guard): the fix landed decisively — updates s1 2->10, s2 7->10, s4 7->10, with byte-level proof (HEAD == baseline, empty diff) and agents offering instead of acting ('Want me to move its scheduled date?'). No over-correction: s11 captured the Kushagra promise while leaving all read-only items pristine; s3 still captured both asks and correctly made no item for Rahul's FYI. Round 3's stricter rubric then surfaced defects round 2 missed, fixed in commit daeddfe — the important one being a real CLI bug, not a prompting issue.
+
+Overall averages moved 9.14 -> 8.82, which is NOT a regression: round 3's rubrics were deliberately harsher (any mutation fails s2; a child sized l fails s8; doubled log tags fail). The trustworthy signal is the updates delta on the fix targets.
+
+Rounds are paused per Abhishek after round 3; round-3's own fixes are therefore unvalidated — see the follow-up item.
 
 ## Next steps
-1. When approved: rebuild 6 sandboxes from current ~/taskmem (cp -R; baseline = HEAD), regenerate digest.
-2. Re-launch the saved workflow FRESH (not resume): script at ~/.claude/projects/-Users-abhishek/088d1f15-3a94-4724-af92-ec8b8c72ceb9/workflows/scripts/taskmem-agent-eval-wf_8f3aca2f-918.js with updated baseline in args.
-3. Compare per-dimension scores vs round 1 (capture 9.6 / completion 9.8 / dedup 9.8 / blocked 9.4 / triage 8.6 / session-end 8.6); expect triage bodies (7) and session-end updates (7) to move most.
-4. Safety rails during any round: chmod -R a-w ~/taskmem/items, remove tm/taskmem symlinks, WM_DIR-jailed sandboxes; RESTORE after.
+(none — complete)
 
 ## Links
-- Round-1 full results: /private/tmp/claude-501/-Users-abhishek/088d1f15-3a94-4724-af92-ec8b8c72ceb9/tasks/wllmkpdmm.output (session scratchpad — copy out if it should survive)
-- Optimization commit: 8dba059 in ~/taskmem
+- Round-2 results: /private/tmp/claude-501/-Users-abhishek/088d1f15-3a94-4724-af92-ec8b8c72ceb9/tasks/wx483uo2p.output (session scratchpad — copy out if it should survive)
+- Round-3 results: /private/tmp/claude-501/-Users-abhishek/088d1f15-3a94-4724-af92-ec8b8c72ceb9/tasks/wz0u6lk9h.output
+- Harness scripts: scratchpad/eval-r2/eval-round2.js, scratchpad/eval-r3/eval-round3.js
+- Commits: 6446616 (read-only boundary), daeddfe (CLI log preservation + round-3 fixes)
