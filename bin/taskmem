@@ -412,13 +412,33 @@ def replace_body(old, new, id_):
     return (new + "\n\n## Log" + kept) if new else ("## Log" + kept)
 
 
+def warn_open_children(id_):
+    """On closing an item, name any still-open children on stderr.
+
+    Agents repeatedly closed parents over live children and then reported the
+    remainder wrong. The CLI can't judge whether that's intended, but it can
+    make the fact impossible to miss — the caller must re-parent or
+    acknowledge them (AGENTS.md), never silently orphan.
+    """
+    open_kids = [fm["id"] for fm in load_all()
+                 if "parent:%s" % id_ in (fm.get("links") or [])
+                 and fm.get("status") not in ("done", "dropped")]
+    if open_kids:
+        print("warning: %s still has open children: %s — re-parent them or "
+              "acknowledge them in your log line; do not report this tree "
+              "without them" % (id_, ", ".join(sorted(open_kids))), file=sys.stderr)
+
+
 def cmd_set(args):
     if not args.assign and args.body is None:
         die("nothing to do: pass field=value assignments and/or --body")
     fm, body, _ = load(args.id)
+    was = fm.get("status")
     apply_assign(fm, args.assign)
     if args.body is not None:
         body = replace_body(body, read_body(args.body), args.id)
+    if fm.get("status") in ("done", "dropped") and was not in ("done", "dropped"):
+        warn_open_children(args.id)
     fm["updated"] = now_ts()
     p = save(args.id, fm, body)
     commit("set %s: %s" % (args.id, " ".join(args.assign) or "body"), agent_name(args))

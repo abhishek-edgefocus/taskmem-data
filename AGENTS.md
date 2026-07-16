@@ -239,11 +239,12 @@ lineage, don't flatten it:
   create the next one. Reviews audit this.
 - **Before closing a parent, check for open children:**
   `taskmem find --where "links~parent:<id>" --where "status!=done,dropped"`.
-  If any are still open, either re-parent them or say so explicitly — in the
-  log line and in your reply. And never state what remains in a project
-  without running that query first: a wrong claim in a log line ("one item
-  left") outlives the conversation that made it and misleads every future
-  reader, including you.
+  The CLI now warns on stderr when you close over live children, naming
+  them — treat that warning as a stop sign: re-parent them or acknowledge
+  each one explicitly, in the log line and in your reply, before moving on.
+  And never state what remains in a project without running that query
+  first: a wrong claim in a log line ("one item left") outlives the
+  conversation that made it and misleads every future reader, including you.
 - An `xl` item is a container, not a task — decompose it into sized children
   (`taskmem link <child> parent <xl-id>`) before anyone "starts" it.
 - **Reread after you write.** After your last mutation on an item,
