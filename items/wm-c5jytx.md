@@ -4,8 +4,8 @@ type: task
 title: Set up northpond model for EDGEX EF scoring — at_orig predictions into silver.predicted_cashflows
 status: waiting
 size: l
-waiting_on: Oliv-via-Abhijeet-Trishit
-nudge: 2026-07-20
+waiting_on: call-2026-07-16-Nate
+nudge: 2026-07-17
 people: [Abhijeet, Trishit, Nakula, Eric]
 tags: [northpond]
 links: [parent:wm-h3dvpa]
