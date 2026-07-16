@@ -3,8 +3,9 @@ id: wm-unb6pr
 type: task
 title: Decide + implement v1/v2 (TU/Experian) breakdown for NorthPond gold cashflow metrics
 status: open
+links: [follows:wm-rgwdyu]
 created: 2026-07-16T11:22:33Z
-updated: 2026-07-16T11:49:19Z
+updated: 2026-07-16T12:48:49Z
 source: claude
 label: TU/Experian breakdown decision
 ---
