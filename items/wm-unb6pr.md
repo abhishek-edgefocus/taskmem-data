@@ -5,7 +5,7 @@ title: Decide + implement v1/v2 (TU/Experian) breakdown for NorthPond gold cashf
 status: open
 links: [follows:wm-rgwdyu]
 created: 2026-07-16T11:22:33Z
-updated: 2026-07-16T12:48:49Z
+updated: 2026-07-16T12:53:36Z
 source: claude
 label: TU/Experian breakdown decision
 ---
@@ -44,3 +44,6 @@ Links:
 - DEV-1395: https://linear.app/edge-focus/issue/DEV-1395/migrate-the-northpond-fund-monitoring-page-to-use-snowflake-data
 - DEV-1024: https://linear.app/edge-focus/issue/DEV-1024/add-a-v2-exp-filter-on-the-following-dashboard
 - PR #5884: https://github.com/edgefocus/efp/pull/5884
+
+## Log
+- 2026-07-16T12:53Z [claude-code] Scope clarification (2026-07-16): the 3 panels that moved off the now-deleted NorthPond gold table DID gain v1/v2 (they are per-loan silver now). This item is UNAFFECTED — it covers the ~17 IRR/ROI/CDR/CPR panels on the SHARED gold.realized_cashflows_calendar_month_daily, a different, pre-existing, 6-platform table. Still needs MODEL_VERSION in that table's grain; still a decision, not just work.
