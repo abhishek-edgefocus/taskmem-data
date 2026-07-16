@@ -45,3 +45,6 @@ Chandra dependency audit — Abhijeet's ask from 2026-06-25, never confirmed, no
 ## Links
 - Registry: lib/efp/stats/datastores/datastore_deprecations.py
 - Maps: lib/efp/stats/datastores/positions_snowflake_map.py (PLATFORM_RENAMES:37, HISTORY_DERIVED_PLATFORMS:82)
+
+## Log
+- 2026-07-16T12:53Z [claude-code] Split out of wm-j523sq log entries into its own item — Abhishek is working it now, high priority. Blocker double-check done: none.
