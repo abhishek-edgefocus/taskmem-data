@@ -2,7 +2,7 @@
 id: wm-qjkp3x
 type: task
 title: Schedule + run EDGEX EF scoring alignment meeting (Oliv ANL delivery + OPs scope)
-status: active
+status: done
 size: s
 scheduled: 2026-07-16
 people: [Abhijeet, Trishit, Nakula, Eric]
