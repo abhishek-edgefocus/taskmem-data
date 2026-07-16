@@ -17,3 +17,4 @@ label: NorthPond monitoring migration
 
 ## Log
 - 2026-07-15T14:44Z [importer] imported from dpx ~/tasks #1
+- 2026-07-16T12:48Z [claude-code] PR #5884 OPEN and in progress (branch abhishek/dev-1395-northpond-at-purchase-features-and-payment, updated 2026-07-16). Shipped the v1/v2 (TU/Experian) filter for the per-loan at-purchase panels + populated silver.positions.MODEL_VERSION for northpond. The ~17 gold cashflow panels (IRR/ROI/CDR/CPR) are NOT covered by it — that is the follow-on wm-unb6pr.
