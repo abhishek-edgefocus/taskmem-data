@@ -9,7 +9,7 @@ tags: [northpond]
 links: [parent:wm-h3dvpa]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-15T21:14:11Z
-updated: 2026-07-15T21:14:11Z
+updated: 2026-07-16T11:33:58Z
 source: claude-code
 ---
 
@@ -27,3 +27,4 @@ From Abhijeet's EDGEX ask (thread below): once the final northpond model is read
 
 ## Log
 - 2026-07-15T21:14Z [claude-code] implementation ask split out from the needs-reply anchor wm-h3dvpa
+- 2026-07-16T11:33Z [claude-code] DESIGN ASSUMPTION INVALIDATED by the thread on 2026-07-16 (Trishit's breakdown, ts 1784201333.620249). This item assumed: northpond secondary model -> at_orig cashflow predictions -> S3 -> silver.predictions(source='s3') -> predicted_cashflows -> ANL -> EF score, i.e. the forward-flow template. Actual architecture per Trishit: EFP runs its model on 200-250 Experian attributes and produces only a CREDIT GRADE, sent to Oliv via API. Oliv holds data we never see, combines their score with ours in an integrated model, and computes the final loss score. The ANL is calculated ON OLIV'S END as a scalar multiple of their score, and that ANL is what gets fed to the EF Grade function. Trishit: 'we don't have even the decisions in our pipeline'; an environment with Eric's team could change this but 'there's nothing that would provide us decisions/losses on application flow immediately', and co-locating it is explicitly 'not in scope for this deal'.
