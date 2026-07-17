@@ -2,7 +2,7 @@
 id: wm-drehnk
 type: task
 title: Inventory NorthPond monitoring panels; map each query to its Snowflake source
-status: next
+status: done
 priority: p1
 size: m
 scheduled: 2026-07-14
