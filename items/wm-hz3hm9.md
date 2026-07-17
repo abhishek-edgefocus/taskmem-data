@@ -31,3 +31,6 @@ work only because their funds have keys.
 Also FUND_KEY-null and possibly wanting the same treatment:
 'Edge Focus Paradigm Fund I, LP', 'Fortress JV - Aggregate',
 'Private Credit Fund - Autos JV'.
+
+## Log
+- 2026-07-17T12:56Z [claude-code] REFRAMED 2026-07-17 after Abhishek's call that Fund Monitoring is a JV dashboard. Evidence: PROD.SILVER.FUND_RETURNS.FUND_TYPE — all 5 FPM funds are 'Joint Venture' and are the ONLY rows with a populated FUND_KEY; efhyf = 'Edge Focus High Yield Fund, LP' = FUND_TYPE 'Evergreen', FUND_KEY null (as are Paradigm 'Closed-end', 'Fortress JV - Aggregate', 'Private Credit Fund - Autos JV'). So FUND_KEY is effectively the JV key and its nullness for efhyf is CORRECT, not a gap — my original 'backfill FUND_KEY' framing was wrong. The actual defect is in the dashboard: the NP WIP's 'Annualized Net Return' panel is byte-identical to FPM's (copy-pasted from the JV dashboard), so it inherits WHERE FUND_KEY='$fund' and returns nothing for efhyf. Fix belongs in the query — scope by FUND_NAME='Edge Focus High Yield Fund, LP' (or FUND_TYPE='Evergreen') instead of FUND_KEY. Do NOT backfill FUND_KEY='efhyf' without checking whether anything else keys off FUND_KEY meaning 'is a JV'. Dropped to low priority: one stat panel.
