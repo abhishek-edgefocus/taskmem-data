@@ -8,7 +8,7 @@ size: s
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-16T12:53:08Z
-updated: 2026-07-17T13:27:06Z
+updated: 2026-07-17T15:01:31Z
 source: claude-code
 ---
 
@@ -57,3 +57,4 @@ Chandra dependency audit — Abhijeet's ask from 2026-06-25, never confirmed, no
 (3) NEW, not in prior scope — transactions.account_id must be NULLed (added northpond to PLATFORM_NULL_COLUMNS, like marlette). silver.transactions maps ACCOUNT_ID straight from raw tape ACCOUNT_NAME and the daily tape ALWAYS arrives as ef_northpond, so silver says ef_northpond for 100% of rows while 79.4% belong to efhyf loans. Legacy applies purchase-tape fund adjustment (adjust_fund_information) so legacy says northpond_efhyf. Returning silver's value would be silently wrong for ~79% of rows. Follow-up worth filing: fix silver.transactions to derive ACCOUNT_ID from fund via account_id_from_fund_expr like positions does.
 
 Also checked: service-fee rows DO exist in silver for northpond (8688 'fee' desc rows) so there is NO upgrade-style fee gap. Diff = 3 files/52 insertions, mirrors upgrade precedent ac6bc26ca. ruff+format clean. Note: no dedicated tests exist for these maps (precedent PRs added none). deprecate_after set to 2026-07-31 — CONFIRM date with Abhishek.
+- 2026-07-17T15:01Z [claude-code] 2026-07-17: Shipped as PR #5936 (https://github.com/edgefocus/efp/pull/5936), commit 8a857a40e on abhishek/dev-1450-deprecate-northpond-datastores. 3 files/53 insertions. ruff+format+mypy clean, 120/120 datastore tests pass. deprecate_after=2026-07-31 (flagged for reviewer to adjust). Full-history parity NOT run (killed a runaway ~350GB legacy-load parity job on dpx mid-work; mappings are pinned to identical source exprs so it was redundant). Follow-up [[wm-7mtzka]] filed for the silver.transactions ACCOUNT_ID fix. Awaiting review.
