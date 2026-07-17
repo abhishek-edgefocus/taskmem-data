@@ -6,6 +6,7 @@ status: next
 priority: p1
 size: l
 tags: [northpond, edgex]
+links: [parent:wm-j523sq]
 created: 2026-07-17T09:40:07Z
 updated: 2026-07-17T09:40:32Z
 source: claude-code
