@@ -2,7 +2,7 @@
 id: wm-u7d75w
 type: task
 title: Deprecate northpond datastores: 2 registry entries + HISTORY_DERIVED / renames calls
-status: active
+status: review
 priority: p1
 size: s
 tags: [northpond]
