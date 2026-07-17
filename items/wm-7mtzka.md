@@ -2,9 +2,12 @@
 id: wm-7mtzka
 type: task
 title: Fix silver.transactions ACCOUNT_ID for northpond (derive from fund, not raw tape)
-status: open
+status: next
+priority: p2
+size: s
+tags: [northpond]
 created: 2026-07-17T13:50:10Z
-updated: 2026-07-17T13:50:10Z
+updated: 2026-07-17T13:50:36Z
 source: claude-code
 ---
 
