@@ -6,8 +6,9 @@ status: next
 priority: p2
 size: s
 tags: [northpond]
+links: [parent:wm-j523sq]
 created: 2026-07-17T13:50:10Z
-updated: 2026-07-17T13:50:36Z
+updated: 2026-07-17T13:50:48Z
 source: claude-code
 ---
 
