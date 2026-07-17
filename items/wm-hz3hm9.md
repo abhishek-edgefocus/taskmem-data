@@ -1,14 +1,14 @@
 ---
 id: wm-hz3hm9
 type: task
-title: Backfill FUND_KEY for Edge Focus High Yield Fund in SILVER.FUND_RETURNS (efhyf returns panel empty)
+title: NorthPond fund-returns panel copies FPM's JV-keyed query; efhyf (Evergreen) has no FUND_KEY
 status: open
-priority: p2
+priority: p3
 size: s
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-17T09:33:20Z
-updated: 2026-07-17T09:33:20Z
+updated: 2026-07-17T12:56:40Z
 source: claude-code
 ---
 
