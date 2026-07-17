@@ -8,7 +8,7 @@ size: s
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-16T12:53:08Z
-updated: 2026-07-17T15:01:31Z
+updated: 2026-07-17T17:53:18Z
 source: claude-code
 ---
 
@@ -58,3 +58,4 @@ Chandra dependency audit — Abhijeet's ask from 2026-06-25, never confirmed, no
 
 Also checked: service-fee rows DO exist in silver for northpond (8688 'fee' desc rows) so there is NO upgrade-style fee gap. Diff = 3 files/52 insertions, mirrors upgrade precedent ac6bc26ca. ruff+format clean. Note: no dedicated tests exist for these maps (precedent PRs added none). deprecate_after set to 2026-07-31 — CONFIRM date with Abhishek.
 - 2026-07-17T15:01Z [claude-code] 2026-07-17: Shipped as PR #5936 (https://github.com/edgefocus/efp/pull/5936), commit 8a857a40e on abhishek/dev-1450-deprecate-northpond-datastores. 3 files/53 insertions. ruff+format+mypy clean, 120/120 datastore tests pass. deprecate_after=2026-07-31 (flagged for reviewer to adjust). Full-history parity NOT run (killed a runaway ~350GB legacy-load parity job on dpx mid-work; mappings are pinned to identical source exprs so it was redundant). Follow-up [[wm-7mtzka]] filed for the silver.transactions ACCOUNT_ID fix. Awaiting review.
+- 2026-07-17T17:53Z [claude-code] 2026-07-17: Set deprecate_after=2026-07-20 (coming Monday) per Abhishek, both registry entries + warning messages. Amended commit -> 1d868711f, force-pushed PR #5936. Also fixed PR body (Testing section + reviewer note had been truncated on original create); full body now posted.
