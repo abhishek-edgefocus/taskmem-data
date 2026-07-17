@@ -8,7 +8,7 @@ size: s
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-16T12:53:08Z
-updated: 2026-07-16T12:53:24Z
+updated: 2026-07-17T13:27:06Z
 source: claude-code
 ---
 
@@ -48,3 +48,12 @@ Chandra dependency audit — Abhijeet's ask from 2026-06-25, never confirmed, no
 
 ## Log
 - 2026-07-16T12:53Z [claude-code] Split out of wm-j523sq log entries into its own item — Abhishek is working it now, high priority. Blocker double-check done: none.
+- 2026-07-17T13:27Z [claude-code] 2026-07-17: DEV-1450 created; branch abhishek/dev-1450-deprecate-northpond-datastores off master in ~/repos-2/efp (clean copy). Both judgement calls RESOLVED against code+data, one OVERTURNS the earlier hypothesis:
+
+(1) PLATFORM_RENAMES account_name->ACCOUNT_ID: YES (like sofi/prosper/marlette, NOT upgrade). Legacy northpond literally sets account_id=account_name in 3 places, and the values ARE account identifiers ('ef_northpond'/'northpond_efhyf') = exactly silver ACCOUNT_ID's domain.
+
+(2) HISTORY_DERIVED_PLATFORMS: NO — hypothesis was WRONG. Northpond does have fund transfers (372/715 loans move Experimental->EFHYF, confirmed via multiple PURCHASE_DATEs + multiple ACCOUNT_IDs), but that does NOT imply history-derived. Legacy northpond defines first purchase AS ORIGINATION by construction: datastore_stand_pos_first_pass_northpond sets first_purchase_date=ContractDate, principal/price_at_first_purchase=OriginalLoanAmount on EVERY row ('the first purchase for this datastore is happening at origination into experimental fund'). Silver carries those same source fields directly as ORIGINATION_DATE=TRY_TO_DATE(p.CONTRACTDATE) and PRINCIPAL_AT_ORIGINATION=p.ORIGINALLOANAMOUNT. So northpond is a THIRD pattern: origination-anchored renames. History-deriving would have returned the EFHYF transfer event instead of origination for those 372 loans — silently wrong.
+
+(3) NEW, not in prior scope — transactions.account_id must be NULLed (added northpond to PLATFORM_NULL_COLUMNS, like marlette). silver.transactions maps ACCOUNT_ID straight from raw tape ACCOUNT_NAME and the daily tape ALWAYS arrives as ef_northpond, so silver says ef_northpond for 100% of rows while 79.4% belong to efhyf loans. Legacy applies purchase-tape fund adjustment (adjust_fund_information) so legacy says northpond_efhyf. Returning silver's value would be silently wrong for ~79% of rows. Follow-up worth filing: fix silver.transactions to derive ACCOUNT_ID from fund via account_id_from_fund_expr like positions does.
+
+Also checked: service-fee rows DO exist in silver for northpond (8688 'fee' desc rows) so there is NO upgrade-style fee gap. Diff = 3 files/52 insertions, mirrors upgrade precedent ac6bc26ca. ruff+format clean. Note: no dedicated tests exist for these maps (precedent PRs added none). deprecate_after set to 2026-07-31 — CONFIRM date with Abhishek.
