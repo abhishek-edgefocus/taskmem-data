@@ -5,6 +5,7 @@ title: Deprecate northpond datastores: 2 registry entries + HISTORY_DERIVED / re
 status: review
 priority: p1
 size: s
+due: 2026-07-20
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-16T12:53:08Z
