@@ -8,7 +8,7 @@ size: m
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-17T09:39:49Z
-updated: 2026-07-20T15:25:30Z
+updated: 2026-07-20T15:40:02Z
 source: claude-code
 ---
 
@@ -49,3 +49,4 @@ Unblocks 31 of 80 panels on the NorthPond Monitoring dashboard (per wm-drehnk in
 
 ## Log
 - 2026-07-20T15:25Z [claude-code] 2026-07-20: ALSO the hard blocker for enabling BEP (best_est) predictions for northpond. Verified prod: SILVER.REALIZED_CASHFLOWS_FROM_ORIGINATION has 0 northpond rows (only happymoney/marlette/prosper/sofi/upgrade). BEP is by definition realized-actuals overlaid on prediction (best_est_projections_base.py), so it yields nothing until these 5 assets materialize. Raises this item's value beyond the 31 dashboard panels.
+- 2026-07-20T15:40Z [claude-code] 2026-07-20: Confirmed the mechanism from the dpx local Dagster codebase. (a) ZERO AutoMaterializePolicy/AutomationCondition anywhere in orchestration/ -> a job run NEVER cascades to downstream assets outside its selection. Materializing statements_northpond alone can never materialize the 5 orphans. (b) All northpond assets are UNPARTITIONED (only mirror_trade_files uses partitions_def) -> 'backfill all dates' is a single run with as_of_date:'all' run config, NOT an N-date partition backfill. (c) The 4 cashflow assets set reload_all_on_change=True so they self-rebuild full history; northpond_positions_daily does NOT -> it specifically needs as_of_date:'all' on first backfill. (d) northpond_realized_cashflows_calendar_month_daily's own docstring claims 'Runs as part of the NorthPond statements job' - it does not; docstring is wrong and should be fixed with the selection change.
