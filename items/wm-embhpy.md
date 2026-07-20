@@ -8,6 +8,7 @@ nudge: 2026-07-22
 people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, follows:wm-3gqqxr]
+refs: [slack=https://edgefocuspartners.slack.com/archives/C0BJ1M304BU/p1784320007718879]
 created: 2026-07-20T22:42:18Z
 updated: 2026-07-20T22:42:18Z
 source: claude-code
