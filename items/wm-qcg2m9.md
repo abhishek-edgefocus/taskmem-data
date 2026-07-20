@@ -4,7 +4,7 @@ type: task
 title: Coder workspace: template fixes to request (k8s-devcontainer)
 status: open
 created: 2026-07-20T16:07:51Z
-updated: 2026-07-20T16:18:07Z
+updated: 2026-07-20T17:40:52Z
 source: claude-code
 ---
 
@@ -23,3 +23,6 @@ Perf: cold start 3m13s (pod schedule); uv venv + pandas/numpy/pyarrow/jupyterlab
 
 ## Log
 - 2026-07-20T16:18Z [claude-code] Dagster test on Coder 2026-07-20: 'make dg-start' UNUSABLE (docker-compose based, no docker daemon on Coder). Native 'dagster dev' works after two fixes: (1) dagster-webserver not in repo .venv - only in Docker image; installed dagster-webserver==1.12.14 (~1s). (2) orchestration/workspace.yaml hardcodes working_directory /app/orchestration (container path), and 'efp' module lives at lib/efp (pyproject packages=[edgefocus, lib/efp]) but isn't installed into venv - native runs need PYTHONPATH=REPO:REPO/lib plus a local workspace yaml (/tmp/ws_local.yaml). Result: 305 assets / 42 jobs on :3011, SQLite instance at /tmp/dagster_home_test. DPX: 309 assets / 41 jobs (commit 162a7660a vs coder c894d400f), postgres-backed on :13053, containers up 4wk. PROPOSAL: add a 'make dg-dev' target for native non-docker dagster that sets PYTHONPATH and generates local workspace.yaml - makes repo usable on docker-less envs.
+- 2026-07-20T17:40Z [claude-code] Docker feasibility on Coder — DEFINITIVE NO from inside the pod (tested 2026-07-20). sudo DOES give real root (uid=0) and apt works, but the pod has no CAP_SYS_ADMIN: CapEff=0x0, bounding set excludes cap_sys_admin/cap_net_admin. Even as root, 'unshare --mount', '--net', '--pid' all fail with EPERM, and 'mount -t tmpfs' is denied. max_user_namespaces=0 and no /dev/fuse, so rootless Docker AND Podman are also impossible. iptables not installed. dockerd binary not present (only docker CLI + compose plugin v5.3.1). User IS in group docker (gid 1001) — template appears to intend a socket mount that never happens. Docker requires a TEMPLATE/cluster change: privileged pod, DinD sidecar, sysbox runtime, or mounting the host socket. Not user-fixable.
+
+PERSISTENCE CORRECTION: only /home/coder persists — it is a 40G ext4 PVC (/dev/nvme2n1), 34G free. Earlier '72G of 99G free' was WRONG: that was the ephemeral overlay rootfs. Terraform recreates kubernetes_pod_v1.main on every start, so / is rebuilt from the image each time — ALL apt installs are lost on restart. Anything to persist must live under /home/coder or go into the template image. Also noted: NFS mounts at /homes (ro) and /home/abhishek (rw) inside the pod.
