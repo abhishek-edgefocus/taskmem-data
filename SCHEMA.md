@@ -80,6 +80,10 @@ responsibility. Extend them by editing this file.
   `blocks` · `parent` (the target is the source's parent — children carry
   the edge) · `relates` ·
   `duplicate-of` · `follows` (source is a follow-up of target)
+  · `blocks` is task-ordering — `A blocks B` means B can't start until A is
+  done, and is what `taskmem chain` reads to order a milestone's steps and
+  find the next actionable one (distinct from `status=waiting`, which is
+  blocked on a person)
   Reverse direction is **derived at query time** (`taskmem links <id>` shows both
   directions; `taskmem find --where links~:<id>` finds inbound references).
 - **projects are items**, not a registry file: `type=project`, goal as the
@@ -131,6 +135,8 @@ so mutations are attributed to you — in `## Log` lines and as the git author.
 | `taskmem link/unlink <id> <rel> <id>` | manage directed edges (validates targets) |
 | `taskmem links <id>` | outbound + inbound edges |
 | `taskmem thread <id> [--all] [--oneline]` | transitive parent/follows lineage, both directions |
+| `taskmem chain <id> [--oneline]` | a milestone's steps (descendants via `parent`) ordered by `blocks`, each tagged done/next/blocked; the single next actionable step marked `next` (derived, not stored) |
+| `taskmem chain-new <parent> "s1" "s2" …` | create the given steps as children of `<parent>`, parent-linked and blocks-chained in order (first step `next`) |
 | `taskmem story <id> [--oneline]` | full context + lineage + merged timeline (git mutations ∪ log lines) |
 | `taskmem delegate <id> [--copy] [--fenced]` | handoff prompt for any AI agent; `--copy` → clipboard (raw), `--fenced` → stdout wrapped in a ````text fence for chat display |
 | `taskmem find [--where EXPR]… [--sort k:desc,k2] [--limit N] [--offset N] [--fields a,b] [--full] [--count] [--oneline]` | generic query |

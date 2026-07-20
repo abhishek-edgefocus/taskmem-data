@@ -258,6 +258,31 @@ lineage, don't flatten it:
   item done with a log line linking the reply. A needs-reply item in a
   thread that already has an anchor attaches to it like any other member.
 
+## Ordered plans (chains)
+
+When a milestone is a *sequence* — do A, then B, then C — model the order with
+`blocks` edges, not a new construct: each step is a child of the milestone
+(`parent:<milestone>`) and blocks the next (`taskmem link <A> blocks <B>` means
+B waits on A). `taskmem chain-new <milestone> "step 1" "step 2" …` lays the
+whole sequence down in one call — children created, parent-linked,
+blocks-chained, the first step `next`. `taskmem chain <milestone> --oneline`
+renders the ordered plan and marks the one **next actionable** step (all its
+blockers done) versus the ones still blocked. That readiness is derived from
+the edges, so it stays correct as steps close — you never restatus the chain
+by hand.
+
+- `blocks` is task-ordering ("can't start B until A is done") and is distinct
+  from `status=waiting` / `waiting_on` (blocked on a *person*). A step can be
+  `status=open` yet not actionable because an earlier step isn't done — the
+  chain view shows that; don't encode it as `waiting`.
+- `chain-new` lays down a skeleton; enrich each step to pickup-ready as you or
+  the human starts it (thin steps are acceptable at creation).
+- When the human asks "what's next on X" or "what's the plan for X", answer
+  from `taskmem chain <X> --oneline`.
+- This is the same `parent`+`blocks` graph everything else uses — a chain is a
+  view over it, not a separate thing. An `xl` milestone that needs decomposing
+  (quality bar below) is exactly what `chain-new` is for.
+
 ## Quality bar for updates
 
 - Status changes always get a `taskmem log` line explaining them — especially
