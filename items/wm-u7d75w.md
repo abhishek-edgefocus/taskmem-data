@@ -2,14 +2,17 @@
 id: wm-u7d75w
 type: task
 title: Deprecate northpond datastores: 2 registry entries + HISTORY_DERIVED / renames calls
-status: review
+status: waiting
 priority: p1
 size: s
 due: 2026-07-20
+waiting_on: Eshan
+nudge: 2026-07-23
+people: [Frank, Eshan]
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-16T12:53:08Z
-updated: 2026-07-20T20:11:00Z
+updated: 2026-07-20T22:42:18Z
 source: claude-code
 ---
 
