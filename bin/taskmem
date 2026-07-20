@@ -615,6 +615,120 @@ def cmd_thread(args):
             emit(n)
 
 
+def chain_steps(root):
+    """Ordered steps of a milestone: descendants of `root` via `parent`,
+    topologically ordered by `blocks` edges, each tagged with computed
+    readiness. A step's order among peers comes from how many of its blockers
+    (inbound `blocks`) must clear first — pure derivation, no stored sequence.
+    """
+    items = {it["id"]: it for it in load_all(True) if it.get("id")}
+    children_of, blocked_by = {}, {}
+    for it in items.values():
+        for edge in (it.get("links") or []):
+            rel, _, tgt = edge.partition(":")
+            if rel == "parent":
+                children_of.setdefault(tgt, []).append(it["id"])
+            elif rel == "blocks":
+                blocked_by.setdefault(tgt, []).append(it["id"])  # tgt waits on it["id"]
+    members, stack = [], list(children_of.get(root, []))
+    seen = set()
+    while stack:
+        cur = stack.pop()
+        if cur in seen or cur not in items:
+            continue
+        seen.add(cur)
+        members.append(cur)
+        stack.extend(children_of.get(cur, []))
+
+    def is_closed(i):
+        return items[i].get("status") in ("done", "dropped")
+
+    # order by longest chain of (member) blockers before it, then by created
+    depth = {}
+
+    def d(i, guard=()):
+        if i in depth:
+            return depth[i]
+        if i in guard:  # cycle guard
+            return 0
+        ups = [b for b in blocked_by.get(i, []) if b in seen]
+        depth[i] = 1 + max([d(u, guard + (i,)) for u in ups], default=0)
+        return depth[i]
+
+    members.sort(key=lambda i: (d(i), items[i].get("created", "")))
+    out = []
+    for i in members:
+        openers = [b for b in blocked_by.get(i, []) if b in items and not is_closed(b)]
+        if is_closed(i):
+            state = items[i].get("status")
+        elif openers:
+            state = "blocked"
+        else:
+            state = "ready"
+        out.append({"id": i, "title": items[i].get("title", ""),
+                    "status": items[i].get("status"), "state": state,
+                    "waiting_on_steps": openers, "due": items[i].get("due")})
+    # the single actionable next step = first ready one in order
+    for s in out:
+        if s["state"] == "ready":
+            s["state"] = "next"
+            break
+    return out
+
+
+def cmd_chain(args):
+    fm, _, _ = load(args.id)  # validate root exists
+    steps = chain_steps(args.id)
+    if args.oneline:
+        ref = ""
+        for r in (fm.get("refs") or []):
+            lbl = r.partition("=")[0]
+            if lbl:
+                ref = " (%s)" % lbl
+                break
+        print("Milestone: %s%s" % (fm.get("title", args.id), ref))
+        if not steps:
+            print("  (no steps yet — add them with `chain-new %s \"step\" …`)" % args.id)
+        glyph = {"done": "done   ", "dropped": "dropped", "blocked": "blocked",
+                 "ready": "ready  ", "next": "NEXT ▶ "}
+        pos = {s["id"]: n for n, s in enumerate(steps, 1)}
+        for n, s in enumerate(steps, 1):
+            waits = ""
+            if s["waiting_on_steps"]:
+                waits = " (needs %s)" % ", ".join("step %s" % pos[w] for w in s["waiting_on_steps"] if w in pos)
+            due = " · due %s" % s["due"] if s.get("due") else ""
+            print("  %d. %s  %s  %s%s%s" % (n, glyph.get(s["state"], s["state"]),
+                                            s["id"], s["title"], waits, due))
+    else:
+        for s in steps:
+            emit(s)
+
+
+def cmd_chain_new(args):
+    parent_fm, _, _ = load(args.parent)  # validate parent exists
+    created, prev = [], None
+    for title in args.steps:
+        id_ = new_id()
+        fm = {"id": id_, "type": "task", "title": title,
+              "status": "next" if prev is None else "open",
+              "label": short_label(title), "links": ["parent:%s" % args.parent],
+              "created": now_ts(), "updated": now_ts(), "source": agent_name(args)}
+        if prev is not None:
+            # prev blocks this step: store the edge on prev (the blocker)
+            pfm, pbody, _ = load(prev)
+            plinks = pfm.get("links", [])
+            plinks = [plinks] if isinstance(plinks, str) else list(plinks)
+            plinks.append("blocks:%s" % id_)
+            pfm["links"], pfm["updated"] = plinks, now_ts()
+            save(prev, pfm, pbody)
+        save(id_, fm, "")
+        created.append(id_)
+        prev = id_
+    commit("chain-new under %s: %d steps" % (args.parent, len(created)), agent_name(args))
+    emit({"parent": args.parent, "created": created,
+          "hint": "enrich each step to pickup-ready; see it with `chain %s --oneline`" % args.parent})
+
+
 def cmd_story(args):
     """Everything about one item: fields, context, lineage, and a merged
     chronological timeline of git mutations + semantic ## Log lines."""
@@ -954,6 +1068,17 @@ def main():
     p.add_argument("--all", action="store_true", help="traverse every rel, not just parent/follows")
     p.add_argument("--oneline", action="store_true", help="render as an indented tree")
     p.set_defaults(fn=cmd_thread)
+
+    p = sub.add_parser("chain", help="ordered steps of a milestone (parent+blocks), with the next actionable one marked")
+    p.add_argument("id")
+    p.add_argument("--oneline", action="store_true", help="readable numbered view instead of JSON")
+    p.set_defaults(fn=cmd_chain)
+
+    p = sub.add_parser("chain-new", help="lay down ordered steps under a parent: chain-new <parent> \"step1\" \"step2\" …")
+    p.add_argument("parent")
+    p.add_argument("steps", nargs="+", help="step titles, in order")
+    p.add_argument("--by", help="acting agent (else $WM_AGENT)")
+    p.set_defaults(fn=cmd_chain_new)
 
     p = sub.add_parser("story", help="full context + lineage + merged timeline for one item")
     p.add_argument("id")
