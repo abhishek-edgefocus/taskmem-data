@@ -8,7 +8,7 @@ size: s
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-17T13:50:10Z
-updated: 2026-07-17T13:50:48Z
+updated: 2026-07-20T15:35:30Z
 source: claude-code
 ---
 
@@ -44,3 +44,6 @@ legacy semantics -- positions.py gets fund per as-of row already; check how t.FU
 Requires a silver backfill. Check downstream consumers of transactions.account_id first.
 
 No Linear issue yet -- worth filing under the NorthPond Data Ingestion project.
+
+## Log
+- 2026-07-20T15:35Z [claude-code] Full-history data comparison (2026-07-20, repos-2) CONFIRMS this bug with hard numbers. Legacy datastore derives account_id per-fund: fund=efhyf -> 'northpond_efhyf' (66,207 rows), fund=experimental -> 'ef_northpond' (21,476). silver.transactions emits raw tape ACCOUNT_NAME='ef_northpond' for BOTH funds (65,585 + 21,022). Net: 65,574 silver rows carry the wrong ACCOUNT_ID (60,985 payments leg + 4,589 service-fee leg) - every efhyf-fund row. Zero mismatches on the experimental fund. So the fix is exactly as scoped: derive ACCOUNT_ID from FUND ('northpond_' || fund) rather than t.ACCOUNT_NAME, in both transactions.py and transactions_service_fees.py. This is the single largest value-level divergence between the two systems.
