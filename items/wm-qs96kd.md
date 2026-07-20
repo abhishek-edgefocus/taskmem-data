@@ -8,7 +8,7 @@ size: m
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-17T09:39:49Z
-updated: 2026-07-17T09:40:32Z
+updated: 2026-07-20T15:25:30Z
 source: claude-code
 ---
 
@@ -46,3 +46,6 @@ pattern (on-demand), NOT a bug. Do not "fix" it.
 
 ## Impact
 Unblocks 31 of 80 panels on the NorthPond Monitoring dashboard (per wm-drehnk inventory).
+
+## Log
+- 2026-07-20T15:25Z [claude-code] 2026-07-20: ALSO the hard blocker for enabling BEP (best_est) predictions for northpond. Verified prod: SILVER.REALIZED_CASHFLOWS_FROM_ORIGINATION has 0 northpond rows (only happymoney/marlette/prosper/sofi/upgrade). BEP is by definition realized-actuals overlaid on prediction (best_est_projections_base.py), so it yields nothing until these 5 assets materialize. Raises this item's value beyond the 31 dashboard panels.
