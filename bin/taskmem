@@ -384,6 +384,41 @@ def cmd_new(args):
     emit(dict(fm, body=body, path=str(p)))
 
 
+BUG_TAG = "taskmem-bug"
+
+
+def cmd_bug(args):
+    """File a defect against taskmem ITSELF — friction an agent hit while using
+    the tool, so the human can fix it later.
+
+    Sugar over `new`, justified by two things the agent shouldn't have to
+    assemble mid-task: the environment stamp (which build misbehaved) and a
+    fixed tag, so these stay out of the working-set views. Filing must cost
+    one line or agents won't do it, and the observation is lost.
+    """
+    id_ = new_id()
+    fm = {"id": id_, "type": "bug", "title": args.title, "status": "inbox",
+          "tags": [BUG_TAG], "label": short_label(args.title),
+          "created": now_ts(), "updated": now_ts(), "source": agent_name(args)}
+    apply_assign(fm, args.assign)
+    detail = read_body(args.body) or ""
+    sha = ""
+    try:
+        sha = subprocess.run(["git", "-C", str(WM_DIR), "rev-parse", "--short", "HEAD"],
+                             capture_output=True, text=True, timeout=5).stdout.strip()
+    except Exception:
+        pass
+    env = ["- taskmem: %s" % (sha or "unknown build"),
+           "- reported by: %s" % agent_name(args),
+           "- host: %s" % os.uname().nodename if hasattr(os, "uname") else "",
+           "- when: %s" % now_ts()]
+    body = "\n".join(([detail, ""] if detail else []) + ["## Environment"] +
+                     [e for e in env if e])
+    p = save(id_, fm, body)
+    commit("bug %s: %s" % (id_, fm.get("title", "")), agent_name(args))
+    emit(dict(fm, body=body, path=str(p)))
+
+
 def cmd_get(args):
     for id_ in args.id:
         fm, body, p = load(id_)
@@ -881,6 +916,13 @@ def main():
     p.add_argument("type"); p.add_argument("title"); p.add_argument("assign", nargs="*")
     p.add_argument("--body", help="markdown body ('-' reads stdin)")
     p.set_defaults(fn=cmd_new)
+
+    p = sub.add_parser("bug", help="file a defect against taskmem itself (tagged %s, status=inbox)" % BUG_TAG)
+    p.add_argument("title")
+    p.add_argument("assign", nargs="*", help="extra field=value pairs")
+    p.add_argument("--body", help="detail: repro, what you expected ('-' reads stdin)")
+    p.add_argument("--by", help="acting agent (else $WM_AGENT)")
+    p.set_defaults(fn=cmd_bug)
 
     p = sub.add_parser("get", help="print item(s) as JSON")
     p.add_argument("id", nargs="+"); p.add_argument("--raw", action="store_true")
