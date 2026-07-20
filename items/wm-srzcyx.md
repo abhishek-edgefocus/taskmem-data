@@ -1,9 +1,9 @@
 ---
 id: wm-srzcyx
 type: task
-title: NorthPond silver ingestion stalled since 2026-07-07 (13 days of transactions missing)
+title: Refresh stale northpond data in DEV_ABHISHEK sandbox (stalled 2026-07-07; prod is fine)
 status: open
-priority: p1
+priority: p3
 size: s
 tags: [northpond]
 created: 2026-07-20T15:35:53Z
