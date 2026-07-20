@@ -7,7 +7,7 @@ priority: p1
 size: s
 tags: [northpond]
 created: 2026-07-20T15:35:53Z
-updated: 2026-07-20T15:36:11Z
+updated: 2026-07-20T19:55:07Z
 source: claude-code
 ---
 
@@ -27,3 +27,6 @@ Any Snowflake-backed NorthPond dashboard (DEV-1395 fund monitoring) is showing d
 
 ## Next
 Find out why the northpond bronze->silver statement ingestion stopped after 2026-07-07 (dagster schedule? sensor? SFTP sync?). Re-run and confirm max AS_OF_DATE catches up to the tape.
+
+## Log
+- 2026-07-20T19:55Z [claude-code] CORRECTION (2026-07-21): this item OVERSTATED the impact. I filed it off DEV_ABHISHEK numbers - the earlier comparison ran snowflake.execute() with no database= arg, which defaults to DEV_{USERNAME}, NOT prod. Re-checked against PROD today: silver.transactions, silver.positions AND silver.northpond_stmt_transactions all have max(AS_OF_DATE) = 2026-07-20, i.e. fully current. So there is NO prod ingestion gap and NO stale-dashboard impact - the 'DEV-1395 dashboards serving 13-day-old data' claim in the original body is WRONG. The stall is confined to the DEV_ABHISHEK sandbox copy (stalled 2026-07-07). Downgrading: this is a dev-env refresh chore, not a p1 prod incident. Lesson for future comparisons: always pass database='PROD' explicitly when making claims about prod.
