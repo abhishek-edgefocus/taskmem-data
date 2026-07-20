@@ -2,13 +2,13 @@
 id: wm-cunr7j
 type: task
 title: Answer Nate/Oliv: which automated ingestions break if loan-file columns change
-status: open
+status: done
 priority: p1
 size: s
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-20T13:55:26Z
-updated: 2026-07-20T14:13:23Z
+updated: 2026-07-20T22:42:18Z
 source: claude-code
 ---
 
