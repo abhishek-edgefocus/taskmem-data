@@ -7,9 +7,9 @@ priority: p1
 size: m
 scheduled: 2026-07-14
 tags: [northpond]
-links: [parent:wm-rgwdyu]
+links: [parent:wm-rgwdyu, blocks:wm-pjhqtk]
 created: 2026-07-14
-updated: 2026-07-17T09:40:49Z
+updated: 2026-07-20T21:26:55Z
 source: dpx-tasks #2
 label: NorthPond panels inventory
 ---
