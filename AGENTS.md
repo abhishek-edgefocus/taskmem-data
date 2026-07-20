@@ -153,6 +153,34 @@ Rules of thumb:
   `refs+=DEV-1234=https://…` (issue, PR, dashboard, Slack thread). The human
   should never have to hunt for the thing an item points at.
 
+## Reporting bugs in taskmem itself
+
+When the tool fights you, file it: `taskmem bug "<what went wrong>" --body -`.
+It lands as `status=inbox`, tagged `taskmem-bug`, stamped with the build and
+your agent name, and is excluded from every work view — so it costs the human
+nothing until they choose to look.
+
+File one whenever you hit friction *using* the memory, not doing the work:
+a command that did the wrong thing or needed a workaround, output that misled
+you, a rule in this file that contradicted another or that you had to reread
+to follow, something you expected to exist and didn't, a field or view that
+made you guess. **The human explicitly asked for this**: agents kept hitting
+the same rough edges and saying nothing, so they never got fixed.
+
+Two rules that keep it useful:
+
+- **Report the friction, don't work around it silently.** If you found a
+  workaround, file the bug *and* say what you did. A silent workaround means
+  the next agent pays the same tax.
+- **Tool defect, not work.** A bug in taskmem is `taskmem bug`. Work the human
+  wants done *to* taskmem (a new feature, a migration, an integration) is a
+  normal item — those belong on the plate; tool bugs deliberately don't.
+
+Write it for a reader with no memory of your session: what you ran, what you
+expected, what happened. One line is fine if that's the whole story; if you
+can name the fix, say so — but never fix the CLI yourself mid-task unless the
+human asked.
+
 ## Writing pickup-ready items
 
 Write every item so the human can start it **cold** — navigating from the

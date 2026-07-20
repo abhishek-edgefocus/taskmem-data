@@ -77,7 +77,11 @@ def section(out, title, items):
 
 
 def digest():
-    OPEN = ["--where", "status!=done,dropped"]
+    # Tool defects (taskmem bug) are not the human's work — keep them out of
+    # every work section so they can't crowd the plate, but surface a count so
+    # they don't rot invisibly either.
+    NOTBUG = ["--where", "tags!=taskmem-bug"]
+    OPEN = ["--where", "status!=done,dropped"] + NOTBUG
     out = []
     seen = set()
 
@@ -95,17 +99,22 @@ def digest():
     section(out, "Replies you owe",
             take(find(*OPEN, "--where", "tags=needs-reply", "--sort", "due", "--full")))
     section(out, "In flight",
-            take(find("--where", "status=next,active", "--sort", "updated:desc", "--full")))
+            take(find("--where", "status=next,active", *NOTBUG, "--sort", "updated:desc", "--full")))
     section(out, "Blocked / waiting",
-            take(find("--where", "status=blocked,waiting", "--sort", "updated")))
-    inbox = find("--where", "status=inbox", "--sort", "created")
+            take(find("--where", "status=blocked,waiting", *NOTBUG, "--sort", "updated")))
+    inbox = find("--where", "status=inbox", *NOTBUG, "--sort", "created")
     section(out, "Inbox (untriaged)", inbox[:5])
     if len(inbox) > 5:
         out.append("  … and %d more in inbox" % (len(inbox) - 5))
-    total = find("--count")
+    total = find(*NOTBUG, "--count")
     if total:
         out.append("Working set: %s items (this digest is mechanical state only; "
                    "judge priorities yourself)." % total[0].get("count"))
+    bugs = find("--where", "tags=taskmem-bug", "--where", "status!=done,dropped", "--count")
+    if bugs and bugs[0].get("count"):
+        out.append("%s open taskmem bug(s) filed by agents — `taskmem find --where "
+                   "tags=taskmem-bug --where \"status!=done,dropped\"` (not work; "
+                   "fix when you feel like it)." % bugs[0]["count"])
     return "\n".join(out)
 
 
