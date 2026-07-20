@@ -6,7 +6,7 @@ status: open
 priority: p2
 size: l
 tags: [northpond, edgex, predictions]
-links: [parent:wm-j523sq]
+links: [parent:wm-j523sq, blocked-by:wm-qs96kd]
 created: 2026-07-20T15:25:55Z
 updated: 2026-07-20T15:26:08Z
 source: claude-code
