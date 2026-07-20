@@ -4,7 +4,7 @@ type: task
 title: Coder workspace: template fixes to request (k8s-devcontainer)
 status: open
 created: 2026-07-20T16:07:51Z
-updated: 2026-07-20T16:07:51Z
+updated: 2026-07-20T16:18:07Z
 source: claude-code
 ---
 
@@ -20,3 +20,6 @@ Template issues to raise with whoever owns k8s-devcontainer:
 5. psql and direnv missing.
 
 Perf: cold start 3m13s (pod schedule); uv venv + pandas/numpy/pyarrow/jupyterlab = 3.9s; efp imports 6.6s. 4 vCPU / 30Gi RAM vs dpx 16 core / 501Gi.
+
+## Log
+- 2026-07-20T16:18Z [claude-code] Dagster test on Coder 2026-07-20: 'make dg-start' UNUSABLE (docker-compose based, no docker daemon on Coder). Native 'dagster dev' works after two fixes: (1) dagster-webserver not in repo .venv - only in Docker image; installed dagster-webserver==1.12.14 (~1s). (2) orchestration/workspace.yaml hardcodes working_directory /app/orchestration (container path), and 'efp' module lives at lib/efp (pyproject packages=[edgefocus, lib/efp]) but isn't installed into venv - native runs need PYTHONPATH=REPO:REPO/lib plus a local workspace yaml (/tmp/ws_local.yaml). Result: 305 assets / 42 jobs on :3011, SQLite instance at /tmp/dagster_home_test. DPX: 309 assets / 41 jobs (commit 162a7660a vs coder c894d400f), postgres-backed on :13053, containers up 4wk. PROPOSAL: add a 'make dg-dev' target for native non-docker dagster that sets PYTHONPATH and generates local workspace.yaml - makes repo usable on docker-less envs.
