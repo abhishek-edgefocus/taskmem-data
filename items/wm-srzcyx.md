@@ -3,8 +3,11 @@ id: wm-srzcyx
 type: task
 title: NorthPond silver ingestion stalled since 2026-07-07 (13 days of transactions missing)
 status: open
+priority: p1
+size: s
+tags: [northpond]
 created: 2026-07-20T15:35:53Z
-updated: 2026-07-20T15:35:53Z
+updated: 2026-07-20T15:36:11Z
 source: claude-code
 ---
 
