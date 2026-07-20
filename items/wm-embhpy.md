@@ -7,7 +7,7 @@ waiting_on: Nate
 nudge: 2026-07-22
 people: [Nate]
 tags: [northpond]
-links: [parent:wm-j523sq]
+links: [parent:wm-j523sq, follows:wm-3gqqxr]
 created: 2026-07-20T22:42:18Z
 updated: 2026-07-20T22:42:18Z
 source: claude-code
