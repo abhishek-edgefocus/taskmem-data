@@ -2,13 +2,13 @@
 id: wm-qs96kd
 type: task
 title: Wire 5 orphaned northpond cashflow assets into statements_northpond + backfill (prod gold EMPTY)
-status: review
+status: done
 priority: p1
 size: m
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-17T09:39:49Z
-updated: 2026-07-20T19:37:47Z
+updated: 2026-07-20T22:42:18Z
 source: claude-code
 ---
 
