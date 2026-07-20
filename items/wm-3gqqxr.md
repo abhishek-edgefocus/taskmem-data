@@ -2,13 +2,13 @@
 id: wm-3gqqxr
 type: task
 title: Review Oliv sample_loan_file + monthly_curves and reply on launch integration approach
-status: open
+status: done
 priority: p2
 size: m
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-20T13:55:27Z
-updated: 2026-07-20T13:55:27Z
+updated: 2026-07-20T22:42:18Z
 source: claude-code
 ---
 
