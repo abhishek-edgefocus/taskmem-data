@@ -3,11 +3,11 @@ id: wm-9s5xkh
 type: task
 title: Integrate NorthPond/Oliv dashboard into Fund Monitoring: represent EFHYF + platform breakdown on a JV-keyed page
 status: open
-priority: p2
+priority: p3
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-hz3hm9, follows:wm-jxuaum]
 created: 2026-07-21T12:32:03Z
-updated: 2026-07-21T12:32:13Z
+updated: 2026-07-21T12:34:14Z
 source: claude-code
 ---
 
