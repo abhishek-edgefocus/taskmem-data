@@ -121,7 +121,13 @@ ignored with a note on stderr. History can only grow, via `taskmem log`.
 ## CLI contract
 
 All output is JSON (JSONL for `find`/`search`) on stdout; errors are
-`{"error": …}` on stderr with exit 1. Set `WM_AGENT=<name>` (or pass `--by`)
+`{"error": …}` on stderr with exit 1. **The JSON is for programs that need
+fields, not a hoop to jump through when reading.** To read an item you can
+already name, read `items/<id>.md` directly or use `get --raw` (which accepts
+several ids at once) — both give you the markdown as written. Reserve the CLI
+for what it is actually needed for: querying across items, and every mutation
+(so `updated`, `## Log`, git authorship and the commit all happen). Never
+hand-edit an item file. Set `WM_AGENT=<name>` (or pass `--by`)
 so mutations are attributed to you — in `## Log` lines and as the git author.
 `WM_DIR` overrides the memory location (default `~/taskmem`).
 

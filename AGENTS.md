@@ -21,6 +21,30 @@ already pinned in `~/.claude/settings.json`, so a per-session export is
 usually redundant — check before adding one, and use `--by` when a single
 mutation belongs to a different role.
 
+## Reading vs querying vs mutating
+
+Pick the cheapest tool that does the job. The CLI is not a gate you must pass
+through to look at an item — the files *are* the record.
+
+- **Reading an item whose id you already know** → read the file:
+  `items/<id>.md`. It is plain markdown, deliberately: that is what
+  files-as-truth means. `taskmem get <id> --raw` does the same and takes
+  several ids at once (`get <id> <id> --raw`). Never pipe `get` through a
+  JSON parser just to reformat it for yourself, and **never truncate the
+  body** — reasoning from a fragment is how agents assert things that aren't
+  true.
+- **Finding items you can't name** → the CLI: `find`, `search`, `thread`,
+  `chain`, `story`. Composable filters are what it is for; don't hand-roll
+  greps over `items/`.
+- **Changing anything** → *always* the CLI (`new`, `set`, `log`, `link`,
+  `bug`, `correction`, …). **Never hand-edit an item file.** The CLI stamps
+  `updated`, preserves the `## Log`, attributes the change to you as git
+  author, and commits it — a manual edit silently loses all four, and the
+  history is the whole point.
+
+`taskmem` and `tm` are on PATH, so no `cd` is needed; use the absolute
+`~/taskmem/bin/taskmem` only when they aren't.
+
 ## Session lifecycle
 
 Follow this in every substantive session:
