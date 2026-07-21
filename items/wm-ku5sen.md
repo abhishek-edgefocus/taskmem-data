@@ -49,3 +49,12 @@ PR #5859 "gold: Setup CL and trigger pipeline for edgex20261NN" (Abhijeet Bodas,
 ## Sequencing
 (1) is a deploy/materialization question, not code. (2) and (4) are buildable now.
 (3) is genuinely blocked on deal close.
+
+## Log
+- 2026-07-21T09:16Z [claude-code] TITLE CLAIM DISPROVEN 2026-07-21 — 'never materialized in prod' was wrong and has been removed from the title. Verified read-only against Dagster prod GraphQL: all five 2026-1NN CL assets have materialized, four of them on 2026-07-20 (happymoney 20:47 UTC, northpond 18:59, marlette 14:54, prosper 11:41 UTC; upgrade 2026-07-16 11:01 UTC). warehouse_thresholds last materialized 2026-07-18 08:43 UTC. Abhishek had already run these. The item was written 07-17 and its claim was stale by the time I repeated it.
+
+WHAT REMAINS OPEN (separate claims, each needing its own evidence):
+(a) All five CL materializations report rows_inserted=0, rows_deleted=0. CAUTION — this is a DELTA metric, not a row count: for comparison edgex20251NN_trigger_limits reported inserted=432 / deleted=426 on a normal run. So 0/0 is consistent with either 'table genuinely empty' or 'merge ran, nothing changed'. NOT yet settled — needs an actual COUNT(*) in Snowflake against the 2026-1NN CL tables. Do not assume empty.
+(b) edgex20261NN_eligible_loans and edgex20261NN_trigger_limits do not appear anywhere in Dagster's 403-asset list, under either naming convention in use (edgex2026 1NN_* or edgex_2026_1nn_*). By contrast these DO exist for 2025-1NN, 2025-2NN and 2026-PT1. So the 'missing assets' half of this item still stands and is the more likely real defect.
+
+Verification method for whoever picks this up: POST https://dagster-prod.edgefocuspartners.com/graphql (reachable unauthenticated, read-only; the web UI is a SPA and WebFetch returns an empty shell).
