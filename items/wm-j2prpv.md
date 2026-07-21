@@ -2,7 +2,7 @@
 id: wm-j2prpv
 type: task
 title: Force the QR-23 decision with Trishit: arithmetic curve derivation vs model-run CFFrame
-status: next
+status: done
 priority: p0
 size: s
 due: 2026-07-21
