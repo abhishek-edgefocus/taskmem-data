@@ -1,14 +1,14 @@
 ---
 id: wm-ku5sen
 type: task
-title: EDGEX-2026-1NN warehouse never materialized in prod: thresholds/CL zero rows + missing eligible_loans & trigger_limits
+title: EDGEX-2026-1NN warehouse: CL assets materialize but insert 0 rows; no eligible_loans/trigger_limits assets defined
 status: next
 priority: p1
 size: l
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-17T09:40:07Z
-updated: 2026-07-17T09:40:32Z
+updated: 2026-07-21T09:16:01Z
 source: claude-code
 ---
 
