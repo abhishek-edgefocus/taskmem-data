@@ -3,11 +3,11 @@ id: wm-a9c7nz
 type: task
 title: Build EF-vs-Oliv prediction comparison dashboard (ENL/ANL scatter, CGL, CNL)
 status: open
-priority: p2
+priority: p3
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-c5jytx]
 created: 2026-07-21T12:19:22Z
-updated: 2026-07-21T12:20:19Z
+updated: 2026-07-21T12:34:14Z
 source: claude-code
 ---
 
