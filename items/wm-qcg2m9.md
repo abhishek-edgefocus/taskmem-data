@@ -4,7 +4,7 @@ type: task
 title: Coder workspace: template fixes to request (k8s-devcontainer)
 status: open
 created: 2026-07-20T16:07:51Z
-updated: 2026-07-21T12:05:19Z
+updated: 2026-07-21T12:13:57Z
 source: claude-code
 ---
 
@@ -27,3 +27,12 @@ Perf: cold start 3m13s (pod schedule); uv venv + pandas/numpy/pyarrow/jupyterlab
 
 PERSISTENCE CORRECTION: only /home/coder persists — it is a 40G ext4 PVC (/dev/nvme2n1), 34G free. Earlier '72G of 99G free' was WRONG: that was the ephemeral overlay rootfs. Terraform recreates kubernetes_pod_v1.main on every start, so / is rebuilt from the image each time — ALL apt installs are lost on restart. Anything to persist must live under /home/coder or go into the template image. Also noted: NFS mounts at /homes (ro) and /home/abhishek (rw) inside the pod.
 - 2026-07-21T12:05Z [claude-code] CAVEAT on the Claude-extension 'fix' (self-correction, 2026-07-21): I over-claimed. The VS Code extension (anthropic.claude-code-2.1.210-linux-x64) and the CLI at ~/.local/bin/claude were ALREADY installed and ALREADY OAuth-authenticated before I touched anything — I did not set them up. What I actually did was create the missing ~/.bashrc and ~/.profile so ~/.local/bin lands on PATH. Verified ONLY via 'bash -lc' (a LOGIN shell, which sources .profile). Never verified end-to-end inside VS Code — never connected the IDE to the workspace. LATENT FLAW in my .bashrc: I put '[ -z $PS1 ] && return' BEFORE the 'export PATH=$HOME/.local/bin:$PATH' line, so NON-interactive shells return early and never get the PATH. If the extension spawns the CLI via a non-interactive, non-login shell, the fix does NOT apply and the original symptom persists. TODO next time workspace is started: (1) move the PATH export above the interactive guard in ~/.bashrc, (2) actually open VS Code against the workspace and confirm the extension launches a session.
+- 2026-07-21T12:13Z [claude-code] RESOLVED root cause of the Claude extension problem (tested end-to-end 2026-07-21) — and my PATH theory was WRONG. The VS Code extension BUNDLES its own CLI at ~/.vscode-server/extensions/anthropic.claude-code-2.1.210-linux-x64/resources/native-binary/claude (261MB). Verified it runs with PATH=/nonexistent, so the extension NEVER depended on PATH. My ~/.bashrc/.profile work only ever affected the 'claude' command typed in a terminal, not the extension.
+
+ACTUAL BLOCKER: OAuth credentials in ~/.claude/.credentials.json are EXPIRED and unrefreshable. accessToken expiresAt=2026-07-15T19:41Z, refreshTokenExpiresAt=2026-07-20T08:15Z — BOTH in the past. Headless test 'claude -p' returns: 'Failed to authenticate: OAuth session expired and could not be refreshed'. subscriptionType=pro, org='abhishek@edgefocuspartners.com's Organization' (personal, not an EFP enterprise org). FIX = user must re-run 'claude' interactively in the workspace and complete the browser OAuth login; nothing else will work and I cannot do it (needs a browser).
+
+Also tested: CLAUDE_CODE_OAUTH_TOKEN in ~/repos/efp/.env is a 20-char PLACEHOLDER literally starting '<subscriptio...' — not a real token; using it gives 401. Not an auth path.
+
+Also: bash never sources ~/.bashrc for non-interactive shells at all, so moving the PATH export above the '[ -z $PS1 ] && return' guard does NOT fix 'bash -c'. Terminal-only PATH now works for login+interactive shells; non-interactive would need BASH_ENV or a symlink into /usr/local/bin (ephemeral, lost each restart).
+
+CORRECTION to an earlier log: AWS SSO IS still working (sts get-caller-identity returns the coder-workspace-dev role). The startup-script line 'AWS access not provisioned - not an EFP Identity Center user' is misleading noise, not a real failure.
