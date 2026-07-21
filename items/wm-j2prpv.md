@@ -7,7 +7,7 @@ priority: p1
 size: s
 due: 2026-07-21
 tags: [northpond]
-links: [relates:wm-c5jytx, relates:wm-9s2mwd]
+links: [relates:wm-c5jytx, relates:wm-9s2mwd, parent:wm-j523sq]
 created: 2026-07-21T12:22:52Z
 updated: 2026-07-21T12:23:01Z
 source: claude-code
