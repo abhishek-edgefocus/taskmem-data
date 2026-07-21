@@ -2,13 +2,13 @@
 id: wm-rp2y23
 type: task
 title: Build EdgeX-2026-1NN Grafana dashboards (zero exist) + promote NorthPond monitoring dashboard out of personal folder
-status: open
+status: done
 priority: p3
 size: l
 tags: [northpond, edgex]
 links: [parent:wm-j523sq, blocked-by:wm-ku5sen]
 created: 2026-07-17T09:40:24Z
-updated: 2026-07-21T12:34:14Z
+updated: 2026-07-21T12:36:08Z
 source: claude-code
 ---
 
