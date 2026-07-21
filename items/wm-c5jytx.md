@@ -11,7 +11,7 @@ tags: [northpond]
 links: [parent:wm-h3dvpa]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-15T21:14:11Z
-updated: 2026-07-21T12:34:14Z
+updated: 2026-07-21T17:38:20Z
 source: claude-code
 label: EDGEX EF scoring setup
 ---
@@ -56,3 +56,18 @@ CONFLICTS WITH SEAN'S QR-23 / DEV-1452 (see wm-9s2mwd). Sean was NOT on this cal
 CMOP/BEP EXPLICITLY OUT OF REACH via Oliv (bears on wm-79k8df) — Nakula: "using their model we can't generate BPS or COP"; Trishit: "Exactly."
 
 REMAINING OPEN (much smaller than before): (1) BACKFILL — the daily-file change is go-forward; nothing in the call covers loans already originated, and EDGEX needs the loans going into the deal. Purchase files may cover it but that was not stated. (2) Where the fixed ratio vector lives — hardcoded in the repo with provenance, or ingested as a versioned file; Trishit expects the scalars to change ("these numbers will change"), so a hardcode needs a change path. (3) The 36-month term assumption breaks if Oliv ever originates other terms. (4) Provenance of Sean's curve — Trishit's own open action; nobody on the call could recall why that curve was chosen.
+- 2026-07-21T17:38Z [claude-code] METHOD SETTLED 2026-07-21 (Abhishek + Trishit) — see wm-j2prpv. Per-loan linear retarget: k = anl_oliv / anl_ours, applied to our model's OP; rescaled predictions become canonical at_orig, CFFrames derived downstream from them. Supersedes the fork-(a) 'ingest an ANL scalar, generate no cashflows' resolution of 2026-07-16 AND the call's arithmetic curve derivation. We now DO need the northpond forward-flow predictor path (wm-9s2mwd).
+
+OPEN DESIGN QUESTIONS raised against the method, none blocking the decision but all cheaper to settle before code:
+
+1. GROSS-VS-NET MISMATCH IN THE RATIO (most material). Our ANL is net of our recovery assumption. Nate's ANL may have NO recovery assumption at all — cgl/1.36 is arithmetically consistent with 1.36 being a pure WAL divisor for a 36-mo amortising loan at 20% CPR, i.e. their 'net' may actually be gross. If so, k = anl_oliv/anl_ours is biased UPWARD and we would systematically inflate losses (order of the recovery rate, maybe ~10% for this population). This is exactly the outstanding Nate question on wm-embhpy — it is now on the critical path, not a nicety.
+
+2. THE RETARGET DOES NOT TIE OUT. ANL is derived as NET_LOSS*12/WEIGHTED_PRIN (generate_anl_from_cashflows_sql), so its denominator depends on the loss vector. Scale losses by k and re-amortise, and surviving principal moves, so the resulting frame's ANL != anl_oliv. Trishit expects k<1 (he said our predictions run hot, '1.8 to 1.5'), so we would UNDERSHOOT their ANL. A single multiply cannot hit the target; needs a per-loan solve/fixed point if exact tie-out to Oliv's ANL is required. Sean's word was 'fully self consistent' — decide whether that means internally consistent (single multiply is fine) or ties to Oliv's ANL (needs the solve).
+
+3. WHAT EXACTLY GETS SCALED. Scaling the loss/default vector then re-running amortisation yields a genuinely self-consistent frame; scaling final output numbers without re-amortising does not (losses stop tying to balances) and would fail Sean's bar. Must be the former.
+
+4. COVERAGE + GUARDRAILS. Does our model produce an OP for every loan on Nate's issuance file? Transcript notes the Experian model accepted only ~80 of ~370 TU-originated loans. Need a documented fallback where no OP exists, and a guard for anl_ours at or near zero (k explodes). Also check the int_rate_at_purchase=0 northpond defect (wm-gxykru) does not corrupt the denominator.
+
+5. WHICH GENERATION of our ANL is the denominator — the ef_scores earliest-generation lock (MIN(GENERATION_TS)) means a stale 2024-10-09 api generation currently wins for all 773 loans. Pin this explicitly.
+
+6. PREPAY stays ours (model-driven), not Nate's flat 20%. Intended, but means the frame is a hybrid and should be documented as such.
