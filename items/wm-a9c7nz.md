@@ -7,7 +7,7 @@ priority: p3
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-c5jytx]
 created: 2026-07-21T12:19:22Z
-updated: 2026-07-21T12:34:14Z
+updated: 2026-07-21T12:34:31Z
 source: claude-code
 ---
 
@@ -26,3 +26,6 @@ Purpose stated by Trishit: this is the feedback loop for recalibration. Once rea
 
 ## Timing
 Trishit framed it as "when we start to build going forward, whenever the deployment starts to come in" -- i.e. not before the ANL feed exists. Not urgent this week, but it is a real committed deliverable and should not silently disappear.
+
+## Log
+- 2026-07-21T12:34Z [claude-code] Dropped to p3 2026-07-21 (dashboard work deferred to next week). Independently blocked anyway: nothing to plot until Oliv's ANL lands per loan via wm-c5jytx.
