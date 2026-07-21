@@ -3,12 +3,12 @@ id: wm-rsdgx8
 type: task
 title: Restructure Linear: split v1/v2 model reporting out of NorthPond deprecation milestone
 status: next
-priority: p2
+priority: p3
 size: s
 tags: [northpond, linear]
 links: [relates:wm-unb6pr, relates:wm-rgwdyu]
 created: 2026-07-20T15:11:15Z
-updated: 2026-07-20T15:11:38Z
+updated: 2026-07-21T12:34:15Z
 source: claude-code
 ---
 
