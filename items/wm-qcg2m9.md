@@ -4,7 +4,7 @@ type: task
 title: Coder workspace: template fixes to request (k8s-devcontainer)
 status: open
 created: 2026-07-20T16:07:51Z
-updated: 2026-07-20T17:40:52Z
+updated: 2026-07-21T12:05:19Z
 source: claude-code
 ---
 
@@ -26,3 +26,4 @@ Perf: cold start 3m13s (pod schedule); uv venv + pandas/numpy/pyarrow/jupyterlab
 - 2026-07-20T17:40Z [claude-code] Docker feasibility on Coder — DEFINITIVE NO from inside the pod (tested 2026-07-20). sudo DOES give real root (uid=0) and apt works, but the pod has no CAP_SYS_ADMIN: CapEff=0x0, bounding set excludes cap_sys_admin/cap_net_admin. Even as root, 'unshare --mount', '--net', '--pid' all fail with EPERM, and 'mount -t tmpfs' is denied. max_user_namespaces=0 and no /dev/fuse, so rootless Docker AND Podman are also impossible. iptables not installed. dockerd binary not present (only docker CLI + compose plugin v5.3.1). User IS in group docker (gid 1001) — template appears to intend a socket mount that never happens. Docker requires a TEMPLATE/cluster change: privileged pod, DinD sidecar, sysbox runtime, or mounting the host socket. Not user-fixable.
 
 PERSISTENCE CORRECTION: only /home/coder persists — it is a 40G ext4 PVC (/dev/nvme2n1), 34G free. Earlier '72G of 99G free' was WRONG: that was the ephemeral overlay rootfs. Terraform recreates kubernetes_pod_v1.main on every start, so / is rebuilt from the image each time — ALL apt installs are lost on restart. Anything to persist must live under /home/coder or go into the template image. Also noted: NFS mounts at /homes (ro) and /home/abhishek (rw) inside the pod.
+- 2026-07-21T12:05Z [claude-code] CAVEAT on the Claude-extension 'fix' (self-correction, 2026-07-21): I over-claimed. The VS Code extension (anthropic.claude-code-2.1.210-linux-x64) and the CLI at ~/.local/bin/claude were ALREADY installed and ALREADY OAuth-authenticated before I touched anything — I did not set them up. What I actually did was create the missing ~/.bashrc and ~/.profile so ~/.local/bin lands on PATH. Verified ONLY via 'bash -lc' (a LOGIN shell, which sources .profile). Never verified end-to-end inside VS Code — never connected the IDE to the workspace. LATENT FLAW in my .bashrc: I put '[ -z $PS1 ] && return' BEFORE the 'export PATH=$HOME/.local/bin:$PATH' line, so NON-interactive shells return early and never get the PATH. If the extension spawns the CLI via a non-interactive, non-login shell, the fix does NOT apply and the original symptom persists. TODO next time workspace is started: (1) move the PATH export above the interactive guard in ~/.bashrc, (2) actually open VS Code against the workspace and confirm the extension launches a session.
