@@ -8,7 +8,7 @@ size: l
 tags: [northpond, edgex, predictions]
 links: [parent:wm-j523sq, blocked-by:wm-qs96kd]
 created: 2026-07-20T15:25:55Z
-updated: 2026-07-20T15:26:08Z
+updated: 2026-07-21T09:04:48Z
 source: claude-code
 ---
 
@@ -75,3 +75,6 @@ Also: legacy had a 2nd independent gate CMOP_VALID_PLATFORMS = [lc, upgrade, mar
 (lib/efp/stats/edgex/constants.py:10) consumed by EDGEX with frozen index=1160. northpond was never
 in it. Could NOT find where that frozen-index pinning is preserved on the Snowflake side — open
 question if EDGEX scoring is in scope (relates to wm-c5jytx).
+
+## Log
+- 2026-07-21T09:04Z [claude-code] DEPRIORITISED per Abhijeet DM 2026-07-20 (ts 1784564371/1784564375): CMOP+BEP predictions for NorthPond are 'not needed for EDGEX, at least immediately'. Critically, the EDGEX 'OP' ask is NOT this item — Abhijeet clarified 'OP for edgex is te integrated model vala' (the Oliv integrated model, tracked as wm-c5jytx). Do not conflate the two. This stays scoped but off the EDGEX critical path.
