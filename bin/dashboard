@@ -197,7 +197,7 @@ def main():
     section(out, "Independent (no project or thread, undated)", backlog)
     done = find("--where", "status=done", *NOTBUG, "--where", "updated>=today-7", "--sort", "updated:desc")
     section(out, "Done this week", done)
-    section(out, "taskmem bugs (agent-reported — tool defects, not work)",
+    section(out, "taskmem issues (agent-reported tool defects + corrections — not work)",
             find("--where", "tags=taskmem-bug", "--where", "status!=done,dropped",
                  "--sort", "created:desc", "--full"))
 

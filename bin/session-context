@@ -112,9 +112,12 @@ def digest():
                    "judge priorities yourself)." % total[0].get("count"))
     bugs = find("--where", "tags=taskmem-bug", "--where", "status!=done,dropped", "--count")
     if bugs and bugs[0].get("count"):
-        out.append("%s open taskmem bug(s) filed by agents — `taskmem find --where "
+        corr = find("--where", "tags=correction", "--where", "status!=done,dropped", "--count")
+        n_corr = corr[0].get("count") if corr else 0
+        extra = " (%s of them corrections — times the memory was wrong)" % n_corr if n_corr else ""
+        out.append("%s open taskmem issue(s) filed by agents%s — `taskmem find --where "
                    "tags=taskmem-bug --where \"status!=done,dropped\"` (not work; "
-                   "fix when you feel like it)." % bugs[0]["count"])
+                   "fix when you feel like it)." % (bugs[0]["count"], extra))
     return "\n".join(out)
 
 
