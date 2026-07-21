@@ -3,6 +3,7 @@ id: wm-c5jytx
 type: task
 title: Set up northpond model for EDGEX EF scoring — at_orig predictions into silver.predicted_cashflows
 status: next
+priority: p1
 size: l
 due: 2026-07-24
 people: [Abhijeet, Trishit, Nakula, Eric]
