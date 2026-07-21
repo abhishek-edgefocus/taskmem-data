@@ -72,6 +72,7 @@
 | wm-srzcyx | northpond | open | low | <1h | Refresh stale northpond data in DEV_ABHISHEK sandbox (stalled 2026-07-07; prod is fine) |  |  |
 | wm-mnetja | integration | open | low |  | Wrap taskmem as an MCP server (tools 1:1 over CLI) |  |  |
 | wm-yyb3dz | integration | open | low |  | GitHub adapter: PR/issue events update linked items |  |  |
+| wm-wn8wbk |  | open |  |  | Confirm expected CNL on Oliv HYF loans contributed to EDGEX 2026-1NN (vs broader deal) |  |  |
 | wm-qcg2m9 |  | open |  |  | Coder workspace: template fixes to request (k8s-devcontainer) |  |  |
 | wm-kpyq3c | taskmem | open |  |  | Work memory v1: markdown files + git + generic CLI |  |  |
 | wm-jpxt8v | taskmem | someday |  |  | Revisit: restructure into ~/brain monorepo (taskmem/ + notes/ + context/) |  |  |
@@ -80,10 +81,10 @@
 
 | id | from | status | priority | effort | task | due | links |
 |---|---|---|---|---|---|---|---|
+| wm-rgwdyu | NorthPond Data Ingestion | done | high | multi-day | Migrate NorthPond Fund Monitoring page to Snowflake data (DEV-1395) | **2026-07-20** | [DEV-1395](https://linear.app/edge-focus/issue/DEV-1395/migrate-the-northpond-fund-monitoring-page-to-use-snowflake-data) [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring) [PR5884](https://github.com/edgefocus/efp/pull/5884) |
 | wm-3gqqxr | NorthPond Data Ingestion | done |  | half-day | Review Oliv sample_loan_file + monthly_curves and reply on launch integration approach |  |  |
 | wm-cunr7j | NorthPond Data Ingestion | done | high | <1h | Answer Nate/Oliv: which automated ingestions break if loan-file columns change |  |  |
 | wm-qs96kd | NorthPond Data Ingestion | done | high | half-day | Wire 5 orphaned northpond cashflow assets into statements_northpond + backfill (prod gold EMPTY) |  |  |
-| wm-rgwdyu | NorthPond Data Ingestion | done | high | multi-day | Migrate NorthPond Fund Monitoring page to Snowflake data (DEV-1395) | **2026-07-20** | [DEV-1395](https://linear.app/edge-focus/issue/DEV-1395/migrate-the-northpond-fund-monitoring-page-to-use-snowflake-data) [Grafana](https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring) [PR5884](https://github.com/edgefocus/efp/pull/5884) |
 | wm-drehnk | NorthPond Data Ingestion | done | high | half-day | Inventory NorthPond monitoring panels; map each query to its Snowflake source |  |  |
 | wm-j9jxpc | northpond | done |  | <1h | Check missing statement files for NorthPond and confirm in Kushagra's thread (before Friday dev call) | **2026-07-17** | [slack](https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1784107733166829?thread_ts=1784107733.166829&cid=C0B6M0AQKB5) |
 | wm-k3wt84 | northpond | done |  |  | NorthPond purchased loans take 2-8 days to appear in silver.positions (portfolio understated after each purchase) |  |  |
@@ -99,11 +100,12 @@
 | wm-c39rb3 | NorthPond Data Ingestion | done | high | <1h | Land DEV-1412: Positions Daily + Realized Cashflows for NorthPond (in review) |  | [DEV-1412](https://linear.app/edge-focus/issue/DEV-1412/add-positions-daily-and-realized-cashflows-for-northpond) |
 | wm-225chs | OpenRoad Data Ingestion | done | high | <1h | Land DEV-1331: OpenRoad predictions ingest+validation, PR #5709 (in review) |  | [DEV-1331](https://linear.app/edge-focus/issue/DEV-1331/ingest-and-validate-predictions) |
 
-## taskmem bugs (agent-reported — tool defects, not work)
+## taskmem issues (agent-reported tool defects + corrections — not work)
 
 | id | from | status | priority | effort | task | due | links |
 |---|---|---|---|---|---|---|---|
+| wm-y7dqmg | taskmem-bug | inbox |  |  | Six NorthPond items sat open/next while the work was already done — Abhishek had to enumerate them manually |  |  |
 | wm-epb27n | taskmem-bug | inbox |  |  | Agents miss existing items and re-do or re-ask about work already handled |  |  |
 | wm-njbe6v | taskmem-bug | inbox |  |  | install.sh did not set WM_AGENT, so attribution silently fell back to 'unknown' |  |  |
 
-*Working set: 28 open items. Full queries: see SCHEMA.md.*
+*Working set: 29 open items. Full queries: see SCHEMA.md.*
