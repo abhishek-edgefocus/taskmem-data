@@ -3,11 +3,12 @@ id: wm-9s2mwd
 type: task
 title: Run the Olive purchase tape model daily (DEV-1452)
 status: open
-priority: p2
+priority: p1
+size: l
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-c5jytx]
 created: 2026-07-20T13:55:37Z
-updated: 2026-07-21T12:20:19Z
+updated: 2026-07-21T12:34:14Z
 source: claude-code
 ---
 
