@@ -5,7 +5,7 @@ title: Build EF-vs-Oliv prediction comparison dashboard (ENL/ANL scatter, CGL, C
 status: open
 priority: p2
 tags: [northpond]
-links: [parent:wm-j523sq]
+links: [parent:wm-j523sq, relates:wm-c5jytx]
 created: 2026-07-21T12:19:22Z
 updated: 2026-07-21T12:20:19Z
 source: claude-code
