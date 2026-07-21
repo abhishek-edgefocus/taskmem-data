@@ -9,7 +9,7 @@ due: 2026-07-21
 tags: [northpond]
 links: [relates:wm-c5jytx, relates:wm-9s2mwd, parent:wm-j523sq]
 created: 2026-07-21T12:22:52Z
-updated: 2026-07-21T12:39:14Z
+updated: 2026-07-21T17:38:01Z
 source: claude-code
 ---
 
@@ -31,3 +31,12 @@ Also raise: the 1.82 / 1.36 scalars Oliv uses to reach CGL and ANL were themselv
 - 2026-07-21T12:39Z [claude-code] STATUS CHECK 2026-07-21 (Abhishek's confirmed-vs-pending review). Re-read the Sean/Trishit/Nakula/Abhishek group DM C0BJ54B95Q9: STILL zero messages after Trishit's 2026-07-17 21:47 IST 'I'll take an initial look today and update the group on what's the best way forward'. Confirmed via a from:<@U02PQS54UJD> after:2026-07-16 search — Sean has posted plenty elsewhere since, nothing further here. Four days of silence on the one decision that sizes the 2026-07-24 build.
 
 This remains the ONLY genuinely scope-changing open item in the whole Oliv/EDGEX picture: everything else pending is either an overdue deliverable from Nate (final schema, purchase-tape schema — wm-embhpy) or a question nobody has asked yet (backfill). Arithmetic route = CGL x hardcoded ratio vector, no predictor class. Sean's route = NorthPond predictor + prep + cfframe config, ~400-550 LOC. Escalate today.
+- 2026-07-21T17:38Z [claude-code] DECIDED 2026-07-21 — Abhishek + Trishit, verbally. The arithmetic-vs-model-run fork is RESOLVED in favour of Sean's route (QR-23 / DEV-1452), implemented as a LINEAR RETARGET rather than a re-fit:
+
+METHOD: take OUR model's origination prediction, divide by OUR ANL, multiply by NATE'S ANL from the issuance file, AT LOAN LEVEL. k = anl_oliv / anl_ours applied per loan. The rescaled predictions become the canonical at_orig predictions, flow downstream, and CFFrames are derived from them — i.e. everything consumes the retargeted numbers, not the raw API-model numbers.
+
+This is Sean's 'Oliv ANL as a stress factor, explicitly NOT as a GBM feature' realised as a ratio scale. It supersedes the 2026-07-16 call's arithmetic curve derivation (static unit curve x terminal CGL). The arithmetic route is DEAD — do not build it.
+
+CONSEQUENCE: we DO need the northpond forward-flow predictor path after all (wm-9s2mwd / wm-79k8df machinery, ~400-550 LOC estimate), since the thing being scaled is our model's OP curve. Also means Abhijeet's original framing (store OPs as prediction_type='at_orig' in silver.predicted_cashflows) is satisfiable again — the curves are ours, retargeted by their ANL.
+
+NOTE FOR WHOEVER BUILDS IT: this is our model retargeted to their loss LEVEL, carrying our timing/shape/prepay/recovery assumptions. It is NOT 'their model's predictions' and should not be described that way to Sean or investors. Open design questions logged on wm-c5jytx.
