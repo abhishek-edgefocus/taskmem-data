@@ -2,14 +2,14 @@
 id: wm-ugkjx7
 type: followup
 title: After deprecation PR merges: announce on #north-pond-tech + send PR to Frank/Michael
-status: open
+status: done
 priority: p2
 size: xs
 tags: [northpond, needs-reply]
 links: [blocked-by:wm-u7d75w, parent:wm-j523sq, relates:wm-c5jytx, relates:wm-unb6pr]
 refs: [slack=https://edgefocuspartners.slack.com/archives/D0B2A3WSJ5N/p1784567623932049]
 created: 2026-07-21T09:05:11Z
-updated: 2026-07-21T09:05:26Z
+updated: 2026-07-21T09:10:20Z
 source: claude-code
 ---
 
