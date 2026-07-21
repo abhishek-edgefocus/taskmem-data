@@ -19,10 +19,12 @@ label: EDGEX EF scoring setup
 From Abhijeet's EDGEX ask (thread below): once the final northpond model is ready, EF score calculation must use it instead of API predictions, storing the secondary-model predictions with prediction_type='at_orig' in silver.predicted_cashflows — similar to the forward-flow prediction pipeline used for other programs. Thread facts: Trishit says the model is ready for EF grades but ANL computation is owned by Eric's team (grades delivered via them); Nakula flags that the pipeline will need dedup preferring source='s3' over source='api'. Design can start now; execution depends on the grades-delivery path from Eric's team.
 
 ## Next steps
-1. First answer Abhijeet's confirmation question (parent item wm-h3dvpa).
-2. Review the forward-flow prediction pipeline for other programs as the template.
-3. Design the ingestion: northpond-model predictions -> silver.predicted_cashflows with prediction_type='at_orig', including Nakula's dedup (prefer source='s3' over 'api').
-4. Coordinate with Trishit / Eric's team on how EF grades + ANL outputs will be delivered.
+(Rewritten 2026-07-21 after the method was settled with Trishit — see wm-j2prpv. The old steps 1 and 4 were stale and had been flagged as wrong twice; parent wm-h3dvpa is done and the delivery path is known.)
+1. Get Nate to state whether his ANL is net of recoveries or effectively gross (the 1.36 question, wm-embhpy). CRITICAL PATH — it biases k. Do this first; it is one Slack message.
+2. Build the northpond forward-flow predictor: predictor class + prep + cfframe config + FORWARD_FLOW_PREDICTORS registry entry in edgefocus/modeling/predictions/run.py (~400-550 LOC, see wm-9s2mwd).
+3. Implement the per-loan retarget k = anl_oliv / anl_ours: scale the loss/default vector and RE-AMORTISE (do not scale outputs), with guards for missing OPs and near-zero anl_ours.
+4. Decide whether the frame must tie out exactly to Oliv's ANL — if yes, a single multiply is insufficient and a per-loan solve is needed (design question 2 in the log).
+5. Land the retargeted predictions as prediction_type='at_orig' in silver.predicted_cashflows; pin which generation of our ANL is the denominator (ef_scores MIN(GENERATION_TS) lock).
 
 ## Links
 - Abhijeet's ask (thread): https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G
