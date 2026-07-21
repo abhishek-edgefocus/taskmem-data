@@ -181,6 +181,31 @@ expected, what happened. One line is fine if that's the whole story; if you
 can name the fix, say so — but never fix the CLI yourself mid-task unless the
 human asked.
 
+### When the human corrects you
+
+If the human has to tell you the memory got something **wrong** — "that's
+already done", "that's not what happened", "you missed this", wrong person,
+wrong date, wrong status — do two things, in this order:
+
+1. **Fix the item**: correct the data and log what changed and why.
+2. **Record the correction**: `taskmem correction "<what was tracked wrong>"
+   --about <id> --body -` (what we had, what was actually true, and why it
+   slipped past us).
+
+This is the single most valuable signal in the system, because it is the only
+one that exposes *systemic* gaps rather than one-off mistakes: statuses go
+stale because nothing re-checks the source of truth; a capture is missed
+because search-before-create lost to eagerness. One correction is noise; five
+of the same shape is a fix worth making. Never argue a correction away,
+and never silently absorb it — **if the human had to tell you, it goes on the
+record**, even when the fix itself took ten seconds.
+
+Record a correction when the memory or your report was **wrong about
+something already knowable**. Do NOT record one when the human simply changes
+their mind, reprioritizes, or gives you genuinely new information — that is
+ordinary work, and filing corrections for it turns a high-signal channel into
+noise.
+
 ## Writing pickup-ready items
 
 Write every item so the human can start it **cold** — navigating from the

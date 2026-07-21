@@ -129,6 +129,7 @@ so mutations are attributed to you — in `## Log` lines and as the git author.
 |---------|---------|
 | `taskmem new <type> <title> [k=v …] [--body -\|text]` | create; prints the item with `id` |
 | `taskmem bug <title> [k=v …] [--body -\|text]` | file a defect against taskmem itself: `type=bug`, `status=inbox`, `tags=[taskmem-bug]`, auto-stamped build/agent/host. Excluded from digest + dashboard work sections (surfaced as a count and its own section) |
+| `taskmem correction <title> [--about <id>] [--body …]` | record that the human had to correct mis-tracked info: `type=correction`, `status=inbox`, `tags=[taskmem-bug, correction]`, `relates:<id>` when `--about` given. Same exclusion as `bug`; review with `--where tags=correction` |
 | `taskmem get <id…> [--raw]` | read (JSON or raw markdown) |
 | `taskmem set <id> k=v k+=v k-=v [--body …]` | update fields (`k=` clears; `+=`/`-=` edit lists); `--body` replaces the context but **never** the `## Log` section — that is preserved automatically |
 | `taskmem log <id> <message>` | append an attributed line to `## Log` |

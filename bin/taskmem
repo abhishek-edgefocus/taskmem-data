@@ -384,22 +384,31 @@ def cmd_new(args):
     emit(dict(fm, body=body, path=str(p)))
 
 
-BUG_TAG = "taskmem-bug"
+BUG_TAG = "taskmem-bug"        # excluded from every work view
+CORRECTION_TAG = "correction"  # subset: the human had to correct us
 
 
-def cmd_bug(args):
-    """File a defect against taskmem ITSELF — friction an agent hit while using
-    the tool, so the human can fix it later.
+def _file_issue(args, kind):
+    """File a defect against the system ITSELF, so the human can fix it later.
 
-    Sugar over `new`, justified by two things the agent shouldn't have to
-    assemble mid-task: the environment stamp (which build misbehaved) and a
-    fixed tag, so these stay out of the working-set views. Filing must cost
-    one line or agents won't do it, and the observation is lost.
+    Two kinds, one storage: `bug` (the tool fought an agent) and `correction`
+    (the human had to tell us we tracked something wrong). Both are NOT the
+    human's work, so both carry BUG_TAG and stay out of the working-set views;
+    the correction tag makes the class that matters most reviewable on its own.
+
+    Sugar over `new`, justified by what the agent shouldn't assemble mid-task:
+    the environment stamp and the fixed tags. Filing must cost one line or
+    agents won't do it, and the observation is lost.
     """
     id_ = new_id()
-    fm = {"id": id_, "type": "bug", "title": args.title, "status": "inbox",
-          "tags": [BUG_TAG], "label": short_label(args.title),
+    tags = [BUG_TAG] + ([CORRECTION_TAG] if kind == "correction" else [])
+    fm = {"id": id_, "type": kind, "title": args.title, "status": "inbox",
+          "tags": tags, "label": short_label(args.title),
           "created": now_ts(), "updated": now_ts(), "source": agent_name(args)}
+    about = getattr(args, "about", None)
+    if about:
+        load(about)  # validate the item being corrected exists
+        fm["links"] = ["relates:%s" % about]
     apply_assign(fm, args.assign)
     detail = read_body(args.body) or ""
     sha = ""
@@ -412,11 +421,21 @@ def cmd_bug(args):
            "- reported by: %s" % agent_name(args),
            "- host: %s" % os.uname().nodename if hasattr(os, "uname") else "",
            "- when: %s" % now_ts()]
+    if about:
+        env.append("- corrected item: %s" % about)
     body = "\n".join(([detail, ""] if detail else []) + ["## Environment"] +
                      [e for e in env if e])
     p = save(id_, fm, body)
-    commit("bug %s: %s" % (id_, fm.get("title", "")), agent_name(args))
+    commit("%s %s: %s" % (kind, id_, fm.get("title", "")), agent_name(args))
     emit(dict(fm, body=body, path=str(p)))
+
+
+def cmd_bug(args):
+    _file_issue(args, "bug")
+
+
+def cmd_correction(args):
+    _file_issue(args, "correction")
 
 
 def cmd_get(args):
@@ -1037,6 +1056,14 @@ def main():
     p.add_argument("--body", help="detail: repro, what you expected ('-' reads stdin)")
     p.add_argument("--by", help="acting agent (else $WM_AGENT)")
     p.set_defaults(fn=cmd_bug)
+
+    p = sub.add_parser("correction", help="record that the human had to correct mis-tracked info (tagged %s+%s)" % (BUG_TAG, CORRECTION_TAG))
+    p.add_argument("title", help="what was tracked wrong, in one line")
+    p.add_argument("assign", nargs="*", help="extra field=value pairs")
+    p.add_argument("--about", help="id of the item that was wrong (links relates:<id>)")
+    p.add_argument("--body", help="what we had vs what was true, and why it slipped ('-' reads stdin)")
+    p.add_argument("--by", help="acting agent (else $WM_AGENT)")
+    p.set_defaults(fn=cmd_correction)
 
     p = sub.add_parser("get", help="print item(s) as JSON")
     p.add_argument("id", nargs="+"); p.add_argument("--raw", action="store_true")
