@@ -8,7 +8,7 @@ size: l
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-c5jytx]
 created: 2026-07-20T13:55:37Z
-updated: 2026-07-21T12:34:14Z
+updated: 2026-07-21T17:38:48Z
 source: claude-code
 ---
 
@@ -31,3 +31,10 @@ SO THE REAL QUESTION IS NOT "how do we build curves" BUT "which of the two agree
 CIRCULARITY WORTH RAISING (not a proven objection): the 1.82 and 1.36 scalars Oliv applies to reach CGL and ANL were fitted off the curve SEAN sent them. Using their ANL as a stress factor on our model therefore partly re-imports our own curve assumption. Nobody on the call could recall which curve that was or why it was chosen; investigating it is an open action on Trishit.
 
 PURCHASE TAPE: contrary to the earlier concern logged here, the call DID confirm purchase files will carry ANL + CGL + model score for originated loans. So this ticket's input exists in principle. Still unknown: the current purchase-file schema (last received Pool 6, June 2025; Nate promised it 2026-07-21, tracked wm-embhpy) and whether any BACKFILL covers loans already originated — the daily-file change is go-forward only.
+- 2026-07-21T17:38Z [claude-code] UNBLOCKED + METHOD SETTLED 2026-07-21 (Abhishek + Trishit; decision recorded on wm-j2prpv). Trishit's promised 'best way forward' update — outstanding since 2026-07-17 — is now delivered verbally. Outcome: SEAN'S ROUTE WINS. The 2026-07-16 call's arithmetic curve derivation is dead.
+
+IMPLEMENTATION IS A PER-LOAN LINEAR RETARGET, not a re-fit: k = anl_oliv / anl_ours, applied to our model's origination prediction. Rescaled predictions become the canonical at_orig set and CFFrames are derived downstream from them. This is Sean's 'ANL as a stress factor, not a GBM feature' realised as a ratio scale — so the QR-23 spec is satisfied without retraining anything.
+
+WHAT THIS TICKET NOW NEEDS: exactly the machinery the code verification above said was missing — a northpond predictor class + prep + cfframe config + registry entry in edgefocus/modeling/predictions/run.py (FORWARD_FLOW_PREDICTORS). The DEV-1452 premise ('config change to the prosper statement model script') remains WRONG and the ticket should be corrected; the ~400-550 LOC estimate stands.
+
+Still gated on the CURRENT PURCHASE-TAPE SCHEMA from Nate (overdue since 2026-07-21, wm-embhpy). Six open design questions against the retarget method are logged on wm-c5jytx — item 1 (whether Nate's ANL is net or gross) is now CRITICAL PATH, because it is the denominator-vs-numerator definition mismatch that would bias k.
