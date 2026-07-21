@@ -11,7 +11,7 @@ tags: [northpond]
 links: [parent:wm-j523sq, follows:wm-3gqqxr]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C0BJ1M304BU/p1784320007718879]
 created: 2026-07-20T22:42:18Z
-updated: 2026-07-21T12:39:04Z
+updated: 2026-07-21T17:38:48Z
 source: claude-code
 label: Oliv schema proposal
 ---
@@ -36,3 +36,10 @@ CLARITY QUESTION STILL UNANSWERED: Nate's 07-20 reply addressed points 1 (yes, i
 BACKFILL still never raised with anyone, on the call or in Slack. Daily-file change is go-forward only; EDGEX needs already-originated loans.
 
 CONFIRMED and NOT to be re-asked: file identity (daily issuance file, not the positions/loan tape); columns iccm_score/cgl/anl appended to a file we already receive, no new feed; portfolio-wide coverage incl. Macquarie; at-origination values never refreshed; 1.82*iccm=cgl, cgl/1.36=anl; one static unit loss curve rescaled by terminal CGL; flat 20% CPR; all loans 36-month; purchase tape WILL carry ANL+CGL+score but NOT monthly curves; our ingestion is clear for him to change columns. Nate's worked example (sample_loan_file.csv + monthly_curves.xlsx, 07-18) is DELIVERED — that action item is closed.
+- 2026-07-21T17:38Z [claude-code] PRIORITY RAISED 2026-07-21. The modelling method was settled today (wm-j2prpv): we retarget our own OP curves by k = anl_oliv/anl_ours per loan. That makes one of the pending Nate questions CRITICAL PATH rather than a clarification:
+
+*** What is inside the 1.36? *** If Nate's ANL carries no recovery assumption (cgl/1.36 is arithmetically consistent with 1.36 being a pure WAL divisor for a 36-month amortising loan at 20% CPR — i.e. their 'net' loss may actually be gross), then dividing OUR net-of-recovery ANL into THEIR gross-basis ANL biases k upward and we systematically inflate losses across the whole EDGEX book. Must be answered before the retarget is coded, not after.
+
+Second, lower-priority modelling question for the same message: is the unit loss curve on default timing or charge-off timing.
+
+The three delivery items (final loan-file schema, current purchase-tape schema, backfill) are unchanged and still overdue — Nate has sent nothing since 2026-07-20 22:44 IST.
