@@ -9,7 +9,7 @@ due: 2026-07-21
 tags: [northpond]
 links: [relates:wm-c5jytx, relates:wm-9s2mwd, parent:wm-j523sq]
 created: 2026-07-21T12:22:52Z
-updated: 2026-07-21T12:34:14Z
+updated: 2026-07-21T12:39:14Z
 source: claude-code
 ---
 
@@ -26,3 +26,8 @@ Only Sean's route yields CMOP/BEP — the call confirmed Oliv's model cannot (Na
 Trishit is the right decider: he owns QR-23, was on the call, and told the Sean/Nakula/Abhishek group DM on 2026-07-17 21:47 IST that he would 'take an initial look today and update the group on what is the best way forward'. No update in the 4 days since; that DM (C0BJ54B95Q9) has had zero messages after it.
 
 Also raise: the 1.82 / 1.36 scalars Oliv uses to reach CGL and ANL were themselves fitted off a curve SEAN sent NorthPond, so stressing our model by their ANL partly re-imports our own curve assumption. Nobody on the call could recall which curve it was or why — investigating it is already an open action on Trishit.
+
+## Log
+- 2026-07-21T12:39Z [claude-code] STATUS CHECK 2026-07-21 (Abhishek's confirmed-vs-pending review). Re-read the Sean/Trishit/Nakula/Abhishek group DM C0BJ54B95Q9: STILL zero messages after Trishit's 2026-07-17 21:47 IST 'I'll take an initial look today and update the group on what's the best way forward'. Confirmed via a from:<@U02PQS54UJD> after:2026-07-16 search — Sean has posted plenty elsewhere since, nothing further here. Four days of silence on the one decision that sizes the 2026-07-24 build.
+
+This remains the ONLY genuinely scope-changing open item in the whole Oliv/EDGEX picture: everything else pending is either an overdue deliverable from Nate (final schema, purchase-tape schema — wm-embhpy) or a question nobody has asked yet (backfill). Arithmetic route = CGL x hardcoded ratio vector, no predictor class. Sean's route = NorthPond predictor + prep + cfframe config, ~400-550 LOC. Escalate today.
