@@ -6,7 +6,7 @@ status: inbox
 tags: [taskmem-bug, correction]
 links: [relates:wm-ku5sen]
 created: 2026-07-21T09:15:44Z
-updated: 2026-07-21T09:15:44Z
+updated: 2026-07-21T09:18:09Z
 source: claude-code
 label: Reported wm-ku5sen's stored description
 ---
@@ -38,3 +38,9 @@ FIX FOR FUTURE AGENTS:
 - host: ip-192-168-0-103.ap-south-1.compute.internal
 - when: 2026-07-21T09:15:44Z
 - corrected item: wm-ku5sen
+
+## Log
+- 2026-07-21T09:18Z [claude-code] SCOPE REFINEMENT from Abhishek, same session: 'I know stuff is verified over there. You need not reverify.' The fix recorded in this correction must NOT be read as a licence to re-check work the human has already confirmed. Correct boundary:
+- VERIFY before ASSERTING a negative — 'never ran', 'untouched', 'not done', 'unanswered'. That was this correction's actual failure and the rule stands unchanged.
+- DO NOT re-verify once the human has stated something is done or verified. Their word is the evidence of record; going and checking anyway wastes their time and reads as not trusting them. Log their confirmation as the evidence and move on.
+The failure mode this guards against is an agent over-correcting into compulsive re-checking after being caught in a stale claim — which is its own way of being unhelpful.
