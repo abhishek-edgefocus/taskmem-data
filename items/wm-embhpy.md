@@ -4,7 +4,7 @@ type: followup
 title: Await Nate's final Oliv loan-file schema + confirm purchase-tape schema
 status: waiting
 waiting_on: Nate
-nudge: 2026-07-22
+nudge: 2026-07-21
 people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, follows:wm-3gqqxr]
