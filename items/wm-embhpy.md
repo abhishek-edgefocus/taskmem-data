@@ -10,7 +10,7 @@ tags: [northpond]
 links: [parent:wm-j523sq, follows:wm-3gqqxr]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C0BJ1M304BU/p1784320007718879]
 created: 2026-07-20T22:42:18Z
-updated: 2026-07-20T22:42:18Z
+updated: 2026-07-21T09:05:26Z
 source: claude-code
 label: Oliv schema proposal
 ---
@@ -23,3 +23,6 @@ Nate (Oliv) in the "Oliv EF Scores" group DM, 2026-07-20 22:44 IST, replying to 
 
 ## Links
 - Oliv EF Scores DM: https://edgefocuspartners.slack.com/archives/C0BJ1M304BU/p1784320007718879
+
+## Log
+- 2026-07-21T09:05Z [claude-code] Nate replied in the group DM 2026-07-20 22:44 IST (ts 1784567693.159499), answering all three points: (1) confirmed the file we reviewed IS the issuance file; (2) he is finalizing changes and will send a FINAL schema proposal for us to confirm — he had some done while generating the sample but stopped as it was a secondary objective; (3) 'we will get you one tomorrow, no problem' re the purchase tape — i.e. due TODAY 2026-07-21. Still waiting on Nate; nudge moved to today since his own commitment lands today.
