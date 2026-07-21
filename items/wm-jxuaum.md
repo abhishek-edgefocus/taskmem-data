@@ -8,9 +8,10 @@ size: xs
 due: 2026-07-21
 people: [Frank]
 tags: [northpond, needs-reply]
+links: [parent:wm-j523sq]
 refs: [slack=https://edgefocuspartners.slack.com/archives/D0B3WL5PG8Z/p1784586942398449]
 created: 2026-07-21T09:05:11Z
-updated: 2026-07-21T09:05:11Z
+updated: 2026-07-21T09:05:26Z
 source: claude-code
 ---
 
