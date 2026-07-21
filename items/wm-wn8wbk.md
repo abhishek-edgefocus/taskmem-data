@@ -2,9 +2,9 @@
 id: wm-wn8wbk
 type: task
 title: Confirm expected CNL on Oliv HYF loans contributed to EDGEX 2026-1NN (vs broader deal)
-status: open
+status: done
 created: 2026-07-21T07:16:39Z
-updated: 2026-07-21T09:07:25Z
+updated: 2026-07-21T12:32:03Z
 source: claude-code
 ---
 
