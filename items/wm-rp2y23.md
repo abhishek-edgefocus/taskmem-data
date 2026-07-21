@@ -8,7 +8,7 @@ size: l
 tags: [northpond, edgex]
 links: [parent:wm-j523sq, blocked-by:wm-ku5sen]
 created: 2026-07-17T09:40:24Z
-updated: 2026-07-17T09:40:32Z
+updated: 2026-07-21T09:05:47Z
 source: claude-code
 ---
 
@@ -36,3 +36,6 @@ folder, titled WIP, 80 panels (per wm-drehnk inventory: 22 work vs PROD today, 3
 empty gold -> wm-qs96kd, 14 blocked on SILVER.NORTHPOND_AT_PURCHASE_FEATURES which is ABSENT in
 PROD -> PR #5884). For the deal it must be promoted out of the personal folder, de-WIP'd, and
 the 3 old [DEPRECATED] NorthPond dashboards left as-is (rename convention already applied).
+
+## Log
+- 2026-07-21T09:05Z [claude-code] PARTIALLY ADVANCED 2026-07-20/21 — the 'promote out of personal folder' half is essentially settled. Abhishek asked Abhijeet whether to put the new dashboard in the fund-monitoring folder ('Navya Dashbaord la kay fund monitoring valya folder madhe thevu ka? Sahebanni sagla restructure kelay', ts 1784576175); Abhijeet: 'yes chalel, northpond cha ek folder banaw happymoney cha ahe tasa' (ts 1784577334) — create a dedicated northpond folder modelled on the HappyMoney one. Abhishek: 'Ok moving, anyways the dashboard is now updated with prod data' (ts 1784577366). New dashboard: https://grafana.edgefocuspartners.com/d/5e958781-1b47-45fc-a7f7-dd4adf82ef4a. VERIFY the folder move actually landed. The EdgeX-2026-1NN dashboards half of this item is still untouched and still blocked by wm-ku5sen.
