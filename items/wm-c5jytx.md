@@ -11,7 +11,7 @@ tags: [northpond]
 links: [parent:wm-h3dvpa]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-15T21:14:11Z
-updated: 2026-07-21T17:38:20Z
+updated: 2026-07-22T13:20:30Z
 source: claude-code
 label: EDGEX EF scoring setup
 ---
@@ -73,3 +73,4 @@ OPEN DESIGN QUESTIONS raised against the method, none blocking the decision but 
 5. WHICH GENERATION of our ANL is the denominator — the ef_scores earliest-generation lock (MIN(GENERATION_TS)) means a stale 2024-10-09 api generation currently wins for all 773 loans. Pin this explicitly.
 
 6. PREPAY stays ours (model-driven), not Nate's flat 20%. Intended, but means the frame is a hybrid and should be documented as such.
+- 2026-07-22T13:20Z [claude-code] Recon (Mission B): Transform framework is DELETE+INSERT by key_column with column-NAME-matched insert (snowflake.delete_and_insert builds INSERT column list from temp table) — adding nullable TARGET_ANL to silver.predictions is safe for other writers. TF provider snowflakedb/snowflake 0.100 ALTERs columns in place (DAYS_PAST_DUE add in ca02ecb4e shipped with no migration); applied via make tf-apply (dev) + deploy-dagster-prod.yml snowflake-tf-apply job (prod, plan-only option). V2 stmt transform recipe mirrors NorthpondStmtIssuance: parsing rule + transform + tf table/stream + asset + job entry.
