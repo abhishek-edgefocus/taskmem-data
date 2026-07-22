@@ -11,7 +11,7 @@ tags: [northpond]
 links: [parent:wm-h3dvpa]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-15T21:14:11Z
-updated: 2026-07-22T13:31:21Z
+updated: 2026-07-22T13:34:10Z
 source: claude-code
 label: EDGEX EF scoring setup
 ---
@@ -77,3 +77,4 @@ OPEN DESIGN QUESTIONS raised against the method, none blocking the decision but 
 - 2026-07-22T13:20Z [claude-code] Mission F recon (orchestration/deploy/test infra) for Oliv issuance_v2 retarget done by subagent: DAG+cron mapped (sensor-driven statements_northpond, ingest_prediction_files */30), prod deploy = manual GHA workflow_dispatch w/ snowflake tf-apply, md-runner supports multi-INPUT+VARIANT. Findings returned to parent agent.
 - 2026-07-22T13:24Z [claude-code-subagent] Recon (Mission C): northpond model_responses payload ALREADY carries our per-loan 'anl' (net, cfframe-based), 'agl' (gross), 'loss_rate' — lib/efp/modeling/pl/northpond_producer.py:171-187 — and it lands in silver.predictions.RAW_RECORD, so RAW_RECORD:anl is queryable today as a cross-check for k=anl_oliv/anl_ours. Caveat: computed under model CF_CONFIG at scoring time, may not match retarget-time cashflow config.
 - 2026-07-22T13:31Z [claude-code] Mission D recon (compute layer) done: mapped populate_predicted_cashflows slice pipeline, cfframe constraints, ANL replica + retarget insertion point for Oliv v2 anl retargeting; report returned to orchestrator.
+- 2026-07-22T13:34Z [claude-code] Mission E recon (Oliv v2 retarget, read-only) done on repos-2/efp@f409751: ef_scores earliest-gen lock is recomputed-on-stream (not truly locked) — history is rebuilt per s3_base from silver.predictions with GENERATION_TS carried over, so retarget-in-place inside PopulatePredictedCashflows + rerun of northpond s3_bases rescales the earliest generation itself; no DELETE migration needed. ef_scores/gold/best_est all cascade via PREDICTED_CASHFLOWS_HISTORY_STREAM reload_all_on_change; silver.positions EF_SCORE/ANL are frozen per as_of_date at build time and need a NorthpondPositions --date all rerun. DEV-503 (int_rate_at_purchase=0) confirmed OFF the retarget critical path: cfframe RATE comes from payload:rate in northpond_api_predictions.py, positions int_rate never enters cfframe/ANL.
