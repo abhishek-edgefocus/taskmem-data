@@ -2,14 +2,14 @@
 id: wm-embhpy
 type: followup
 title: Await Nate's final Oliv loan-file schema + confirm purchase-tape schema
-status: next
+status: done
 priority: p1
 people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, follows:wm-3gqqxr]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C0BJ1M304BU/p1784320007718879]
 created: 2026-07-20T22:42:18Z
-updated: 2026-07-23T13:02:05Z
+updated: 2026-07-23T13:02:06Z
 source: claude-code
 label: Oliv schema proposal
 ---
