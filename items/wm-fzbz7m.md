@@ -14,3 +14,16 @@ created: 2026-07-23T10:33:14Z
 updated: 2026-07-23T10:33:32Z
 source: claude-code
 ---
+
+## Log
+- 2026-07-23T10:33Z [claude-code] CREATED 2026-07-23 from a Linear/GitHub sweep — this work was in flight since 2026-07-22 with no taskmem item. DEV-1468 'Retarget NorthPond at_orig predictions to Oliv's ANL (issuance_v2)', created 2026-07-22 18:32Z, status In Progress, no priority set in Linear. It is the concrete implementation of [[wm-c5jytx]]'s method and supersedes its steps 2-3 for the retarget half.
+
+SPLIT INTO TWO PRs. PR #5993 (DRAFT, ingestion half) is up: bronze northpond_issuance_v2 parsing rule covering all three plausible delivery layouts (unmonitored for now — a start_date before deliveries stabilise would alert on the whole back-range), new silver.northpond_stmt_issuance_v2 narrow projection (2 identifiers + iccm_score/cgl/anl only), nullable TARGET_ANL on silver.predictions, NorthpondAPIPredictions joins v2 and emits TARGET_ANL with a second stream source + expand_keys for late arrival, new orchestration asset in statements_northpond with northpond_api_predictions depending on it. 11 files incl. 2 terraform schemas. Explicitly changes NO existing number. The retarget that consumes TARGET_ANL is a SECOND, UNWRITTEN PR — scaling happens at first use in PopulatePredictedCashflows, not at ingestion, so raw model output is preserved.
+
+JOIN-KEY GOTCHA worth keeping: v2 drops the integer loan_id for the OLV-prefixed oliv_loan_number (same key as the purchase file). 'northpond_' || OLIV_LOAN_NUMBER reproduces EFP_ID exactly. Would have failed SILENTLY otherwise — v1's additional_where filters RAW_RECORD:loan_id != '', which drops every v2 row.
+
+CI: 4/5 checks pass (integration, Select tests, Seer, Cursor Bugbot). The one FAILURE is 'Run Tests' and it is NOT a test failure — ruff format --check reports 'Would reformat: edgefocus/transformations/silver/statement_rows/northpond/northpond_constants_test.py, 1 file would be reformatted, 2390 already formatted'. One ruff format + push clears it.
+
+Nakula asked on the Linear issue 2026-07-22 18:35 'How do we plan to do this? Will it point to a new model that Trishit will deploy?' — Abhishek answered 18:52: 'New Model Preds = Old Model Preds * (Oliv's ANL / Our ANL)'. Answered, no open thread.
+
+COMMITMENT MADE TO OLIV: Abhishek told the group DM 2026-07-22 16:25 'We are planning to update our pipeline to support these new fields and compute the new predictions and cash flows by Friday' — i.e. by 2026-07-24. That is both PRs plus a run, and the k-denominator question ([[wm-embhpy]], the 1.36 net-vs-gross issue) is still unasked.
