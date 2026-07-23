@@ -9,7 +9,7 @@ people: [Kabeer]
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-22T13:47:21Z
-updated: 2026-07-22T13:47:26Z
+updated: 2026-07-23T10:08:44Z
 source: claude-code
 ---
 
@@ -61,3 +61,6 @@ https://docs.google.com/document/d/1sJRAzAt6-GIfLx9sP0hcGWchEokd3G7eKHuy64wBYBk
    re-sent for scoring.
 4. Consider alerting: 93% platform-validation-reject for 5 days went unnoticed
    by #errors-api.
+
+## Log
+- 2026-07-23T10:08Z [claude-code] Correction to next-step 4: #errors-api DOES fire per-request 'Invalid Request from Platform' alerts (seen live for northpond/openroad/foursight/prosper on 2026-07-23), so the line1 rejects almost certainly alerted thousands of times and were lost in per-request noise. The gap is aggregation/rate-based alerting, not missing alerts.
