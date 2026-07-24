@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T09:10:04Z
+updated: 2026-07-24T10:15:58Z
 source: claude-code
 ---
 
@@ -50,3 +50,8 @@ BOOLEAN RISK CLOSED: S3CsvFile reads dtype=str so is_home_owner/modified arrive 
 REPO STATE: repos-3 prior work parked on branch wip/repos-3-parked-20260724 (commit 6205bd0d9 = the uncommitted lib/efp/snowflake.py fetch_pandas_all fallback). .env.tmp deliberately NOT committed — it holds a live SNOWFLAKE_TOKEN and is not gitignored; left untracked in the working dir. Upstream deliberately unset on the DEV-1474 branch so a bare 'git push' cannot hit master. RESTORE: git checkout abhishek/dev-970/track-ai-billing-on-slack (its tip 825f0cff6 is unchanged and pushed); the parked tweak is on wip/repos-3-parked-20260724.
 
 STILL OPEN: no DEV_ABHISHEK end-to-end ingestion run yet (would write dummy rows to sandbox bronze/silver — deleting the S3 file will NOT retract them). Cutover: decide when to stop the efp-derived/trades/northpond_ff -> purchase_tape/ mirror in sync_statements.py. Monitoring schedule intentionally omitted until Oliv confirms real-file cadence.
+- 2026-07-24T10:15Z [claude-code] 2026-07-24: PUSHED + PR RAISED. https://github.com/edgefocus/efp/pull/6011 (open, base master, head abhishek/dev-1474-ingest-northpond-purchase-tape-from-new-sftp-path, 2 files, +113/-0). Linear DEV-1474. Branch now tracks its own remote (upstream re-set by the push, no longer master). Awaiting review.
+
+FOLLOW-UPS not in the PR: (1) stop the efp-derived/trades/northpond_ff -> statements/northpond/purchase_tape/ mirror in edgefocus/transformations/bronze/sync_statements.py once Oliv stops sending the Pool N xlsx; (2) add a MonitoringSchedule once Oliv confirms real-file cadence; (3) optional DEV_ABHISHEK end-to-end ingestion run — deferred because it writes dummy rows to sandbox bronze/silver and deleting the S3 object does NOT retract them (no delete reconciliation on the S3 statement path); (4) Oliv to remove the dummy file once testing is done.
+
+REPO RESTORE (repos-3 still on the DEV-1474 branch): parked work is on wip/repos-3-parked-20260724 (6205bd0d9, the lib/efp/snowflake.py fetch_pandas_all fallback); original branch abhishek/dev-970/track-ai-billing-on-slack is unchanged at 825f0cff6. .env.tmp left untracked (live SNOWFLAKE_TOKEN, not gitignored).
