@@ -163,3 +163,16 @@ FOLLOW-UP PR NEEDED: (a) new rule for purchase_file/v0/YYYY/MM/purchase_file_v0_
 *** GRAIN QUESTION DEFINITIVELY CLOSED BY NATE *** 2026-07-23 23:56 IST, two messages I had not seen earlier: "I think we will need to nail down the exact file cadence/delivery but my current expectation is that we will produce a daily purchase file (both legacy and the new version) and upload to sftp each day" AND "A given loan should appear on only one file ever". That is direct confirmation of the incremental / no-duplicates semantics Abhishek asserted — my earlier concern is resolved from the source. It also means the cadence IS daily, so the omitted MonitoringSchedule is now worth adding.
 
 CURRENT STATE 12:56Z: new purchase_file/ prefix NOT yet in S3 despite Nate saying at 18:24 IST "Purchase files uploaded anyway to the proposed file paths". purchase_file_legacy/ empty. issuance_v2/ has only the 2026-07-23 file (Abhishek still awaiting a fresh one to validate). PROD still clean: 372 rows, no 2026 purchase_tape rows. Prod deploy is MANUAL workflow_dispatch with required reviewers; last deploy 2026-07-23 20:53Z on 44a6884e, so the merge is not live.
+- 2026-07-24T15:45Z [claude-code] 2026-07-24: FOLLOW-UP PR RAISED — https://github.com/edgefocus/efp/pull/6013 (branch abhishek/dev-1474-parse-new-purchase-file-paths, commit e65592dba, base master 75b843584). Same ticket DEV-1474, follows PR 6011.
+
+WHY: Oliv finalised the spec AFTER 6011 merged, so the merged rule matches nothing. New paths purchase_file/v0/... (legacy schema, ingest) and purchase_file/v1/... (new schema, ignore).
+
+WHAT: (1) new rule northpond_purchase_tape_v0_csv, pattern .../purchase_file/v0/YYYY/MM/purchase_file_v0_(?P<date>8digits)(_N)?.csv, %Y%m%d, S3CsvFile, statement_type=purchase_tape, account_name=northpond_efhyf, priority=1; (2) ignore rule for any purchase_file/**/*_test.csv; (3) ignore rule for purchase_file/v1/**; (4) removed the dead purchase_file_legacy rule; (5) rewrote northpond_patterns_test.py (9 tests).
+
+_TEST GUARDED TWICE (deliberate): find_matching_rule returns the FIRST match so both ignore rules are ordered ahead of the ingest rule; AND the ingest pattern allows only a numeric dedup suffix after the date, so _test cannot match it even without the ignore rule. A loose .*\.csv here would silently pull Oliv stub data into prod — that was the trap in the 6011 pattern.
+
+SCHEMA VERIFIED against Nates actual samples: v0 = 21 cols, ZERO missing, ZERO extra, SAME ORDER as the silver source columns. v1 = 17 cols (oliv_loan_number, accrued_interest_on_purchase_date, principal_on_purchase_date, annual_interest, homeowner, vantage_score_v4, post_dti, days_past_due, plus a column literally named "coalesce") — confirms v1 must stay out of purchase_tape.
+
+TESTS: 9 new tests pass; 553 passed across edgefocus/transformations/bronze/ + orchestration/tests/bronze_statement_file_arrival_test.py; ruff + mypy clean. Routing table verified for all 8 real-world path shapes incl. both _test variants.
+
+STILL OPEN: nothing has appeared under s3://efp-raw/statements/northpond/purchase_file/ as of 13:0xZ despite Nate saying at 18:24 IST the files were uploaded — worth confirming the upload location with him. Also note Nates path example contained a typo, 2026}/07/, worth confirming it is not in their generator.
