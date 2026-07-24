@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T08:03:04Z
+updated: 2026-07-24T08:08:10Z
 source: claude-code
 ---
 
@@ -35,3 +35,6 @@ Oliv is moving the legacy-format purchase tape to a NEW SFTP folder: `purchase_f
 1. Ask Nate the two grain questions (incremental vs snapshot; purchase_date semantics) — BLOCKING, code cannot ship correctly without it.
 2. Agree a cutover date + confirm dummies stop / move off the prod prefix.
 3. Then add the parsing rule + test + backfill.
+
+## Log
+- 2026-07-24T08:08Z [claude-code] 2026-07-24: Abhishek states Nate confirmed the purchase tape carries only INCREMENTAL loans with no dupes — which matches existing pipeline semantics (one file per purchase event, each loan once). Verified against the full C0BJ1M304BU thread (2026-07-22 16:22 -> 2026-07-23 23:44) and the 07-16 call notes: the only 'superset of loans' statement is Nate 2026-07-22 17:16 point 2b, and it is about the ISSUANCE_V2 file, NOT the purchase tape. No incremental/no-dupes statement for the purchase tape found in Slack or call notes — Abhishek may have it from a call not captured here. IF incremental is correct, BLOCKER 1 (grain) is CLOSED and the dummy's 589 rows / 334 overlap with prod is just fabricated noise per Nate's 'pay little attention to the values'. Remaining work is unchanged: ~30-line parsing rule, no silver change. Also per Abhishek: the dummy file is for DEV_ABHISHEK testing only and Oliv will be asked to remove it afterwards — note that deleting the S3 object does NOT retract already-ingested bronze/silver rows (no delete reconciliation on the S3 statement path, unlike the google_sheet ingesters), so dummy rows must be purged manually.
