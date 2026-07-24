@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T10:44:43Z
+updated: 2026-07-24T10:53:36Z
 source: claude-code
 ---
 
@@ -79,3 +79,16 @@ NULL DIFFS (dummy artifact, already flagged): ACCRUED_INTEREST and OUTSTANDING_P
 VALUE RANGES — clearly dummy, NOT purchase-tape-like (reinforces that these are seasoned loans, not fresh purchases): DPD new max 553 / avg 74.3 vs old max 2 / avg 0.01; ORIGINAL_TERM new min 4 vs old always 36; REMAINING_TERM new 12-28 vs old 29-36; INTEREST_RATE new min 0.0 vs old min 12.58; OUTSTANDING_PRINCIPAL new min 0.0 vs old min 836.37; PRISM_CASH_SCORE new min 0.0 vs old min 84; BORROWER_INCOME_ANNUAL new max 5,971,680 vs old max 756,000. Nate said to ignore the values, so this is expected — but it means the file tells us nothing about real-file value sanity.
 
 VERDICT: structurally the new rows match the existing rows; the only structural difference is the VARCHAR date format, which is benign under TRY_TO_DATE. Value-level differences are all dummy-generation noise.
+- 2026-07-24T10:53Z [claude-code] 2026-07-24: REMAINING NON-LOCAL ISSUES (Abhishek asked to exclude local-env/dev-sandbox/dummy-data noise).
+
+*** BIGGEST: the purchase tape table DRIVES FUND CLASSIFICATION. *** constants.py:40 FUND_WITH_PURCHASE_TAPE_EXPR does: IFF(LoanNumber IN (SELECT LOAN_ID FROM silver.northpond_stmt_purchase_tapes WHERE TRY_TO_DATE(PURCHASE_DATE) <= src.AS_OF_DATE), 'efhyf', <standard account->fund mapping>). It is consumed by stmt_positions.py AND stmt_transactions.py. So EVERY loan added to the purchase tape is thereby classified into EFHYF for positions and transactions. Widening the purchase tape silently widens EFHYF. This is the concrete production consequence of the earlier grain question: if the legacy file is ever broader than genuine EFHYF purchases (the dummy carried 589 loans of which 255 were NOT in the existing prod purchase tape), those loans get reassigned to efhyf in silver.positions/transactions. Safe ONLY if the file really is incremental genuine purchases, as Abhishek states Nate confirmed. Worth an explicit reconciliation the first time a REAL file lands: compare new LOAN_IDs against expected purchases before/after the silver run.
+
+OTHER CONSUMERS of silver.northpond_stmt_purchase_tapes (blast radius): transfers.py, gold/northpond_tu_offers_daily.py, gold/northpond_tu_offers_bucketed.py, orchestration/assets/northpond_assets.py, orchestration/jobs/statements_northpond.py.
+
+AS_OF_DATE INVARIANT CHANGE: for all 6 historical Pool files AS_OF_DATE == PURCHASE_DATE exactly (verified in prod). The new rule derives AS_OF_DATE from the FILENAME (file-generation date) while PURCHASE_DATE comes from file content. Same-day generation keeps the invariant; next-day generation breaks it. Matters because FUND_WITH_PURCHASE_TAPE_EXPR filters TRY_TO_DATE(PURCHASE_DATE) <= AS_OF_DATE — a file generated BEFORE its own purchase_date would drop those loans from the efhyf classification. Confirm with Oliv that the file is generated on/after the purchase date.
+
+SUPERSESSION IS NARROWER THAN IT LOOKS: priority=1 only bites when the csv and xlsx share (platform, statement_type, as_of_date, account_name). xlsx as_of_date = purchase-agreement date; csv as_of_date = file-generation date. If both feeds run with differing dates for one purchase, it double counts. Real mitigation is a clean cutover, not the priority flag.
+
+NO MonitoringSchedule: if Oliv goes daily and a file is missed, nothing alerts.
+
+PR 6011 CI: Run Tests pass (11m7s), Select tests pass, Cursor Bugbot pass, Seer Code Review pass, integration tests skipped. MERGEABLE, blocked only on REVIEW_REQUIRED.
