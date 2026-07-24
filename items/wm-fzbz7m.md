@@ -11,7 +11,7 @@ tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-c5jytx, relates:wm-embhpy]
 refs: [DEV-1468=https://linear.app/edge-focus/issue/DEV-1468/retarget-northpond-at-orig-predictions-to-olivs-anl-issuance-v2, PR=https://github.com/edgefocus/efp/pull/5993]
 created: 2026-07-23T10:33:14Z
-updated: 2026-07-24T18:37:15Z
+updated: 2026-07-24T19:12:53Z
 source: claude-code
 ---
 
@@ -35,3 +35,4 @@ ALSO: only ONE issuance_v2 file exists (20260723). Nate has not produced a 07-24
 
 USEFUL DERIVED FACT for path work: those screenshots prove Oliv SFTP root edge-focus/ maps to our s3://efp-raw/statements/northpond/. So Nates proposed /purchase_file/v0/{YYYY}/{MM}/ will land at s3://efp-raw/statements/northpond/purchase_file/v0/{YYYY}/{MM}/.
 - 2026-07-24T18:37Z [claude-code] QR confirmed: retarget applies to DEFAULT probabilities only, not prepay. PR #6015 updated (19dbaa57a) — prepay now written straight off the payload, unscaled/unclamped. This also settles the open tie-out question: default-only measured 1.03% mean abs error vs Oliv's ANL, vs 4.68% when both curves were scaled.
+- 2026-07-24T19:12Z [claude-code] E2E test passed in local dagster (DEV_ABHISHEK): issuance_v2 -> api_predictions -> predicted_cashflows -> ef_scores. 83 Oliv-ANL loans scored. EF_ANL lands 1.03% mean abs from Oliv's ANL (vs 26.4% off our own model), 82/83 in the same EF bucket as an exact ANL. Prepay confirmed unscaled (2988/2988 ratio exactly 1.0); 25,812 non-Oliv rows byte-identical (control). Two DEV-env blockers fixed: SILVER.EF_SCORES was a stale 4-col clone (terraform has 7) so ef_scores crashed on PREV.S3_BASE — added S3_BASE/AS_OF_DATE/PLATFORM + EF_SCORES_STREAM; silver.predicted_cashflows in DEV is still a VIEW onto PROD so verification used predicted_cashflows_history.
