@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T12:38:57Z
+updated: 2026-07-24T12:39:10Z
 source: claude-code
 ---
 
@@ -140,3 +140,4 @@ ONE ORPHAN ROW: PROD.bronze.statement_files contains s3://efp-raw/statements/nor
 *** SEQUENCING RISK — merge order matters. *** ingest_statement_files has a 'refresh' subcommand explicitly documented for exactly this case: 'New parsing rules are added and you want to categorize previously unknown files' (line 1033), usage example at line 1147 is literally . So once DEV-1474 merges, that orphan row is re-evaluated against the new rule. Combined with the fact that the file WILL be re-synced from Oliv's SFTP (they have not been asked to remove it yet), merging before Oliv deletes it means PROD ingests 589 DUMMY rows into silver.northpond_stmt_purchase_tapes — and because FUND_WITH_PURCHASE_TAPE_EXPR classifies everything in the purchase tape as EFHYF, those 589 loans would be pulled into efhyf in silver.positions and silver.transactions.
 
 REQUIRED ORDER: (1) Nate deletes the dummy from Oliv's SFTP; (2) confirm it no longer re-appears in s3://efp-raw/statements/northpond/purchase_file_legacy/; (3) THEN merge PR 6011. If the merge must happen first, either add the file to _EXCLUDE in edgefocus/sftp/northpond.py or make sure nobody runs  for northpond until the file is gone.
+- 2026-07-24T12:39Z [claude-code] Correction to previous entry: backticks were shell-substituted, so one line lost its content. The refresh usage example at ingest_statement_files.py:1147 reads: refresh --status unknown --filter northpond
