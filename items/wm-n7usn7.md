@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T16:29:25Z
+updated: 2026-07-24T17:15:17Z
 source: claude-code
 ---
 
@@ -197,3 +197,18 @@ SILVER RESULT: as_of_date 2026-07-24 = 4 rows / 4 loans, account northpond_efhyf
 V1 CONTAMINATION CHECK: 0 rows missing APPLICATION_UUID at 2026-07-24. Since v1 has no application_uuid column, any v1 leak would have shown as NULLs there. Clean.
 
 CLEANUP: sandbox fixtures removed from s3://efp-sandbox/abhishek/statements/northpond/purchase_file/. repos-1 NOT touched this round (it is on branch abhishek/dev-1468-ingest-oliv-issuance-v2-anl with its own +37 lines in northpond.py and predates the 6011 merge) — the bronze runs were driven from repos-3 which holds the exact PR code, and the Dagster silver asset does not depend on the parsing rules.
+- 2026-07-24T17:15Z [claude-code] 2026-07-24: GENERALISED the _test ignore to ALL northpond feeds. Pushed to PR 6013 as commit 7538ab292.
+
+IMPACT AUDIT FIRST (the question Abhishek asked): of 5,895 northpond files EVER recorded in PROD bronze.statement_files, ZERO contain "test" or "latest". In efp-raw today only 2 northpond keys match, both Nates new stubs. So generalising affects nothing existing.
+
+*** THE "LATEST" TRAP — real, not hypothetical. *** "latest" literally contains "test", and OLIV_LOAN_TAPE_LATEST.csv is a real filename in this workspace (Abhishek posted it into Slack on 2026-07-17). Empirically tested four candidate regexes:
+  _test\.csv   (chosen)      -> matches only the stub. CORRECT.
+  test\.csv    (no _)        -> WRONGLY matches oliv_loan_tape_latest.csv
+  test  (bare, case-insens)  -> WRONGLY matches both OLIV_LOAN_TAPE_LATEST.csv and lowercase
+The leading underscore is what makes it safe. Documented in a code comment so nobody "simplifies" it later.
+
+CHANGE: removed the purchase_file-scoped _test rule; added r"s3://.*/statements/northpond/.*_test\.csv" as the FIRST entry in NORTHPOND_RULES (find_matching_rule returns the first match, so a stub can never be claimed by a downstream ingest rule whichever feed it imitates). 18 rules total.
+
+VERIFIED: 19 tests in northpond_patterns_test.py; 563 passed across edgefocus/transformations/bronze/ + orchestration/tests/bronze_statement_file_arrival_test.py; ruff + mypy clean. 19-case routing audit ALL PASS covering: stubs ignored on purchase_file v0/v1, loan_tape, transaction tape, issuance, issuance_v2, payment_configuration, transaction_on_board; three "latest" variants NOT swallowed; and all six real feeds still routing to their own rules (loan_positions, loan_transactions, issuance, payment_configuration, transaction_boards, purchase_tape xlsx, purchase_tape_v0_csv).
+
+PR 6013 body updated to 4 bullets. CI re-running.
