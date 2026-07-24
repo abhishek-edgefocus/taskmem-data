@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T17:15:17Z
+updated: 2026-07-24T17:57:29Z
 source: claude-code
 ---
 
@@ -212,3 +212,19 @@ CHANGE: removed the purchase_file-scoped _test rule; added r"s3://.*/statements/
 VERIFIED: 19 tests in northpond_patterns_test.py; 563 passed across edgefocus/transformations/bronze/ + orchestration/tests/bronze_statement_file_arrival_test.py; ruff + mypy clean. 19-case routing audit ALL PASS covering: stubs ignored on purchase_file v0/v1, loan_tape, transaction tape, issuance, issuance_v2, payment_configuration, transaction_on_board; three "latest" variants NOT swallowed; and all six real feeds still routing to their own rules (loan_positions, loan_transactions, issuance, payment_configuration, transaction_boards, purchase_tape xlsx, purchase_tape_v0_csv).
 
 PR 6013 body updated to 4 bullets. CI re-running.
+- 2026-07-24T17:57Z [claude-code]  2026-07-24: FINAL PRE-MERGE VERIFICATION of the GENERALISED rule (commit 7538ab292) — PASSED.
+
+ROUTING (sandbox matrix, --env dev, 6 files):
+  issuance/2026/07/issuance_20260725_test.csv        -> ignore   <- generalisation works on a NON-purchase feed
+  issuance/2026/07/issuance_latest.csv               -> unknown  <- NOT swallowed by the _test rule (the key false-positive check)
+  purchase_file/v0/.../purchase_file_v0_20260725.csv -> pending_statement_rows, purchase_tape, 2026-07-25, northpond_purchase_tape_v0_csv
+  purchase_file/v0/.../purchase_file_v0_20260725_test.csv -> ignore
+  purchase_file/v1/.../purchase_file_v1_20260725.csv      -> ignore
+  purchase_file/v1/.../purchase_file_v1_20260725_test.csv -> ignore
+Nate REAL stubs in efp-raw (20260723_test, both v0 and v1) re-confirmed still -> ignore.
+END TO END: rows ingestion 1 file / 4 rows; Dagster run 4737b543-0cee-452a-8339-a3afb64b9537 RUN_SUCCESS, stream consumed, watermark updated. silver as_of_date 2026-07-25 = 4 rows / 4 loans, efhyf, correctly typed.
+
+*** DAGSTER ENV GOTCHA WORTH REMEMBERING (cost a failed run, NOT a code issue) *** The compose file bind-mounts orchestration/definitions.py, utils.py, executors.py, workspace.yaml and dagster.yaml as SINGLE FILES. A single-file bind mount pins the INODE at container start, so when git checkout REPLACES the file (branch switch), the container keeps serving the OLD content indefinitely, while directory mounts (assets/, jobs/, schedules/, sensors/, edgefocus/) track changes live. This produced a bogus DagsterImportError "cannot import name credible_assets from orchestration.assets": the container held a stale definitions.py that imported credible_assets while assets/ tracked repos-1 current branch abhishek/dev-1393-fixes-in-openroad-positions, which is 128 commits behind master and predates orchestration/assets/credible_assets.py (added 2026-07-16, PR #5881). FIX: docker restart dagster-webserver-abhishek. ALWAYS restart the container after switching branches in repos-1.
+
+CLEANUP: sandbox fixtures removed from s3://efp-sandbox/abhishek/statements/northpond/{purchase_file,issuance}/.
+NOTE: repos-1 currently carries a stale copy of my ORIGINAL 6011 overlay (M parsing_rules/northpond.py + untracked northpond_patterns_test.py) on the dev-1393 branch. It is NOT the current PR code and should be reverted: git checkout -- edgefocus/transformations/bronze/parsing_rules/northpond.py && rm edgefocus/transformations/bronze/northpond_patterns_test.py
