@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T10:15:58Z
+updated: 2026-07-24T10:29:34Z
 source: claude-code
 ---
 
@@ -55,3 +55,14 @@ STILL OPEN: no DEV_ABHISHEK end-to-end ingestion run yet (would write dummy rows
 FOLLOW-UPS not in the PR: (1) stop the efp-derived/trades/northpond_ff -> statements/northpond/purchase_tape/ mirror in edgefocus/transformations/bronze/sync_statements.py once Oliv stops sending the Pool N xlsx; (2) add a MonitoringSchedule once Oliv confirms real-file cadence; (3) optional DEV_ABHISHEK end-to-end ingestion run — deferred because it writes dummy rows to sandbox bronze/silver and deleting the S3 object does NOT retract them (no delete reconciliation on the S3 statement path); (4) Oliv to remove the dummy file once testing is done.
 
 REPO RESTORE (repos-3 still on the DEV-1474 branch): parked work is on wip/repos-3-parked-20260724 (6205bd0d9, the lib/efp/snowflake.py fetch_pandas_all fallback); original branch abhishek/dev-970/track-ai-billing-on-slack is unchanged at 825f0cff6. .env.tmp left untracked (live SNOWFLAKE_TOKEN, not gitignored).
+- 2026-07-24T10:29Z [claude-code] 2026-07-24: END-TO-END RUN IN DEV_ABHISHEK — SUCCESS. Patch applied to repos-1 (~/repos/efp, the Dagster copy) as a working-tree overlay via git format-patch/git apply; applied cleanly, Abhishek's 12 in-flight uncommitted files untouched. NOT committed there — revert with: git checkout -- edgefocus/transformations/bronze/parsing_rules/northpond.py && rm edgefocus/transformations/bronze/northpond_patterns_test.py
+
+SAFETY: confirmed get_database_name() resolves from the ENVIRONMENT env var (=dev) + USERNAME (=ABHISHEK) -> DEV_ABHISHEK. The ingest_statement_files --env flag ONLY selects the S3 scan prefix (prod -> s3://efp-raw/, dev -> s3://efp-sandbox/{USERNAME}/), it does NOT affect the Snowflake target. So --env prod reads real efp-raw and still writes to DEV_ABHISHEK. Note: these CLIs do NOT self-load .env; must 'set -a; . ./.env; set +a' first.
+
+RESULTS: (1) ingest_statement_files backfill --platform northpond --env prod --filter purchase_file_legacy: dry-run 1 file WOULD insert; real run 1 inserted, status pending_statement_rows, no supersession. (2) ingest_statement_rows --platform northpond --statement-type purchase_tape --date 2026-07-23: 589 rows inserted into bronze.statement_rows (northpond/purchase_tape/2026-07-23/northpond_efhyf). (3) silver stmt_purchase_tapes --date 2026-07-23: MERGE LANDED — 589 rows / 589 distinct LOAN_ID in DEV_ABHISHEK.silver.northpond_stmt_purchase_tapes, alongside the 6 historical Pool events.
+
+DATA QUALITY: BOOLEAN cast verified live — IS_HOME_OWNER/MODIFIED came from CSV strings '0'/'1' and materialised as a real mix (565 F/F, 23 T/F, 1 F/T), not collapsed to all-False. Typed cols parsed correctly (LOAN_AMOUNT float, VANTAGE_SCORE/CREDIT_GRADE int, INTEREST_RATE float, STATE varchar), LOAN_ID OLV-prefixed, FUND mapped to efhyf.
+
+KNOWN NON-BLOCKING ISSUE: silver transform threw at the POST-merge step — DEV_ABHISHEK.SILVER.NORTHPOND_STMT_PURCHASE_TAPES_STREAM does not exist (stream on the TARGET table, consumed to propagate changes downstream). Sandbox provisioning gap, unrelated to DEV-1474; the merge itself completed. Would need the stream created in the sandbox to exercise downstream propagation.
+
+FLAG FOR NATE (dummy-data artifact, but confirm for the REAL file): 59/589 rows have BLANK outstanding_principal_balance_as_of_funding_date and accrued_interest_as_of_funding_date in the source csv (1 blank employment_tenure). Verified these are genuinely empty cells in Oliv's file, faithfully carried to NULL — not a parsing defect. PROD comparison: all 372 real purchase-tape loans have 0 nulls in both columns. outstanding_principal feeds TAPE_PRINCIPAL/transfer amounts, so a blank on a REAL purchase would break transfers. Likely just dummy-generation noise given Nate said to ignore the values, but worth one line of confirmation.
