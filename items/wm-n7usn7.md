@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T12:39:10Z
+updated: 2026-07-24T12:44:59Z
 source: claude-code
 ---
 
@@ -141,3 +141,8 @@ ONE ORPHAN ROW: PROD.bronze.statement_files contains s3://efp-raw/statements/nor
 
 REQUIRED ORDER: (1) Nate deletes the dummy from Oliv's SFTP; (2) confirm it no longer re-appears in s3://efp-raw/statements/northpond/purchase_file_legacy/; (3) THEN merge PR 6011. If the merge must happen first, either add the file to _EXCLUDE in edgefocus/sftp/northpond.py or make sure nobody runs  for northpond until the file is gone.
 - 2026-07-24T12:39Z [claude-code] Correction to previous entry: backticks were shell-substituted, so one line lost its content. The refresh usage example at ingest_statement_files.py:1147 reads: refresh --status unknown --filter northpond
+- 2026-07-24T12:44Z [claude-code] 2026-07-24: CANNOT verify Oliv SFTP directly from dexterplus. edgefocus/sftp/northpond.py resolves creds via require_secret(NORTHPOND_SFTP_HOST/USER/PASSWORD), and the dexterplus IAM user (arn:aws:iam::508533208338:user/dexter-plus-ubuntu) gets AccessDeniedException on secretsmanager:GetSecretValue for northpond_sftp_*. Password is not in any local .env either; .env.example:72-74 only documents host=sftp-public-prod.olivfinancial.com user=edgefocus with the password redacted. So a direct SFTP listing is not possible from this host — would need creds or to run from an environment with Secrets Manager access.
+
+INDIRECT CHECK SET UP INSTEAD (and it tests the thing that actually matters): the prod sync mirrors Oliv SFTP -> EFS -> S3 with an exclude-list only, so if the file were still on their SFTP it would be re-copied into s3://efp-raw/statements/northpond/purchase_file_legacy/. I deleted the S3 object at ~12:37Z. Monitoring that prefix for 60 min (12 checks, 5 min apart). Prefix staying empty = Nate genuinely removed it and the merge gate is clear; reappearance = still present on their side and PR 6011 must NOT be merged yet.
+
+Nate told Abhishek on 2026-07-24 that he has deleted the file from Oliv SFTP.
