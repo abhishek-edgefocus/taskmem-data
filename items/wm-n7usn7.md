@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T15:45:56Z
+updated: 2026-07-24T16:29:25Z
 source: claude-code
 ---
 
@@ -176,3 +176,24 @@ SCHEMA VERIFIED against Nates actual samples: v0 = 21 cols, ZERO missing, ZERO e
 TESTS: 9 new tests pass; 553 passed across edgefocus/transformations/bronze/ + orchestration/tests/bronze_statement_file_arrival_test.py; ruff + mypy clean. Routing table verified for all 8 real-world path shapes incl. both _test variants.
 
 STILL OPEN: nothing has appeared under s3://efp-raw/statements/northpond/purchase_file/ as of 13:0xZ despite Nate saying at 18:24 IST the files were uploaded — worth confirming the upload location with him. Also note Nates path example contained a typo, 2026}/07/, worth confirming it is not in their generator.
+- 2026-07-24T16:29Z [claude-code] 2026-07-24: PR 6013 VERIFIED END-TO-END ON DEXTERPLUS — the _test question for Nate is ANSWERED: YES, safe for Oliv to keep dropping test files.
+
+NATE ALREADY DELIVERED to the new paths (arrived in efp-raw 2026-07-24 13:37:14): purchase_file/v0/2026/07/purchase_file_v0_20260723_test.csv (1033 B) and purchase_file/v1/2026/07/purchase_file_v1_20260723_test.csv (731 B). Both are _test stubs.
+
+TEST 1 — REAL files, prod prefix scan (repos-3 on the PR branch, ENVIRONMENT=dev so writes go to DEV_ABHISHEK): both of Nate real stub files registered as STATUS=ignore, statement_type NULL, rule_name NULL. ingest_statement_rows --statement-type purchase_tape then reported "No files with data to process", 0 files / 0 rows. Nothing leaked.
+
+TEST 2 — full routing matrix staged in s3://efp-sandbox/abhishek/statements/northpond/purchase_file/ and scanned with --env dev. Result, 6 purchase_file entries, exactly ONE ingestable:
+  v0/purchase_file_v0_20260723_test.csv  -> ignore
+  v0/purchase_file_v0_20260724.csv       -> pending_statement_rows, purchase_tape, 2026-07-24, rule northpond_purchase_tape_v0_csv
+  v0/purchase_file_v0_20260724_test.csv  -> ignore
+  v1/purchase_file_v1_20260723_test.csv  -> ignore
+  v1/purchase_file_v1_20260724.csv       -> ignore
+  v1/purchase_file_v1_20260724_test.csv  -> ignore
+  purchase_file_legacy/...               -> unknown (rule removed, as intended)
+  Pool 1-6 xlsx                          -> rows_added, unchanged
+POSITIVE CONTROL PASSED: the non-test v0 ingested 4 rows to bronze, then Dagster asset northpond_stmt_purchase_tapes run bb0ab333-c5fb-4fe2-9195-de36e8a953fe = RUN_SUCCESS ("0 deleted, 4 inserted"), stream consumed successfully, watermark updated.
+
+SILVER RESULT: as_of_date 2026-07-24 = 4 rows / 4 loans, account northpond_efhyf, fund efhyf. Values correct and typed (OLV12563419-22, amounts 1000/2500/1000/4000, vantage 595/596/601/562, rates 22.06/22.02/22.06/26.77, states MO/FL/FL/MI, IS_HOME_OWNER False, all 4 application_uuids populated).
+V1 CONTAMINATION CHECK: 0 rows missing APPLICATION_UUID at 2026-07-24. Since v1 has no application_uuid column, any v1 leak would have shown as NULLs there. Clean.
+
+CLEANUP: sandbox fixtures removed from s3://efp-sandbox/abhishek/statements/northpond/purchase_file/. repos-1 NOT touched this round (it is on branch abhishek/dev-1468-ingest-oliv-issuance-v2-anl with its own +37 lines in northpond.py and predates the 6011 merge) — the bronze runs were driven from repos-3 which holds the exact PR code, and the Dagster silver asset does not depend on the parsing rules.
