@@ -146,3 +146,20 @@ REQUIRED ORDER: (1) Nate deletes the dummy from Oliv's SFTP; (2) confirm it no l
 INDIRECT CHECK SET UP INSTEAD (and it tests the thing that actually matters): the prod sync mirrors Oliv SFTP -> EFS -> S3 with an exclude-list only, so if the file were still on their SFTP it would be re-copied into s3://efp-raw/statements/northpond/purchase_file_legacy/. I deleted the S3 object at ~12:37Z. Monitoring that prefix for 60 min (12 checks, 5 min apart). Prefix staying empty = Nate genuinely removed it and the merge gate is clear; reappearance = still present on their side and PR 6011 must NOT be merged yet.
 
 Nate told Abhishek on 2026-07-24 that he has deleted the file from Oliv SFTP.
+- 2026-07-24T12:57Z [claude-code] 2026-07-24 IMPORTANT: OLIV CHANGED THE FILE PATHS AFTER PR 6011 MERGED. The merged rule is now a NO-OP.
+
+NATE 2026-07-24 18:09 IST (ts 1784896779.651619): "I have deleted the file. We have slightly modified/finalized the specs for the purchase file delivery." NEW PATHS (v0 = legacy, v1 = new):
+  /purchase_file/v0/{YYYY}/{MM}/purchase_file_v0_{date}.csv
+  /purchase_file/v1/{YYYY}/{MM}/purchase_file_v1_{date}.csv
+Abhishek confirmed the trailing slash after v1; Nate reacted with a checkmark. Abhishek replied "I will add these in our configs."
+
+IMPACT ON MERGED CODE (commit 1bda6b22, merged 11:46:47Z, NOT yet deployed to prod):
+1. The merged rule pattern is .../statements/northpond/purchase_file_legacy/\d{4}/\d{1,2}/purchase_file_legacy_(?P<date>\d{8}).*\.csv — it will now match NOTHING. purchase_file_legacy/ is abandoned and its S3 prefix is empty.
+2. The negative test test_new_standard_purchase_file_not_ingested asserts purchase_file/2026/07/purchase_file_20260723.csv matches no rule. Under the new scheme purchase_file/v0/... is exactly what we DO want to ingest, so that test now encodes a stale assumption — it still passes but is misleading.
+3. *** TRAP: _test FILES. *** Nate will regularly drop e.g. purchase_file_v0_20260724_test.csv ("these are not real and we can wipe them out"). The merged pattern uses (?P<date>\d{8}).*\.csv — the trailing .* happily matches _test. A naive port of that pattern to the new path WOULD INGEST NATE-S STUB TEST FILES INTO PROD. The new rule must exclude _test (or add an explicit ignore rule for it).
+
+FOLLOW-UP PR NEEDED: (a) new rule for purchase_file/v0/YYYY/MM/purchase_file_v0_YYYYMMDD.csv; (b) exclude _test; (c) leave purchase_file/v1/ unmatched with a test asserting that; (d) remove the now-dead purchase_file_legacy rule; (e) replace the stale negative test.
+
+*** GRAIN QUESTION DEFINITIVELY CLOSED BY NATE *** 2026-07-23 23:56 IST, two messages I had not seen earlier: "I think we will need to nail down the exact file cadence/delivery but my current expectation is that we will produce a daily purchase file (both legacy and the new version) and upload to sftp each day" AND "A given loan should appear on only one file ever". That is direct confirmation of the incremental / no-duplicates semantics Abhishek asserted — my earlier concern is resolved from the source. It also means the cadence IS daily, so the omitted MonitoringSchedule is now worth adding.
+
+CURRENT STATE 12:56Z: new purchase_file/ prefix NOT yet in S3 despite Nate saying at 18:24 IST "Purchase files uploaded anyway to the proposed file paths". purchase_file_legacy/ empty. issuance_v2/ has only the 2026-07-23 file (Abhishek still awaiting a fresh one to validate). PROD still clean: 372 rows, no 2026 purchase_tape rows. Prod deploy is MANUAL workflow_dispatch with required reviewers; last deploy 2026-07-23 20:53Z on 44a6884e, so the merge is not live.
