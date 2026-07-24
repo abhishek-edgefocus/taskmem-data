@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T10:29:34Z
+updated: 2026-07-24T10:44:43Z
 source: claude-code
 ---
 
@@ -66,3 +66,16 @@ DATA QUALITY: BOOLEAN cast verified live — IS_HOME_OWNER/MODIFIED came from CS
 KNOWN NON-BLOCKING ISSUE: silver transform threw at the POST-merge step — DEV_ABHISHEK.SILVER.NORTHPOND_STMT_PURCHASE_TAPES_STREAM does not exist (stream on the TARGET table, consumed to propagate changes downstream). Sandbox provisioning gap, unrelated to DEV-1474; the merge itself completed. Would need the stream created in the sandbox to exercise downstream propagation.
 
 FLAG FOR NATE (dummy-data artifact, but confirm for the REAL file): 59/589 rows have BLANK outstanding_principal_balance_as_of_funding_date and accrued_interest_as_of_funding_date in the source csv (1 blank employment_tenure). Verified these are genuinely empty cells in Oliv's file, faithfully carried to NULL — not a parsing defect. PROD comparison: all 372 real purchase-tape loans have 0 nulls in both columns. outstanding_principal feeds TAPE_PRINCIPAL/transfer amounts, so a blank on a REAL purchase would break transfers. Likely just dummy-generation noise given Nate said to ignore the values, but worth one line of confirmation.
+- 2026-07-24T10:44Z [claude-code] 2026-07-24: PURCHASE TAPE TABLE COMPARED THOROUGHLY (new 589 csv rows vs existing 372 xlsx rows, DEV_ABHISHEK.silver.northpond_stmt_purchase_tapes). Downstream deliberately not tested per Abhishek.
+
+STREAM QUESTION SETTLED: NORTHPOND_STMT_PURCHASE_TAPES_STREAM DOES exist in PROD.SILVER (verified via SHOW STREAMS — all 10 platform purchase-tape streams present there). So the dev failure is purely a sandbox provisioning gap; prod is unaffected. Abhishek was right.
+
+STRUCTURE — IDENTICAL: LOAN_ID 589/589 OLV-prefixed, single distinct length; STATE 2-char 589/589; APPLICATION_UUID 36-char 589/589; FUND single value efhyf; 589 rows / 589 distinct LOAN_ID, ZERO dupes. Null rates identical to the xlsx rows on 19 of 22 columns.
+
+*** ONE REAL FORMAT DISCREPANCY (investigated, benign) ***: PURCHASE_DATE and FUNDING_DATE are VARCHAR. OLD xlsx rows are LENGTH 19 ('2025-02-05 00:00:00' — pandas read_excel produced datetimes). NEW csv rows are LENGTH 10 ('2026-07-23' — S3CsvFile reads dtype=str so the raw string is preserved). So the two vintages are NOT byte-identical in those columns. VERIFIED NOT A PROBLEM: northpond consumes these via TRY_TO_DATE(PURCHASE_DATE) (see northpond constants + positions.py), and TRY_TO_DATE parses BOTH formats to the same DATE — tested live, 0 unparseable rows in either vintage. RESIDUAL RISK: any NEW downstream code doing raw string comparison / LIKE / SUBSTR on these VARCHARs would see different formats. Worth knowing, not worth blocking.
+
+NULL DIFFS (dummy artifact, already flagged): ACCRUED_INTEREST and OUTSTANDING_PRINCIPAL 10.0% null on new (59/589) vs 0.0% on old; EMPLOYMENT_TENURE 0.2% (1/589) vs 0.0%.
+
+VALUE RANGES — clearly dummy, NOT purchase-tape-like (reinforces that these are seasoned loans, not fresh purchases): DPD new max 553 / avg 74.3 vs old max 2 / avg 0.01; ORIGINAL_TERM new min 4 vs old always 36; REMAINING_TERM new 12-28 vs old 29-36; INTEREST_RATE new min 0.0 vs old min 12.58; OUTSTANDING_PRINCIPAL new min 0.0 vs old min 836.37; PRISM_CASH_SCORE new min 0.0 vs old min 84; BORROWER_INCOME_ANNUAL new max 5,971,680 vs old max 756,000. Nate said to ignore the values, so this is expected — but it means the file tells us nothing about real-file value sanity.
+
+VERDICT: structurally the new rows match the existing rows; the only structural difference is the VARCHAR date format, which is benign under TRY_TO_DATE. Value-level differences are all dummy-generation noise.
