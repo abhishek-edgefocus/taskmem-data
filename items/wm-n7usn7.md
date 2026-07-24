@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T10:58:15Z
+updated: 2026-07-24T11:02:30Z
 source: claude-code
 ---
 
@@ -99,3 +99,15 @@ MY POINT ABOUT THE STANDARD FILE WAS MIS-FRAMED and is withdrawn: it was a forwa
 NET: no material open issues on DEV-1474 as scoped. Substantive checks that passed on their own merits: exact 21-col match, 0 missing/extra, 0 dupes, 589 distinct loans; BOOLEAN casts verified live with a real T/F mix; the single structural difference (PURCHASE_DATE/FUNDING_DATE VARCHAR 19-char xlsx vs 10-char csv) traced to BOTH consumers — FUND_WITH_PURCHASE_TAPE_EXPR and transfers.py:140 — and confirmed benign because both wrap it in TRY_TO_DATE, 0 unparseable rows either vintage. PR 6011 CI fully green; MERGEABLE, blocked only on REVIEW_REQUIRED.
 
 REMAINING ACTION: get a reviewer on PR 6011. Then merge + cutover.
+- 2026-07-24T11:02Z [claude-code] 2026-07-24: RAN VIA DAGSTER (dexterplus) — the runner gap is now closed. Per-user Dagster stacks on dexterplus.edgefocus.net; Abhishek's is dagster-webserver-abhishek on host port 13053 (container 3000), postgres 15053. Container bind-mounts ~/repos/efp/edgefocus -> /app/edgefocus:ro, so the repos-1 working-tree overlay is LIVE inside the container — verified the container itself resolves northpond_purchase_tape_legacy_csv with priority 1.
+
+COMMAND THAT WORKS (note: 'bash -lc' wipes PATH, and 'asset materialize' has NO -w flag; must use -f/-d):
+docker exec -w /app/orchestration dagster-webserver-abhishek /app/.venv/bin/dagster asset materialize -f /app/orchestration/definitions.py -d /app/orchestration --select northpond_stmt_purchase_tapes
+
+RUN 467ce559-a728-442b-b715-73b2442634e1 (recorded in the instance, visible in UI). Transform itself SUCCEEDED end to end through Dagster: watermark ensured for BRONZE.STATEMENT_ROWS -> SILVER.NORTHPOND_STMT_PURCHASE_TAPES, found 1 key ['2026-07-23'], temp table 589 rows, deleted 589, inserted 589. Run then FAILED at the final step 'Consuming NORTHPOND_STMT_PURCHASE_TAPES stream' — the SAME missing-sandbox-stream gap as the CLI run, which Abhishek has waived (stream exists in PROD.SILVER, verified).
+
+BONUS — IDEMPOTENCY NOW PROVEN (was previously on my untested list): the Dagster run re-processed the same file and did DELETE 589 -> INSERT 589, i.e. replace-not-append. Re-delivery of the same file does NOT duplicate rows.
+
+DAG UNCHANGED as Abhishek expected: no Dagster asset was added or modified: the change is a bronze parsing rule only, so the asset graph is byte-identical. northpond_stmt_purchase_tapes is part of job statements_northpond (orchestration/jobs/statements_northpond.py).
+
+URLs: run http://dexterplus.edgefocus.net:13053/runs/467ce559-a728-442b-b715-73b2442634e1 ; asset http://dexterplus.edgefocus.net:13053/assets/northpond_stmt_purchase_tapes ; webserver returns HTTP 200.
