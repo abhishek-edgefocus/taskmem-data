@@ -11,7 +11,7 @@ tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-c5jytx, relates:wm-embhpy]
 refs: [DEV-1468=https://linear.app/edge-focus/issue/DEV-1468/retarget-northpond-at-orig-predictions-to-olivs-anl-issuance-v2, PR=https://github.com/edgefocus/efp/pull/5993]
 created: 2026-07-23T10:33:14Z
-updated: 2026-07-24T19:12:53Z
+updated: 2026-07-24T19:58:28Z
 source: claude-code
 ---
 
@@ -36,3 +36,4 @@ ALSO: only ONE issuance_v2 file exists (20260723). Nate has not produced a 07-24
 USEFUL DERIVED FACT for path work: those screenshots prove Oliv SFTP root edge-focus/ maps to our s3://efp-raw/statements/northpond/. So Nates proposed /purchase_file/v0/{YYYY}/{MM}/ will land at s3://efp-raw/statements/northpond/purchase_file/v0/{YYYY}/{MM}/.
 - 2026-07-24T18:37Z [claude-code] QR confirmed: retarget applies to DEFAULT probabilities only, not prepay. PR #6015 updated (19dbaa57a) — prepay now written straight off the payload, unscaled/unclamped. This also settles the open tie-out question: default-only measured 1.03% mean abs error vs Oliv's ANL, vs 4.68% when both curves were scaled.
 - 2026-07-24T19:12Z [claude-code] E2E test passed in local dagster (DEV_ABHISHEK): issuance_v2 -> api_predictions -> predicted_cashflows -> ef_scores. 83 Oliv-ANL loans scored. EF_ANL lands 1.03% mean abs from Oliv's ANL (vs 26.4% off our own model), 82/83 in the same EF bucket as an exact ANL. Prepay confirmed unscaled (2988/2988 ratio exactly 1.0); 25,812 non-Oliv rows byte-identical (control). Two DEV-env blockers fixed: SILVER.EF_SCORES was a stale 4-col clone (terraform has 7) so ef_scores crashed on PREV.S3_BASE — added S3_BASE/AS_OF_DATE/PLATFORM + EF_SCORES_STREAM; silver.predicted_cashflows in DEV is still a VIEW onto PROD so verification used predicted_cashflows_history.
+- 2026-07-24T19:58Z [claude-code] PR #5993 (DEV-1468) merged to master 2026-07-24T18:30Z. PR #6015 (DEV-1445) rebased onto master and retargeted base master->4 files, MERGEABLE, REVIEW_REQUIRED. PROD BLOCKER: silver.northpond_stmt_issuance_v2 + its stream do NOT exist in PROD yet — terraform is manual (make tf-apply) and has not run since the merge. Deploying either PR before tf-apply breaks northpond_api_predictions (existing asset). Prod dagster deploy is manual workflow_dispatch so merging is safe. Secondary: 88/115 Oliv loans already have at_orig predictions in PROD and 33 have locked EF scores, so the retarget only reaches new loans; a backfill would need --date 2026-07-02:2026-07-23 (22 dates) plus clearing those loans' cashflow history. Blast radius zero: 0 Oliv loans in PROD positions.
