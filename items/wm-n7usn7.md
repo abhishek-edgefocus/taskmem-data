@@ -7,8 +7,9 @@ priority: p1
 size: s
 people: [Nate]
 tags: [northpond]
+links: [parent:wm-j523sq]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T08:02:57Z
+updated: 2026-07-24T08:03:04Z
 source: claude-code
 ---
 
