@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T11:02:30Z
+updated: 2026-07-24T11:11:46Z
 source: claude-code
 ---
 
@@ -111,3 +111,14 @@ BONUS — IDEMPOTENCY NOW PROVEN (was previously on my untested list): the Dagst
 DAG UNCHANGED as Abhishek expected: no Dagster asset was added or modified: the change is a bronze parsing rule only, so the asset graph is byte-identical. northpond_stmt_purchase_tapes is part of job statements_northpond (orchestration/jobs/statements_northpond.py).
 
 URLs: run http://dexterplus.edgefocus.net:13053/runs/467ce559-a728-442b-b715-73b2442634e1 ; asset http://dexterplus.edgefocus.net:13053/assets/northpond_stmt_purchase_tapes ; webserver returns HTTP 200.
+- 2026-07-24T11:11Z [claude-code] 2026-07-24: DAGSTER RUN NOW GREEN — root cause of the earlier failure found, and it was NOT 'sandbox never provisioned' (my earlier framing was WRONG; Abhishek correctly said these runs had succeeded before).
+
+ROOT CAUSE: DEV_ABHISHEK.SILVER was DB-RESET on 2026-07-23 07:27 (all silver tables show CREATED 2026-07-23 07:27). A Snowflake db-reset/table-replace DROPS dependent streams. Only 3 streams were hand-recreated afterwards at 2026-07-23 07:39 — NORTHPOND_STMT_ISSUANCE_STREAM, NORTHPOND_STMT_ISSUANCE_V2_STREAM, PREDICTIONS_STREAM — i.e. exactly the DEV-1468 work in flight at the time. Dev silver had 3 streams vs 107 tables. EVIDENCE it worked before: dagster event_logs for asset northpond_stmt_purchase_tapes show 16 ASSET_MATERIALIZATION (success) events with the last on 2026-06-23 — i.e. BEFORE the reset — vs 20 ASSET_MATERIALIZATION_PLANNED. Terraform is the source of truth (terraform/snowflake/silver_northpond_stmt_purchase_tapes.tf:192 declares NORTHPOND_STMT_PURCHASE_TAPES_STREAM with replace_triggered_by the table) and is not applied to dev sandboxes. Abhishek's own slop/create_missing_streams.py docstring confirms the mechanism: 'Create missing Snowflake streams that were dropped during db-reset'.
+
+FIX APPLIED (dev only): created DEV_ABHISHEK.SILVER.NORTHPOND_STMT_PURCHASE_TAPES_STREAM ON TABLE ... APPEND_ONLY = FALSE, matching the terraform definition. Reports stale=false.
+
+RE-RUN ee248d14-7f34-4e2b-894d-b260e559912b = RUN_SUCCESS (verified via GraphQL). Full clean path: found 1 key ['2026-07-23'] -> temp table 589 rows -> deleted 589 -> inserted 589 -> stream consumed successfully -> watermark updated -> 'transformation completed: 589 deleted, 589 inserted'. Idempotency re-confirmed a second time (delete-then-insert, no duplication).
+
+NOTE FOR ABHISHEK: slop/create_missing_streams.py only covers 4 streams (TRANSACTIONS, TRANSACTIONS_ITD, TRANSFERS, POSITIONS). The sandbox is still missing ~100 other streams from the same reset, so other assets will fail identically until that script is extended or terraform is applied to dev.
+
+URLs: green run http://dexterplus.edgefocus.net:13053/runs/ee248d14-7f34-4e2b-894d-b260e559912b ; earlier failed run 467ce559-a728-442b-b715-73b2442634e1.
