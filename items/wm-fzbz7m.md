@@ -11,7 +11,7 @@ tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-c5jytx, relates:wm-embhpy]
 refs: [DEV-1468=https://linear.app/edge-focus/issue/DEV-1468/retarget-northpond-at-orig-predictions-to-olivs-anl-issuance-v2, PR=https://github.com/edgefocus/efp/pull/5993]
 created: 2026-07-23T10:33:14Z
-updated: 2026-07-23T10:33:32Z
+updated: 2026-07-24T13:05:14Z
 source: claude-code
 ---
 
@@ -27,3 +27,10 @@ CI: 4/5 checks pass (integration, Select tests, Seer, Cursor Bugbot). The one FA
 Nakula asked on the Linear issue 2026-07-22 18:35 'How do we plan to do this? Will it point to a new model that Trishit will deploy?' — Abhishek answered 18:52: 'New Model Preds = Old Model Preds * (Oliv's ANL / Our ANL)'. Answered, no open thread.
 
 COMMITMENT MADE TO OLIV: Abhishek told the group DM 2026-07-22 16:25 'We are planning to update our pipeline to support these new fields and compute the new predictions and cash flows by Friday' — i.e. by 2026-07-24. That is both PRs plus a run, and the k-denominator question ([[wm-embhpy]], the 1.36 net-vs-gross issue) is still unasked.
+- 2026-07-24T13:05Z [claude-code] CORRECTION 2026-07-24: earlier notes (wm-embhpy log, 2026-07-23) said the issuance_v2 scope was "Shipped in PR #5993 (DEV-1468)". That is MISLEADING — PR 5993 "DEV-1468: Ingest Oliv issuance_v2 into a dedicated silver table" is still OPEN, mergedAt=null. Verified 2026-07-24: no issuance_v2 parsing rule exists on origin/master, and there is no terraform/snowflake file for the silver issuance_v2 table.
+
+CONSEQUENCE IN PROD: the file IS delivered and synced — s3://efp-raw/statements/northpond/issuance_v2/2026/07/issuance_v2_20260723.csv, 114,053 bytes, 2026-07-23 18:07:18 UTC (Nate placed it 17:03:50 UTC; ~63 min sync lag). But PROD.bronze.statement_files has it as status=unknown with rule_name NULL, there are zero issuance_v2 rows in bronze.statement_rows, and PROD.SILVER.NORTHPOND_STMT_ISSUANCE_V2 does not exist. DEV_ABHISHEK does have the table + NORTHPOND_STMT_ISSUANCE_V2_STREAM, which is why it looked done from the dev side.
+
+ALSO: only ONE issuance_v2 file exists (20260723). Nate has not produced a 07-24 one, despite Abhishek saying on 2026-07-24 18:21 IST "I am yet to validate the issuance v2 file. Lmk whenever you drop it" — the file he is waiting for is already there. Nate confirmed this with two screenshots at 18:25 IST showing edge-focus/issuance_v2/2026/07/ containing exactly issuance_v2_20260723.csv.
+
+USEFUL DERIVED FACT for path work: those screenshots prove Oliv SFTP root edge-focus/ maps to our s3://efp-raw/statements/northpond/. So Nates proposed /purchase_file/v0/{YYYY}/{MM}/ will land at s3://efp-raw/statements/northpond/purchase_file/v0/{YYYY}/{MM}/.
