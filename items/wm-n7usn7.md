@@ -2,9 +2,13 @@
 id: wm-n7usn7
 type: task
 title: Ingest Oliv legacy purchase file at new SFTP path (purchase_file_legacy/) — BLOCKED on grain semantics
-status: open
+status: blocked
+priority: p1
+size: s
+people: [Nate]
+tags: [northpond]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T08:02:53Z
+updated: 2026-07-24T08:02:57Z
 source: claude-code
 ---
 
