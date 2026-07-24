@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T10:53:36Z
+updated: 2026-07-24T10:58:15Z
 source: claude-code
 ---
 
@@ -92,3 +92,10 @@ SUPERSESSION IS NARROWER THAN IT LOOKS: priority=1 only bites when the csv and x
 NO MonitoringSchedule: if Oliv goes daily and a file is missed, nothing alerts.
 
 PR 6011 CI: Run Tests pass (11m7s), Select tests pass, Cursor Bugbot pass, Seer Code Review pass, integration tests skipped. MERGEABLE, blocked only on REVIEW_REQUIRED.
+- 2026-07-24T10:58Z [claude-code] 2026-07-24: ISSUE LIST CLOSED OUT by Abhishek. Explicitly waived / not applicable: (a) AS_OF_DATE-from-filename vs PURCHASE_DATE ordering — fine; (b) multiple programs / Nate's future folder changes — not expected, ignore; (c) purchase tape -> EFHYF classification — INTENDED, everything in the purchase tape is the high-yield fund by design; (d) csv-vs-xlsx cutover double count — only CSVs expected going forward, no parallel xlsx feed; (e) MonitoringSchedule absence — fine; (f) all local-env / repos-1 overlay / .env.tmp / DEV_ABHISHEK sandbox state / dummy-data value noise — Abhishek will repopulate dev from prod.
+
+MY POINT ABOUT THE STANDARD FILE WAS MIS-FRAMED and is withdrawn: it was a forward-looking note about a migration NOT being made. We ingest ONLY purchase_file_legacy/. The standardised purchase_file/ folder matches NO rule and test_new_standard_purchase_file_not_ingested locks that in. The legacy csv carries application_uuid fully populated (589/589, 36-char), so gold/northpond_tu_offers_daily.py and _bucketed.py (which join the purchase tape on application_uuid) are unaffected.
+
+NET: no material open issues on DEV-1474 as scoped. Substantive checks that passed on their own merits: exact 21-col match, 0 missing/extra, 0 dupes, 589 distinct loans; BOOLEAN casts verified live with a real T/F mix; the single structural difference (PURCHASE_DATE/FUNDING_DATE VARCHAR 19-char xlsx vs 10-char csv) traced to BOTH consumers — FUND_WITH_PURCHASE_TAPE_EXPR and transfers.py:140 — and confirmed benign because both wrap it in TRY_TO_DATE, 0 unparseable rows either vintage. PR 6011 CI fully green; MERGEABLE, blocked only on REVIEW_REQUIRED.
+
+REMAINING ACTION: get a reviewer on PR 6011. Then merge + cutover.
