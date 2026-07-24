@@ -11,7 +11,7 @@ tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-c5jytx, relates:wm-embhpy]
 refs: [DEV-1468=https://linear.app/edge-focus/issue/DEV-1468/retarget-northpond-at-orig-predictions-to-olivs-anl-issuance-v2, PR=https://github.com/edgefocus/efp/pull/5993]
 created: 2026-07-23T10:33:14Z
-updated: 2026-07-24T13:05:14Z
+updated: 2026-07-24T18:37:15Z
 source: claude-code
 ---
 
@@ -34,3 +34,4 @@ CONSEQUENCE IN PROD: the file IS delivered and synced — s3://efp-raw/statement
 ALSO: only ONE issuance_v2 file exists (20260723). Nate has not produced a 07-24 one, despite Abhishek saying on 2026-07-24 18:21 IST "I am yet to validate the issuance v2 file. Lmk whenever you drop it" — the file he is waiting for is already there. Nate confirmed this with two screenshots at 18:25 IST showing edge-focus/issuance_v2/2026/07/ containing exactly issuance_v2_20260723.csv.
 
 USEFUL DERIVED FACT for path work: those screenshots prove Oliv SFTP root edge-focus/ maps to our s3://efp-raw/statements/northpond/. So Nates proposed /purchase_file/v0/{YYYY}/{MM}/ will land at s3://efp-raw/statements/northpond/purchase_file/v0/{YYYY}/{MM}/.
+- 2026-07-24T18:37Z [claude-code] QR confirmed: retarget applies to DEFAULT probabilities only, not prepay. PR #6015 updated (19dbaa57a) — prepay now written straight off the payload, unscaled/unclamped. This also settles the open tie-out question: default-only measured 1.03% mean abs error vs Oliv's ANL, vs 4.68% when both curves were scaled.
