@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T12:37:16Z
+updated: 2026-07-24T12:38:57Z
 source: claude-code
 ---
 
@@ -131,3 +131,12 @@ NO EFS COPY to clean: /efs/data/statements/northpond/ is not reachable from dext
 *** WILL COME BACK: the file is still on Oliv's SFTP. *** Nobody has asked Nate to remove it yet — that was always the plan AFTER dev testing. Since edgefocus/sftp/northpond.py mirrors Oliv's whole remote tree into statements/northpond/ (exclude-list only, no allowlist), the next prod sync run will re-copy the file straight back into S3. Deleting from S3 is therefore only durable once Oliv removes it from their SFTP. ACTION: ask Nate to delete purchase_file_legacy/2026/07/purchase_file_legacy_20260723.csv from the SFTP. Optionally, if it needs to stay on their side, add it to the _EXCLUDE list in edgefocus/sftp/northpond.py.
 
 ALSO NOT RETRACTED by the S3 delete (as established earlier — no delete reconciliation on the S3 statement path): the 589 rows already in DEV_ABHISHEK bronze.statement_files / bronze.statement_rows / silver.northpond_stmt_purchase_tapes. Abhishek has said he will repopulate dev from prod, so leaving them.
+- 2026-07-24T12:38Z [claude-code] 2026-07-24: PROD CHECKED — NO DATA CONTAMINATION, but one orphan row + a REAL SEQUENCING RISK.
+
+PROD IS CLEAN: bronze.statement_rows has ZERO northpond/purchase_tape rows for anything in 2026. PROD.silver.northpond_stmt_purchase_tapes is UNCHANGED — still exactly 372 rows / 372 loans across the same 6 Pool events (2025-02-05, 03-20, 04-22, 05-09, 05-23, 06-17). Nothing from the dummy landed in prod.
+
+ONE ORPHAN ROW: PROD.bronze.statement_files contains s3://efp-raw/statements/northpond/purchase_file_legacy/2026/07/purchase_file_legacy_20260723.csv with STATUS='unknown' and PLATFORM/STATEMENT_TYPE/AS_OF_DATE/RULE_NAME all NULL. Expected and harmless: prod's SQS-driven file registration saw the new S3 object, found no matching parsing rule (DEV-1474 is not merged), and filed it as 'unknown' = 'No matching rule found' (ingest_statement_files.py:17). No rows were parsed from it.
+
+*** SEQUENCING RISK — merge order matters. *** ingest_statement_files has a 'refresh' subcommand explicitly documented for exactly this case: 'New parsing rules are added and you want to categorize previously unknown files' (line 1033), usage example at line 1147 is literally . So once DEV-1474 merges, that orphan row is re-evaluated against the new rule. Combined with the fact that the file WILL be re-synced from Oliv's SFTP (they have not been asked to remove it yet), merging before Oliv deletes it means PROD ingests 589 DUMMY rows into silver.northpond_stmt_purchase_tapes — and because FUND_WITH_PURCHASE_TAPE_EXPR classifies everything in the purchase tape as EFHYF, those 589 loans would be pulled into efhyf in silver.positions and silver.transactions.
+
+REQUIRED ORDER: (1) Nate deletes the dummy from Oliv's SFTP; (2) confirm it no longer re-appears in s3://efp-raw/statements/northpond/purchase_file_legacy/; (3) THEN merge PR 6011. If the merge must happen first, either add the file to _EXCLUDE in edgefocus/sftp/northpond.py or make sure nobody runs  for northpond until the file is gone.
