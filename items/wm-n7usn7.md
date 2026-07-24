@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T11:11:46Z
+updated: 2026-07-24T12:37:16Z
 source: claude-code
 ---
 
@@ -122,3 +122,12 @@ RE-RUN ee248d14-7f34-4e2b-894d-b260e559912b = RUN_SUCCESS (verified via GraphQL)
 NOTE FOR ABHISHEK: slop/create_missing_streams.py only covers 4 streams (TRANSACTIONS, TRANSACTIONS_ITD, TRANSFERS, POSITIONS). The sandbox is still missing ~100 other streams from the same reset, so other assets will fail identically until that script is extended or terraform is applied to dev.
 
 URLs: green run http://dexterplus.edgefocus.net:13053/runs/ee248d14-7f34-4e2b-894d-b260e559912b ; earlier failed run 467ce559-a728-442b-b715-73b2442634e1.
+- 2026-07-24T12:37Z [claude-code] 2026-07-24: DUMMY FILE DELETED FROM S3. Removed s3://efp-raw/statements/northpond/purchase_file_legacy/2026/07/purchase_file_legacy_20260723.csv (107,134 bytes, the only object under that prefix). Prefix now empty.
+
+RECOVERABLE: efp-raw has versioning ENABLED, so this was a soft delete. Delete marker VersionId iYQbSyHRy_2HvboCiI8GokzpvD.R471. ; original object still present as VersionId Yo1kccU0wu1reJagbaqpY3CiFP87.68u (107,134 bytes). Restore = delete the delete-marker version.
+
+NO EFS COPY to clean: /efs/data/statements/northpond/ is not reachable from dexterplus (host has no such path; the container mounts /efs read-only and the northpond path does not exist there). The SFTP->EFS->S3 sync runs in the prod environment, not on dexterplus.
+
+*** WILL COME BACK: the file is still on Oliv's SFTP. *** Nobody has asked Nate to remove it yet — that was always the plan AFTER dev testing. Since edgefocus/sftp/northpond.py mirrors Oliv's whole remote tree into statements/northpond/ (exclude-list only, no allowlist), the next prod sync run will re-copy the file straight back into S3. Deleting from S3 is therefore only durable once Oliv removes it from their SFTP. ACTION: ask Nate to delete purchase_file_legacy/2026/07/purchase_file_legacy_20260723.csv from the SFTP. Optionally, if it needs to stay on their side, add it to the _EXCLUDE list in edgefocus/sftp/northpond.py.
+
+ALSO NOT RETRACTED by the S3 delete (as established earlier — no delete reconciliation on the S3 statement path): the 589 rows already in DEV_ABHISHEK bronze.statement_files / bronze.statement_rows / silver.northpond_stmt_purchase_tapes. Abhishek has said he will repopulate dev from prod, so leaving them.
