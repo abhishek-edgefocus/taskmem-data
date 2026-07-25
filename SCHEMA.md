@@ -129,7 +129,10 @@ for what it is actually needed for: querying across items, and every mutation
 (so `updated`, `## Log`, git authorship and the commit all happen). Never
 hand-edit an item file. Set `WM_AGENT=<name>` (or pass `--by`)
 so mutations are attributed to you — in `## Log` lines and as the git author.
-`WM_DIR` overrides the memory location (default `~/taskmem`).
+`WM_DIR` overrides the memory location (default `~/taskmem`). `WM_OFF=1`
+disables the memory for a session/folder (mutations refused, digest silent) —
+set it in a folder's `.claude/settings.json` `env` to never track there;
+`taskmem session off` does the same for one live session.
 
 | Command | Purpose |
 |---------|---------|
@@ -153,6 +156,8 @@ so mutations are attributed to you — in `## Log` lines and as the git author.
 | `taskmem archive <id…>` | move out of the working set into `archive/` |
 | `taskmem unarchive <id…>` | move back into `items/` |
 | `taskmem notify <title> <message>` | OS notification |
+| `taskmem session off\|on\|status` | disable/enable mutations for the current session (`CLAUDE_CODE_SESSION_ID`); reads always work |
+| `taskmem session undo [--yes]` | revert this session's item changes — delete items it created, restore items it edited; dry-run without `--yes`; skips items another session also touched |
 | `taskmem sync` | commit; pull --rebase + push if a remote exists |
 
 ### Query grammar

@@ -129,9 +129,22 @@ HEADER = (
 ) % (WM_DIR, WM_DIR, TM)
 
 
+def _disabled():
+    if os.environ.get("WM_OFF"):
+        return True
+    sid = os.environ.get("CLAUDE_CODE_SESSION_ID", "").strip()
+    return bool(sid) and (WM_DIR / ".sessions" / (sid + ".off")).exists()
+
+
 def main():
     plain = "--plain" in sys.argv
     event = next((a for a in sys.argv[1:] if not a.startswith("-")), "SessionStart")
+    if _disabled():
+        # taskmem is off for this session/folder: inject nothing, so the agent
+        # is not primed to capture. Reads still work if it explicitly asks.
+        if plain:
+            print("taskmem is disabled for this session (WM_OFF or `taskmem session off`).")
+        return
     text = digest()
     if plain:
         print(text or "(task memory is empty)")

@@ -45,6 +45,32 @@ through to look at an item — the files *are* the record.
 `taskmem` and `tm` are on PATH, so no `cd` is needed; use the absolute
 `~/taskmem/bin/taskmem` only when they aren't.
 
+## Turning taskmem off (and undoing a session)
+
+Sometimes the human does not want this session tracked — a throwaway session,
+a sensitive folder, an experiment. Respect it:
+
+- **The human says "disable taskmem" / "don't track this" mid-session** →
+  `taskmem session off`. From then on every mutation in this session is
+  refused (reads still work), keyed to `CLAUDE_CODE_SESSION_ID`. Re-enable
+  with `taskmem session on`. Once off, do not capture, do not "helpfully"
+  record anything — that is the whole point.
+- **A whole folder should never track** → set `WM_OFF=1` in that folder's
+  `.claude/settings.json` `env`. The SessionStart digest then injects nothing
+  and every mutation is refused there, automatically, no per-session step.
+- **"Undo what got tracked this session" / "delete the tasks from this
+  session"** → `taskmem session undo` (dry run — shows what it *would* do),
+  then `taskmem session undo --yes` to apply. It deletes items created this
+  session and reverts edits this session made to pre-existing items, using the
+  `wm-session:` git trailer to find exactly this session's commits. It
+  **skips** any item another session also changed afterwards (never clobbers
+  other work) and lists what it skipped. The undo is itself a commit, so it is
+  reversible. Always show the dry run to the human before `--yes`.
+
+If the human only wants *some* of the session's captures gone, do not use
+`undo` (it is all-or-nothing for the session) — drop or fix those items
+individually instead.
+
 ## Session lifecycle
 
 Follow this in every substantive session:
