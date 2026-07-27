@@ -9,7 +9,7 @@ people: [Frank, Kabeer, Abhijeet]
 tags: [northpond, api-health]
 links: [parent:wm-j523sq, related:wm-wvdxs4]
 created: 2026-07-27T10:07:14Z
-updated: 2026-07-27T14:43:13Z
+updated: 2026-07-27T14:43:48Z
 source: claude-code
 ---
 
@@ -22,59 +22,90 @@ Report claim: northpond_loan_fl has *active* Experian credit-pull failures —
 "98 errors in Sentry, growing, 2 ALB 5xx, plus widespread degraded responses
 with null creditGrade".
 
-## Finding: the Sentry part is a false positive (same class as revolut/foursight)
+## Root cause: intermittent Experian HTTP 401 on the credit-report POST
 
-Sentry EFP-ERRORS-AW "[northpond_loan_fl] Server Error: Experian Credit Pull
-Failed: ... Missing: credit profile, Clarity report"
-(https://edgefocus.sentry.io/issues/EFP-ERRORS-AW, linear ERROR-400):
-- **First seen 2025-12-19**, not new. Lifetime occurrences 98 on 07-24 →
-  111 on 07-27. The "98, growing" number is the issue's LIFETIME counter,
-  not a 07-24 count.
-- Actual events **on 2026-07-24: 2** (02:19 and 17:13 UTC), against 1.2K
-  northpond applications that day (EFP DEV summary) = **0.17%**.
-- Last 30d: 33 events ~= 1.1/day, flat. Per-day: 06-27..07-16 mostly 1-2/day;
-  **07-17 -> 07-21 = ZERO** (the line1 outage window, wm-wvdxs4 — requests were
-  rejected before ever reaching Experian, which corroborates that window);
-  07-22 3, 07-23 2, 07-24 2, 07-25 5, 07-26 1.
-- The "2 ALB 5xx" are the SAME 2 events (gateway 500s when the pull fails),
-  not independent evidence.
-- Error semantics: "Missing: credit profile, Clarity report" = Experian
-  returned no credit profile / no Clarity report for that consumer — a
-  per-applicant no-hit/thin-file condition, not an integration failure.
+**Corrected 2026-07-27** (first pass wrongly called this a per-applicant
+thin-file no-hit — see Log). Verified via Sentry `get_issue_breadcrumbs` on
+EFP-ERRORS-AW's latest event (07-27 10:03:43Z):
 
-Real Experian integration failures look different and did NOT occur on 07-24:
-EFP-ERRORS-1J5/1B9/1BB (OAuth 401 "account is in invalid state"), 264 events
-confined to 2026-07-12 22:51 -> 2026-07-13 13:12 UTC, now resolved (Kabeer
-raised with Nate at the time; also recorded in wm-wvdxs4).
+    Posting Experian credit pull request for app_uuid: 1bf4fda5-...
+    [httplib] POST https://us-api.experian.c... -> http.response.status_code: 401
+    Post request response status: 401
+    [1785146623431400884] Experian response received: ['errors']
+    No creditProfile found in Experian response
 
-## Open: the "widespread null creditGrade" claim — UNVERIFIED
-Cannot be checked from Sentry. Needs bronze.api_events / Snowflake for
-2026-07-24: share of northpond_loan_fl responses with null creditGrade vs the
-~93%-graded baseline (wm-wvdxs4). BLOCKED 2026-07-27: AWS VPN down on
-Abhishek's Mac, so dpx and grafana.edgefocuspartners.com are both unreachable
-(curl to grafana returns 000). Run when VPN is back before replying with a
-definitive answer.
+So: Experian rejects the call with 401; "Missing: credit profile, Clarity
+report" is the downstream symptom, not a consumer data condition. No
+token-refresh breadcrumb precedes the 401 -> a cached bearer token was reused
+and rejected. Reviewer cites lib/efp/experian_data/handler.py
+get_raw_credit_info (`is_success = response.status_code == 200`), so a 401 is a
+hard failure; a genuine no-hit would be HTTP 200 with empty creditProfile.
+NOT verified by me — no repo access from Abhishek's Mac.
 
-## Also found: operator-notes doc has no northpond entry
+Hypothesis worth testing (mine, unproven): at ~0.17% of calls this is too rare
+for a broken credential — it looks like a token-expiry race (request issued in
+the instant the cached token expires, no refresh-and-retry on 401). If so the
+fix is a forced refresh + single retry on 401.
+
+Distinct from EFP-ERRORS-1J5/1B9/1BB, which were 401s on the *token* endpoint
+("account is in invalid state"), 264 events confined to 07-12 22:51 -> 07-13
+13:12 UTC, resolved.
+
+## Two failure modes the report conflated
+a. **Hard fail** -> HTTP 500 -> Sentry EFP-ERRORS-AW. ~2-5/day; 07-24 = 2,
+   which are also the "2 ALB 5xx" (same 2 requests, not extra evidence).
+b. **Incomplete pull** -> HTTP 200 with creditGrade=null, no exception, NEVER
+   reaches Sentry. Reason bucket "Missing: Clarity report" ~13-36/day.
+   Sentry-only monitoring cannot see (b) at all.
+
+## The report's numbers were still wrong
+- "98 errors, growing" = EFP-ERRORS-AW's LIFETIME total (firstSeen 2025-12-19;
+  98 on 07-24 -> 112 on 07-27), not same-day volume. On 07-24 there were 2.
+- "widespread degraded responses with null creditGrade": ~60 null-grade offers
+  on 07-24 = ~5% of 1.2K apps. Baseline is ~93% graded (~7% null, wm-wvdxs4),
+  so 07-24 was AT OR BELOW baseline. Not widespread.
+- The real null-grade spike was 07-17 -> 07-21 (up to ~97% of offers null) =
+  the already-root-caused `currentAddress.line1` outage (wm-wvdxs4), which
+  ended 07-21 17:58 UTC. Not evidence about 07-24.
+- Corroboration: EFP-ERRORS-AW had ZERO events 07-17 -> 07-21 — requests were
+  rejected at validation before ever reaching Experian.
+
+## Snowflake sources for (b) — run when VPN is up
+gold.credit_pulls_daily (platform='northpond', event_type='experian_request';
+total_failures + failure_reason_counts) and silver.northpond_exp_offers
+(COUNT_IF(credit_grade IS NULL)). Reviewer already pulled these; re-run to
+confirm independently.
+
+## UNVERIFIED: possible PII in Sentry events
+Reviewer reports EFP-ERRORS-AW events carry live applicant PII (SSN, DOB, name,
+address) in the captured request body on the get-offers path. I could not
+confirm or refute it — the Sentry MCP event view exposes no request body, and
+the breadcrumbs show `[Filtered]` on several fields, so scrubbing is at least
+partly active. Check the Request section of an event in the Sentry UI directly.
+If confirmed it is a data-handling issue meriting its own ticket, separate from
+this one.
+
+## Also: operator-notes doc has no northpond entry
 "Agent Notes — api_monitoring_review"
-(https://docs.google.com/document/d/1sJRAzAt6-GIfLx9sP0hcGWchEokd3G7eKHuy64wBYBk,
-modified 2026-07-27) contains only 3 lines: full-coverage reporting, revolut
-no-prod-apps expected, foursight latency known. Kabeer fixed the agent account's
-access to it on 07-27. The **northpond entries are still missing** — both the
-0%-approval-is-expected note recommended on 07-22 (wm-wvdxs4 next-step 2) and a
-new one for this: "Missing: credit profile, Clarity report" is a per-applicant
-Experian no-hit at ~1-2/day baseline; flag only if the daily rate spikes.
+(https://docs.google.com/document/d/1sJRAzAt6-GIfLx9sP0hcGWchEokd3G7eKHuy64wBYBk)
+has only 3 lines (full-coverage, revolut, foursight). Kabeer fixed the agent
+account's access on 07-27. Still missing: northpond 0%-approval-is-expected
+(wm-wvdxs4 next-step 2). Do NOT add a note calling these credit-pull errors
+benign — they are a real, if small, auth bug.
 
-## Report bug worth raising with Kabeer
-The health skill read a Sentry issue's lifetime occurrence count as in-window
-volume. Same failure mode could inflate any long-lived low-rate issue. Fix:
-count events within the report window (issue.id + date filter), not issue.count.
+## Report bug to raise with Kabeer
+The health skill presented a Sentry issue's lifetime occurrence count as
+same-day volume. Fix: count events filtered by issue.id + report date. Second
+gap: credit-pull health cannot be judged from Sentry/ALB-5xx alone, because
+mode (b) returns HTTP 200 — cross-check Snowflake.
 
 ## Next steps
-1. When VPN is back: quantify null-creditGrade share for northpond on 07-24.
-2. Reply to Frank in the thread (draft prepared — Abhishek posts it himself).
-3. Add the two northpond entries to the operator-notes doc.
-4. Tell Kabeer about the lifetime-counter bug in the health skill.
+1. File a ticket for the Experian 401 (refresh-and-retry on 401); EFP-ERRORS-AW
+   is still unresolved, last event 07-27 10:03Z.
+2. Confirm or kill the PII claim in the Sentry UI.
+3. Reply to Frank (corrected draft prepared — Abhishek posts it himself).
+4. Tell Kabeer about both monitoring bugs.
+5. Add the northpond entry to the operator-notes doc.
 
 ## Log
 - 2026-07-27T14:43Z [claude-code] CORRECTION (2026-07-27, after external review + breadcrumb check): my 'per-applicant Experian no-hit/thin-file' root cause was WRONG. get_issue_breadcrumbs on EFP-ERRORS-AW latest event (07-27 10:03:43Z, app 1bf4fda5-7578-4e29-b946-cc982ae5d301) shows: 'Posting Experian credit pull request' -> httplib POST us-api.experian.com http.response.status_code=401 -> 'Post request response status: 401' -> "Experian response received: ['errors']" -> 'No creditProfile found in Experian response'. So it is an Experian AUTH REJECTION on the credit-report POST; 'Missing: credit profile' is the downstream symptom. No token-refresh breadcrumb precedes the 401 => cached bearer token reused and rejected. A genuine no-hit would be HTTP 200 with an empty creditProfile (reviewer cites lib/efp/experian_data/handler.py get_raw_credit_info: is_success = status_code == 200 -- not verified by me, no repo access from this Mac). Do NOT repeat the 'normal / no credit file' framing; the draft Slack reply built on it was withdrawn before posting.
