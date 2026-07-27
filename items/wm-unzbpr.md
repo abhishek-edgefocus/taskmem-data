@@ -9,7 +9,7 @@ people: [Frank, Kabeer, Abhijeet]
 tags: [northpond, api-health]
 links: [parent:wm-j523sq, related:wm-wvdxs4]
 created: 2026-07-27T10:07:14Z
-updated: 2026-07-27T10:07:30Z
+updated: 2026-07-27T14:43:13Z
 source: claude-code
 ---
 
@@ -75,3 +75,6 @@ count events within the report window (issue.id + date filter), not issue.count.
 2. Reply to Frank in the thread (draft prepared — Abhishek posts it himself).
 3. Add the two northpond entries to the operator-notes doc.
 4. Tell Kabeer about the lifetime-counter bug in the health skill.
+
+## Log
+- 2026-07-27T14:43Z [claude-code] CORRECTION (2026-07-27, after external review + breadcrumb check): my 'per-applicant Experian no-hit/thin-file' root cause was WRONG. get_issue_breadcrumbs on EFP-ERRORS-AW latest event (07-27 10:03:43Z, app 1bf4fda5-7578-4e29-b946-cc982ae5d301) shows: 'Posting Experian credit pull request' -> httplib POST us-api.experian.com http.response.status_code=401 -> 'Post request response status: 401' -> "Experian response received: ['errors']" -> 'No creditProfile found in Experian response'. So it is an Experian AUTH REJECTION on the credit-report POST; 'Missing: credit profile' is the downstream symptom. No token-refresh breadcrumb precedes the 401 => cached bearer token reused and rejected. A genuine no-hit would be HTTP 200 with an empty creditProfile (reviewer cites lib/efp/experian_data/handler.py get_raw_credit_info: is_success = status_code == 200 -- not verified by me, no repo access from this Mac). Do NOT repeat the 'normal / no credit file' framing; the draft Slack reply built on it was withdrawn before posting.
