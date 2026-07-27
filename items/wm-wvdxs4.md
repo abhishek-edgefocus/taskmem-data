@@ -9,7 +9,7 @@ people: [Kabeer]
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-22T13:47:21Z
-updated: 2026-07-23T10:08:44Z
+updated: 2026-07-27T10:07:20Z
 source: claude-code
 ---
 
@@ -64,3 +64,4 @@ https://docs.google.com/document/d/1sJRAzAt6-GIfLx9sP0hcGWchEokd3G7eKHuy64wBYBk
 
 ## Log
 - 2026-07-23T10:08Z [claude-code] Correction to next-step 4: #errors-api DOES fire per-request 'Invalid Request from Platform' alerts (seen live for northpond/openroad/foursight/prosper on 2026-07-23), so the line1 rejects almost certainly alerted thousands of times and were lost in per-request noise. The gap is aggregation/rate-based alerting, not missing alerts.
+- 2026-07-27T10:07Z [claude-code] 2026-07-24 health report re-flagged northpond (Experian credit-pull). Triaged in wm-unzbpr: false positive (lifetime Sentry counter, 2 events on 07-24 vs 1.2K apps). Confirms next-step 2 is still open — operator-notes doc still has NO northpond entry as of 07-27.
