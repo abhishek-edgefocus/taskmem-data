@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [DEV-503=https://linear.app/edge-focus/issue/DEV-503/int-rate-at-purchase-0-for-northpond-loans-in-positions, PR5704=https://github.com/edgefocus/efp/pull/5704]
 created: 2026-07-14
-updated: 2026-07-28T12:58:28Z
+updated: 2026-07-28T13:19:00Z
 source: dpx-tasks #9
 label: NorthPond int_rate root-cause
 ---
@@ -35,3 +35,21 @@ WORKAROUND ALREADY IN PROD (found today, not in the ticket): conditions.py:43 in
 ACTION: this is not research work any more, it is a one-line PR needing a reviewer. Ask for review on #5704 (+ revert the conditions.py carve-out). Root-causing is DONE — retitle/re-scope accordingly.
 
 Linear ticket state itself not checked: both Linear MCP servers are unauthenticated in this session.
+- 2026-07-28T13:19Z [claude-code] LINEAR TICKET READ 2026-07-28 (MCP reconnected). Confirms the still-needed verdict and adds four things the code/PR side did not show.
+
+TICKET STATE: created 2025-12-10 by Chandra Shekhar, assignee Abhishek, priority Medium, due date 2025-12-31 (7 months overdue). Labels: Data Consistancy [sic], Codebase Refactor. Status is 'Todo' — it was moved BACK from In Progress to Todo on 2026-07-22T11:33Z, three weeks AFTER PR #5704 went up and while that PR was still open with green CI. Full state churn: Todo -> In Progress (2026-01-20) -> Blocked Internally (2026-01-27) -> Backlog (2026-03-31) -> In Progress (2026-06-29, auto-moved by the PR) -> Todo (2026-07-22). PR #5704 IS attached to the ticket, so whoever regressed it did so with the PR visible.
+
+STALE BLOCKER: DEV-503 is marked blockedBy DEV-910 'Ingest Northpond data into snowflake positions'. DEV-910 was CANCELED on 2026-06-24 (assignee Nakula Neeraje, project Codebase Refactor, milestone 'All platforms using Snowflake'). So the block is dead — the relation should be removed or DEV-503 reads as blocked when it is not.
+
+CHANDRA'S ACTUAL ANSWER (the previous session only INFERRED it from the script; the inference was right on substance but missed a step). Thread:
+- Abhishek 2026-06-24: '@chandra - NorthPond Positions data in SnowFlake is now validated, do we still need to fix Datastores?'
+- Chandra 2026-06-25: 'Is it a high effort from your end? if not then its better we fix there too AND UPDATE THE DATA IN NEW INDEX'
+- Abhishek 2026-06-25: 'What specific dependency do we currently have on datastores?'
+- Chandra 2026-06-26: 'One of the important checked in jobs is lib/efp/stats/edgex/bin/abs_datasets_job.py which uses cross platform data to create datasets we share with EDGEX investor'
+=> His gate is effort, and a one-liner clears it. NEW REQUIREMENT NOT IN THE PR: 'update the data in new index' — merging the code does not retroactively fix already-generated datastore output. A regeneration/backfill of the NorthPond first-pass datastore is part of the ask and PR #5704 does not do it. Its own test plan even lists 'Verify int_rate_at_purchase is non-zero after re-generating the first-pass datastore' as an unchecked box.
+
+UNANSWERED CLOSE REQUEST: Abhijeet Bodas, 2026-06-24, with a screenshot: 'this seems to be fixed in snowflake. Can you confirm and close this if appropriate?' Never answered. That is the literal 'is this still needed' question sitting on the ticket, and the answer is NO, do not close on those grounds — Snowflake being correct was never the issue; the datastore is the broken side and abs_datasets_job reads the datastore, not Snowflake.
+
+PLATFORM SIDE NEVER FIXED: Eshan 2026-01-12 posted Nate's reply — NorthPond confirmed OriginalInterestRate=0 is an ACTIVE issue on their end, and said to use CurrentInterestRate meanwhile. Two options were put up: (a) reference CurrentInterestRate in standposFirstPass, (b) push NorthPond to fix it upstream. (a) is what PR #5704 does; (b) never happened. Eshan's position was 'I dont think it is impacting us anywhere... its just a matter of sanity of our datastores' — Chandra rebutted the same day: 'I require it to share northpond static data with PT for edgex deals. I will then make that adjustment for now', i.e. he has been hand-adjusting since January. That manual adjustment plus the conditions.py:43 northpond carve-out (PR #4425, 2026-01-19) are the two live workarounds the merge should retire.
+
+SO THE FULL CLOSE-OUT IS FOUR STEPS, not one: (1) get #5704 reviewed and merged; (2) regenerate/backfill the NorthPond first-pass datastore so existing data is corrected — Chandra's 'new index'; (3) revert the conditions.py:43 northpond carve-out; (4) answer Abhijeet on the ticket, drop the dead DEV-910 blocker, move status off Todo.
