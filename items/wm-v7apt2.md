@@ -47,3 +47,6 @@ so switching the denominator is a column change, not a redesign.
 - Implementation that shipped without the answer: [[wm-fzbz7m]]
 - Schema thread this was first raised on: [[wm-embhpy]]
 - Retarget PR: https://github.com/edgefocus/efp/pull/6015
+
+## Log
+- 2026-07-28T17:38Z [claude-code] Created 2026-07-28 during a full reconciliation. Confirmed still unasked by Slack search over the Oliv group DM: no message from or to Nate mentions net-of-recoveries, gross, or 1.36. Carried out of [[wm-c5jytx]] at close so it does not die with that item.
