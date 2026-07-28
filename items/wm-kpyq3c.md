@@ -2,10 +2,10 @@
 id: wm-kpyq3c
 type: decision
 title: Work memory v1: markdown files + git + generic CLI
-status: open
+status: done
 tags: [taskmem]
 created: 2026-07-14T14:20:46Z
-updated: 2026-07-16T11:49:19Z
+updated: 2026-07-28T17:41:10Z
 source: bootstrap
 label: Taskmem v1 build
 ---
