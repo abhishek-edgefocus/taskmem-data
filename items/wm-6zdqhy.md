@@ -9,7 +9,7 @@ people: [Frank]
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-28T10:38:32Z
-updated: 2026-07-28T12:33:35Z
+updated: 2026-07-28T13:16:56Z
 source: claude-code
 ---
 
@@ -126,3 +126,16 @@ Awaiting Abhishek's call on all three.
 NEW VALIDATION added: cross-checked every registered column against COLUMN_MAPPING datastore keys. northpond 18/18 valid; sofi, marlette, upstart, happymoney all clean. FOUND A PRE-EXISTING BUG: upgrade_verified.py has 6 dead entries keyed by silver names (itd_payment_* and itd_recovery_*) that are not COLUMN_MAPPING keys and therefore never match — same class of bug the bots caught in mine. NOT fixed here; noted in the PR body. Worth its own ticket.
 
 STILL NOT REGISTERED, flagged in the PR for reviewer input: is_home_owner_at_purchase (52.03%, silver strictly richer) and remaining_term_over_2 (0.42%) — both look like straightforward additions but I did not add them unasked.
+- 2026-07-28T13:16Z [claude-code] ITD SIBLING LEGS REGISTERED 2026-07-28 — PR #6058 amended + force-pushed, 18 -> 20 columns.
+
+Full comment audit via GraphQL reviewThreads: 6 threads on the PR, all from bots (no human comments, no substantive review bodies). 4 resolved (markup root cause, ITD column name x2 pairs), 2 unresolved — cursor[bot] and sentry[bot] at 2026-07-28T12:35, both the SAME finding: only cum_payment_transaction_received was registered while its own reason string and the doc said the principal and interest legs share the identical EFFECTIVEDATE-vs-REMITTEDDATE cause at 3.22%/3.36%. Self-inconsistent, and introduced by my own previous fix.
+
+FIXED: registered cum_payment_principal_received and cum_payment_interest_received; reworded the transaction-leg reason so the shared cause is stated once and the siblings are cross-referenced rather than described as matching 100%. Precedent: marlette_verified.py registers all three legs together (:304/:321/:333). sofi registers only the transaction leg but its reason makes no claim about the others.
+
+The three cum_recovery_* legs deliberately excluded — 0.00% on every date in the window, nothing to verify. Now stated explicitly in both the module docstring and the doc.
+
+Verified after: 20 registered, 0 duplicates, all 20 valid COLUMN_MAPPING datastore keys, all reasons non-empty; ruff format/check and mypy clean; other platforms unchanged.
+
+GOTCHA (2nd time bitten by string anchors): 's.index("    ),")' matched the 8-space-indented closing paren of the reason= block, not the 4-space entry terminator, and silently spliced the new entries INTO an existing VerifiedDifference — caught only by ruff's parse error. Anchor on '\n    ),\n' (leading newline) when locating a top-level entry boundary, and always re-run ruff after a scripted splice.
+
+REMAINING UNADDRESSED: none on the PR. Still open for Abhishek's decision (flagged in the PR body, not bot-raised): is_home_owner_at_purchase 52.03% and remaining_term_over_2 0.42% unregistered; purchase_year/purchase_quarter semantics; int_rate_at_purchase 98.74% (DEV-503) and model_version 100% (DEV-1024) untraced; markup family untraced.
