@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [DEV-503=https://linear.app/edge-focus/issue/DEV-503/int-rate-at-purchase-0-for-northpond-loans-in-positions, PR5704=https://github.com/edgefocus/efp/pull/5704]
 created: 2026-07-14
-updated: 2026-07-28T13:33:51Z
+updated: 2026-07-28T13:40:36Z
 source: dpx-tasks #9
 label: NorthPond int_rate root-cause
 ---
@@ -69,3 +69,4 @@ Its row #1 literally called out DEV-503's table: 'Routable today for sofi/prospe
 STRONGEST ARGUMENT THE LEGACY FIX MUST LAND ANYWAY: DEV-1457's own closing question — 'if positions come from silver and cfframes from the legacy datastore, could they disagree about the loan universe?' Since cfframes have no Snowflake path and none is planned, the likely answer is that EDGEX keeps reading positions from LEGACY for consistency with the cfframes. That is a long-lived legacy read, not a soon-to-die one, so the legacy datastore has to be CORRECT — deprecation does not excuse it.
 
 FOLLOW-UP WORTH FILING (not filed): DEV-1457 is High priority, unstarted since 2026-07-17, assigned to Eshan, and is the umbrella that eventually retires this whole class of problem. No taskmem item exists for it.
+- 2026-07-28T13:40Z [claude-code] 2026-07-28: Abhishek raised that the new Oliv file ingestion will break the old pipeline. He is right — filed [[wm-tvjjgw]]. Relevant to this item because the legacy purchase-tape feed (efp-derived xlsx via mirror_trade_files northpond_ff) is due to stop in favour of the DEV-1474 csv, and legacy statement_loan_positions/transactions depend on it for fund classification. If legacy northpond is left to starve, #5704 fixes a rate on a table that is going stale anyway; if legacy is kept alive to serve EDGEX until DEV-1457 lands, #5704 plus a purchase-tape repoint are both required. Either way the two decisions should be taken together, not separately.
