@@ -11,7 +11,7 @@ people: [Nate]
 tags: [northpond]
 links: [relates:wm-n7usn7]
 created: 2026-07-28T17:28:34Z
-updated: 2026-07-28T17:39:52Z
+updated: 2026-07-28T17:40:04Z
 source: claude-code
 ---
 
@@ -35,3 +35,6 @@ immediately before `.csv`.
 
 Verification already done on 2026-07-24 stubs + the full routing matrix is logged on
 [[wm-n7usn7]] (2026-07-28 entry).
+
+## Log
+- 2026-07-28T17:40Z [claude-code] next -> waiting 2026-07-28: the next movement is Nate's, not ours. He said at 15:49 UTC (21:19 IST) he was running the test purchaser files 'at this moment' and asked us to validate they are not flowing through, but as of 17:27 UTC nothing new had landed under s3://efp-raw/statements/northpond/purchase_file/. Nothing to check until his files appear, so waiting on Nate with a nudge tomorrow rather than sitting in next as if it were actionable.
