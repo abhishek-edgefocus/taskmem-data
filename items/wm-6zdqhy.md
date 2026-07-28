@@ -2,14 +2,15 @@
 id: wm-6zdqhy
 type: task
 title: Document validated NorthPond positions (Frank's ask on PR #5504)
-status: open
+status: review
 priority: p2
 size: s
 people: [Frank]
 tags: [northpond]
 links: [parent:wm-j523sq]
+refs: [PR6058=https://github.com/edgefocus/efp/pull/6058]
 created: 2026-07-28T10:38:32Z
-updated: 2026-07-28T14:08:10Z
+updated: 2026-07-28T17:40:12Z
 source: claude-code
 ---
 
