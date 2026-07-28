@@ -2,14 +2,14 @@
 id: wm-unzbpr
 type: task
 title: Triage northpond Experian credit-pull flag on 2026-07-24 API health report (Frank)
-status: active
+status: done
 priority: p2
 size: s
 people: [Frank, Kabeer, Abhijeet]
 tags: [northpond, api-health]
 links: [parent:wm-j523sq, related:wm-wvdxs4]
 created: 2026-07-27T10:07:14Z
-updated: 2026-07-27T14:52:46Z
+updated: 2026-07-28T17:38:36Z
 source: claude-code
 ---
 
