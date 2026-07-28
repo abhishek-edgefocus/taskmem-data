@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [DEV-503=https://linear.app/edge-focus/issue/DEV-503/int-rate-at-purchase-0-for-northpond-loans-in-positions, PR5704=https://github.com/edgefocus/efp/pull/5704]
 created: 2026-07-14
-updated: 2026-07-28T13:19:00Z
+updated: 2026-07-28T13:33:51Z
 source: dpx-tasks #9
 label: NorthPond int_rate root-cause
 ---
@@ -53,3 +53,19 @@ UNANSWERED CLOSE REQUEST: Abhijeet Bodas, 2026-06-24, with a screenshot: 'this s
 PLATFORM SIDE NEVER FIXED: Eshan 2026-01-12 posted Nate's reply — NorthPond confirmed OriginalInterestRate=0 is an ACTIVE issue on their end, and said to use CurrentInterestRate meanwhile. Two options were put up: (a) reference CurrentInterestRate in standposFirstPass, (b) push NorthPond to fix it upstream. (a) is what PR #5704 does; (b) never happened. Eshan's position was 'I dont think it is impacting us anywhere... its just a matter of sanity of our datastores' — Chandra rebutted the same day: 'I require it to share northpond static data with PT for edgex deals. I will then make that adjustment for now', i.e. he has been hand-adjusting since January. That manual adjustment plus the conditions.py:43 northpond carve-out (PR #4425, 2026-01-19) are the two live workarounds the merge should retire.
 
 SO THE FULL CLOSE-OUT IS FOUR STEPS, not one: (1) get #5704 reviewed and merged; (2) regenerate/backfill the NorthPond first-pass datastore so existing data is corrected — Chandra's 'new index'; (3) revert the conditions.py:43 northpond carve-out; (4) answer Abhijeet on the ticket, drop the dead DEV-910 blocker, move status off Todo.
+- 2026-07-28T13:33Z [claude-code] DEPRECATION PREMISE CHECKED 2026-07-28 — Abhishek asked 'but we deprecated datastores, right?'. Answer: yes for northpond, but it does NOT make DEV-503 moot. Verdict unchanged: still needed.
+
+WHAT WAS ACTUALLY DEPRECATED: PR #5936 (DEV-1450, merged 2026-07-21, see [[wm-u7d75w]]) added ('DatastorePositions','northpond') and ('DatastoreTransactions','northpond') to DEPRECATION_REGISTRY with snowflake_routable=True. Registry-based, additive, nothing deleted. It emits a warning and ENABLES an opt-in source='snowflake' path — it does not reroute anything by itself.
+
+WHY THE EDGEX PATH IS UNAFFECTED — three independent reasons, all verified on origin/master today:
+1. source defaults to 'datastore' (base_datastore.py:175/221/1400/1430). Routing is opt-in per call.
+2. NOBODY IN THE REPO PASSES source='snowflake'. git grep across lib/ bin/ edgefocus/ orchestration/ returns only the definitions and error strings themselves — zero production callers. The routing exists and is unused.
+3. datastore_positions.py:87 _load_from_snowflake raises NotImplementedError unless exactly ONE platform. abs_data_requests.load_datasets() calls DatastorePositions(platforms=constants.PLATFORMS, interval='latest', index=self.index).data() — all 7 platforms in one call (constants.PLATFORMS = lc, upgrade, marlette, prosper, sofi, happymoney, northpond). So it STRUCTURALLY cannot route, regardless of registry state. Same for the second call at abs_data_requests.py:659.
+Net: the EDGEX ABS job still reads the legacy datastore, so int_rate_at_purchase is still 0 for northpond there. The Snowflake comparison data agrees — 98.74%% mismatch through 2026-07-19, i.e. after the deprecation merged.
+
+THE REAL MIGRATION IS DEV-1457, AND IT HAS NOT STARTED: 'EDGEX investor data share: Snowflake equivalents for the datastores we read'. Created 2026-07-17 by Chandra Shekhar, assignee Eshan Gupta, priority HIGH, status BACKLOG, never started. It documents that EDGEX produces 5 investor datasets monthly from bin/abs_datasets_job.py reading 16 DATASTORES across all 7 platforms, and that the June 2026 run already emitted a past-deadline deprecation warning for marlette positions. It names both blockers I found independently: (1) source='snowflake' is one-platform-at-a-time vs EDGEX's all-7 call; (2) NO CFFRAME DATASTORE HAS A SNOWFLAKE PATH AT ALL — DatastoreCfframeFromPurch, DatastoreCfframe, DatastoreCalendarMonthCfframe, DatastorePredCfframeFromPurch, DatastoreSimPredCfframeFromPurch (the last pinned at index 1160 so historical EF grades never move). Every curve in the deliverable comes from a cfframe. Only DatastorePositions/DatastoreTransactions are registered; DatastoreTransfers and the 7 Statement* datastores have no registry entry either.
+Its row #1 literally called out DEV-503's table: 'Routable today for sofi/prosper/marlette/happymoney/upgrade — but NOT lc or northpond. What is the plan for those two?' — written 2026-07-17, four days before #5936 closed the northpond half. lc is STILL not routable, which alone keeps the multi-platform call on legacy.
+
+STRONGEST ARGUMENT THE LEGACY FIX MUST LAND ANYWAY: DEV-1457's own closing question — 'if positions come from silver and cfframes from the legacy datastore, could they disagree about the loan universe?' Since cfframes have no Snowflake path and none is planned, the likely answer is that EDGEX keeps reading positions from LEGACY for consistency with the cfframes. That is a long-lived legacy read, not a soon-to-die one, so the legacy datastore has to be CORRECT — deprecation does not excuse it.
+
+FOLLOW-UP WORTH FILING (not filed): DEV-1457 is High priority, unstarted since 2026-07-17, assigned to Eshan, and is the umbrella that eventually retires this whole class of problem. No taskmem item exists for it.
