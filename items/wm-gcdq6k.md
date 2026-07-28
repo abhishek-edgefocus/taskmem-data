@@ -9,7 +9,7 @@ tags: [ai-billing]
 links: [parent:wm-r45vp3]
 refs: [DEV-970=https://linear.app/edge-focus/issue/DEV-970/add-tracking-of-ai-billing-to-slack, PR-5880=https://github.com/edgefocus/efp/pull/5880, PR-5388=https://github.com/edgefocus/efp/pull/5388]
 created: 2026-07-14
-updated: 2026-07-28T17:39:32Z
+updated: 2026-07-28T19:13:14Z
 source: dpx-tasks #10
 label: AI billing to Slack
 ---
@@ -31,3 +31,4 @@ label: AI billing to Slack
 2. Linear DEV-970 moved In Progress -> In Review on 2026-07-27T22:20Z. It is the only issue assigned to Abhishek currently in a started state.
 PR #5388 (2/2, the AI-txn filter + Slack post) is still OPEN and still a draft, untouched since 2026-07-14 — that is the genuinely unstarted half.
 Unchanged and still the gating action: /dagster/prod/ramp_client_id and ramp_client_secret exist but hold PLACEHOLDER_UPDATE_IN_CONSOLE. Samuel said on 2026-07-28 'We however need to seed the parameter.' Seeding is a prod secret write and Abhishek's call.
+- 2026-07-28T19:13Z [claude-code] Abhijeet reviewed PR #5880 on 2026-07-28: code fine, but flagged that bronze/silver ramp tables expose who-spent-what to the whole firm (CC Frank). Confirmed real and automatic - PROD_READER holds SELECT ON FUTURE TABLES IN DATABASE PROD, so both tables are firm-readable the moment they exist. silver carries CARD_HOLDER_FIRST_NAME/LAST_NAME/DEPARTMENT_NAME/LOCATION_NAME + CARD_ID; bronze RAW_RESPONSE carries card_holder, memo, receipts, disputes, policy_violations, merchant_location. gold (PR 2/2) is aggregates only. No masking-policy or snowflake_grant precedent exists in terraform/snowflake, so restricting bronze would be a new pattern needing Samuel's input. Proposal drafted for the thread: drop the 5 cardholder columns from silver, keep identity only in bronze, restrict bronze (this PR or a follow-up) - awaiting Frank/Abhijeet. DEV CLEANUP DONE 2026-07-29: truncated DEV_ABHISHEK bronze.ramp_transactions and silver.ramp_transactions (2700 rows each -> 0) and cleared 1730 ramp rows from ops.changed_keys; tables/streams kept, so a re-test is just a 13-min as_of_date=all backfill. Reason: DB_CREATOR owns DEV_ABHISHEK and 16 users hold that role, so the test data was readable by all of them; ownership cannot be revoked, only the data removed.
