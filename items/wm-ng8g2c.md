@@ -2,13 +2,13 @@
 id: wm-ng8g2c
 type: task
 title: Create Ramp account using the automations Google account
-status: next
+status: done
 priority: p2
 size: s
 tags: [ramp, account-setup, ai-billing]
 links: [parent:wm-gcdq6k]
 created: 2026-07-14
-updated: 2026-07-28T10:18:38Z
+updated: 2026-07-28T10:36:14Z
 source: dpx-tasks #11
 label: Ramp account setup
 ---
