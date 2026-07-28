@@ -9,7 +9,7 @@ people: [Frank]
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-28T10:38:32Z
-updated: 2026-07-28T13:46:20Z
+updated: 2026-07-28T14:08:10Z
 source: claude-code
 ---
 
@@ -154,3 +154,15 @@ Both were previously listed in the doc as 'expected' but left unregistered — e
 POST-STATE: 21 registered, every one with a nonzero max mismatch in the window, all valid COLUMN_MAPPING keys, no dupes. ruff + mypy clean.
 
 Monitor task be5ky7mat armed: polls PR #6058 every 90s, emits new review comments and each CI check as it reaches a terminal state, and stops once all checks are terminal with ~6 min of comment silence. NOT merging — user has not asked for that.
+- 2026-07-28T14:08Z [claude-code] PR #6058 DESCRIPTION TRIMMED 2026-07-28 per Abhishek — cut from ~50 lines of tables to 5 bullets + a scope note + the DAG line. He asked for 'max 4-5 short crisp bullets of whats included'. The detail did not need to live in the PR body; it is already in docs/northpond/snowflake-datastore-comparison.md, which is the durable home.
+
+PR STATE — GREEN AND QUIET at HEAD b4855d94c:
+  Run Tests pass (16m1s) | Select tests pass | Cursor Bugbot pass | Seer Code Review pass | Run integration tests skipping
+  Unresolved review threads: 0 (7 threads total over the PR's life, all bot-raised, all resolved)
+The pattern audit worked — after fixing the whole class rather than one comment at a time, the bot round on b4855d94c produced no new findings.
+
+Monitor task be5ky7mat is NO LONGER RUNNING (stopped without a completion record, likely session teardown). Verified PR state manually instead. If more comments land, re-check with:
+  gh pr checks 6058 --repo edgefocus/efp
+  gh api graphql -f query='{repository(owner:"edgefocus",name:"efp"){pullRequest(number:6058){reviewThreads(first:50){nodes{isResolved comments(first:1){nodes{author{login} createdAt body}}}}}}}'
+
+NOT MERGED — Abhishek has never asked me to merge and I have not. Ready for his review/merge whenever he wants.
