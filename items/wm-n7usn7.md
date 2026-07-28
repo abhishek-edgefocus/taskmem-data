@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-24T17:57:29Z
+updated: 2026-07-28T17:28:30Z
 source: claude-code
 ---
 
@@ -228,3 +228,14 @@ END TO END: rows ingestion 1 file / 4 rows; Dagster run 4737b543-0cee-452a-8339-
 
 CLEANUP: sandbox fixtures removed from s3://efp-sandbox/abhishek/statements/northpond/{purchase_file,issuance}/.
 NOTE: repos-1 currently carries a stale copy of my ORIGINAL 6011 overlay (M parsing_rules/northpond.py + untracked northpond_patterns_test.py) on the dev-1393 branch. It is NOT the current PR code and should be reverted: git checkout -- edgefocus/transformations/bronze/parsing_rules/northpond.py && rm edgefocus/transformations/bronze/northpond_patterns_test.py
+- 2026-07-28T17:28Z [claude-code] 2026-07-28: NATE RE-RAN TEST PURCHASE FILES (Slack C0BJ1M304BU 21:19 IST / 15:49 UTC: 'we're running some of those test purchaser files at this moment... validate they're not accidentally flowing through the system'). VERIFIED CLEAN — PROD UNCONTAMINATED.
+
+CODE IS LIVE: PR 6013 merged 2026-07-24 17:58Z (624e8aee). Deployed — prod Dagster deploys on 2026-07-26 (eba30cb3, f558577f) and 2026-07-27 (9b1bb3ed, 491f2d55) all contain 624e8aee (git merge-base --is-ancestor = YES). Today's 2026-07-28 10:10Z deploy FAILED but that does not roll back; 07-27 18:25Z success is the live build.
+
+ROUTING RE-VERIFIED against origin/master (332e83616) via a detached worktree, 20-case matrix: purchase_file/v0|v1 *_test.csv -> IGNORE (northpond-wide _test rule, first in NORTHPOND_RULES); purchase_file_v0_YYYYMMDD.csv and _N dedup suffix -> INGEST northpond_purchase_tape_v0_csv/purchase_tape; ALL purchase_file/v1/** -> IGNORE; _test stubs on issuance / issuance_v2 / loan_tape -> IGNORE; oliv_loan_tape_latest.csv (both cases) NOT swallowed; purchase_file_legacy/ -> UNKNOWN (rule removed as intended). Naming variants _TEST.csv, _test.CSV, _test_2.csv, test_ prefix -> UNKNOWN, i.e. still NOT ingested. Net: no test-shaped name can reach silver; the only leak path would be Oliv naming a stub exactly like a real file (no marker at all).
+
+PROD STATE 2026-07-28 17:27Z: bronze.statement_files — the two real Oliv stubs (purchase_file_v0_20260723_test.csv, purchase_file_v1_20260723_test.csv, loaded 2026-07-24 13:43 PT) both STATUS=ignore, statement_type/as_of_date/rule_name NULL; the old purchase_file_legacy_20260723.csv still sits at STATUS=unknown (harmless orphan). bronze.statement_rows northpond/purchase_tape: only the 6 x 2025 Pool events (72/111/73/60/59/75), ZERO 2026 rows. silver.northpond_stmt_purchase_tapes: 372 rows / 372 loans across the same 6 events (2025-02-05, 03-20, 04-22, 05-09, 05-23, 06-17) — UNCHANGED.
+
+TODAY'S FILES NOT IN S3 YET: s3://efp-raw/statements/northpond/purchase_file/ still holds only the two 2026-07-24 objects. The northpond SFTP->S3 sync ran at 16:36 UTC (after Nate's 15:49 UTC message) and picked up issuance/issuance_v2/payment_configuration/loan_tape for 2026-07-28 but nothing under purchase_file/. So Nate's new stubs had not been dropped to SFTP as of 17:27 UTC — WORTH A RE-CHECK once they land, to confirm they route to STATUS=ignore in prod bronze.
+
+ONE STANDING ASK FOR NATE: keep the '_test' marker immediately before '.csv'. That literal suffix is the whole guard.
