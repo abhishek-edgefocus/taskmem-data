@@ -9,7 +9,7 @@ people: [Frank]
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-28T10:38:32Z
-updated: 2026-07-28T11:33:42Z
+updated: 2026-07-28T11:54:44Z
 source: claude-code
 ---
 
@@ -80,3 +80,27 @@ His suspicion about underlying business terminology was CORRECT and this is the 
 New name matches the actual tooling: compare_datastore_positions.py / compare_datastore_transactions.py / compare_datastore_cashflows.py in edgefocus/transformations/silver/comparison/. Also dropped the 'follows docs/upstart/reconciliation_ledger.md precedent' line from the PR body — the precedent that matters is upstart_verified.py, not the doc name.
 
 RULE: don't copy a naming convention from a single platform's file without checking it is actually a convention and doesn't collide with existing domain vocabulary.
+- 2026-07-28T11:54Z [claude-code] DASHBOARD REVIEW 2026-07-28 — board is stale and the substrate no longer supports one of the claims in PR #6058.
+
+BOARD: Grafana 98ba2ef7 JSON last edited 2026-06-22T14:20Z by abhishek (version 9, created 2026-06-15). Its text-panel annotations are dated 'as of 2026-06-10' / '2026-06-15'. Nothing touched in 5+ weeks.
+
+SUBSTRATE: DEV_ABHISHEK.GOLD.POSITIONS_COMPARISON_DAILY, PLATFORM='northpond'. 121 rows spanning 2026-03-21..2026-07-19, UPDATED_AT 2026-07-20T06:04. BUT only 28 of those 121 dates are real comparisons (COMMON_COUNT>0, 715 loans, EXTRA_IN_DATASTORE=0); the other 93 have COMMON_COUNT=0 and EXTRA_IN_DATASTORE=715, i.e. silver empty in the sandbox. Clean dates run 2026-06-16..2026-07-19 with holes at 07-13 and 07-16/17/18. Ties to wm-srzcyx (stale DEV_ABHISHEK).
+
+=> CLAIM TO CORRECT in docs/northpond/snowflake-datastore-comparison.md AND the PR body: 'full-history column-by-column comparison ... zero datastore-only loans across the entire 2-year history'. That was true of the earlier full-history run the dashboard annotations were written from, but the current queryable substrate holds only 28 comparable dates in a ~5-week window. Either re-run full history or restate the evidence window honestly.
+
+NEW DIFFERENCES not in the doc (all post-date the 06-10/06-15 annotations):
+- INT_RATE_AT_PURCHASE 98.74% (706/715), first nonzero 2026-06-16. Already tracked as DEV-503 / PR #5704 / wm-gxykru but absent from the doc and from northpond_verified.py.
+- IS_HOME_OWNER_AT_PURCHASE 52.03%, first nonzero 2026-06-16. Was item #15 in the old 2026-06-10 log ('SF richer') but dropped out of the current doc.
+- MODEL_VERSION 100%, first nonzero 2026-07-19 — brand new, only on the very last date. Relates to DEV-1024 v1/v2 (PR #5925, wm-unb6pr).
+- ITD_PAYMENT_PRINCIPAL_RECEIVED 3.22% and ITD_PAYMENT_INTEREST_RECEIVED 3.36%, both first nonzero 2026-06-18. The doc and the northpond_verified.py reason string for itd_payment_transaction_received BOTH assert these two 'match 100%' — now false.
+
+CHANGED vs the doc:
+- PRINCIPAL_BAND: doc says ~19%, actual 0.42%.
+- SCHEDULED_PAYMENT_AMOUNT: registered in northpond_verified.py, but 0.00% on every clean date in the window — never mismatches. Registration is currently a no-op.
+- REMAINING_TERM: doc 6 loans (0.84%) -> actual 0.42% (3 loans).
+- BANKRUPTCY_FILED_DATE / IN_BANKRUPTCY: doc says 2 loans -> actual 0.42% (3 loans).
+CONSISTENT: POOL_ID 56.64, AS_OF_MONTH 27.55, INTEREST_AT_PURCHASE 23.78, MGR_MARK_DQ_BUCKET 21.96, PURCHASE_QUARTER 16.78, TERMS_SEASONED 10.63, PURCHASE_YEAR 9.93, MARKUP 1.82, EXPOSURE/MARKUP_BAND 0.98, ANL/IRR/bands 75.24, EF_SCORE/ZIP_CODE/IS_JOINT 100.
+
+Not reported on: ACCOUNT_ID (per standing instruction).
+
+NOT YET ACTIONED — awaiting Abhishek's call on whether to amend PR #6058.
