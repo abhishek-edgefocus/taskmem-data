@@ -2,13 +2,13 @@
 id: wm-7mtzka
 type: task
 title: Fix silver.transactions ACCOUNT_ID for northpond (derive from fund, not raw tape)
-status: review
+status: next
 priority: p2
 size: s
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-u7d75w]
 created: 2026-07-17T13:50:10Z
-updated: 2026-07-28T17:39:32Z
+updated: 2026-07-28T17:42:03Z
 source: claude-code
 ---
 
