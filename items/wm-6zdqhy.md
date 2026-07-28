@@ -9,7 +9,7 @@ people: [Frank]
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-28T10:38:32Z
-updated: 2026-07-28T12:15:12Z
+updated: 2026-07-28T12:33:35Z
 source: claude-code
 ---
 
@@ -115,3 +115,14 @@ NOT YET ACTIONED — awaiting Abhishek's call on whether to amend PR #6058.
    => To make the NorthPond board read clean, someone must add show_mode + verified_cols to the dashboard JSON (Snowflake names), which is a separate change from this PR. The PR body, the doc opening, and the northpond_verified.py docstring all currently claim otherwise and need rewording.
 
 Awaiting Abhishek's call on all three.
+- 2026-07-28T12:33Z [claude-code] FIXES APPLIED 2026-07-28, PR #6058 amended + force-pushed (HEAD 7f5f759da, 3 files / +400, 21 -> 18 registered columns).
+
+1. ITD column name — column='itd_payment_transaction_received' -> 'cum_payment_transaction_received'. Verified the lookup now resolves. Also corrected its reason string, which claimed the principal and interest legs 'match 100%' — they went nonzero 2026-06-18 and read 3.22%/3.36% on 2026-07-19.
+2. markup / markup_band / exposure REMOVED from the registry (21->18). Their root cause was never traced by anyone — my reason string and the dashboard annotation both guessed. Now listed as Open in the doc + module docstring with the code evidence for why the one-day offset cannot explain them (positions_utils.py:937).
+3. Premise reworded in all three places (module docstring, doc, PR body): registration tags columns in the compare_datastore_positions REPORT; it does NOT affect the Grafana board. Board filtering is a separate hand-maintained dashboard variable (show_mode + verified_cols, Snowflake names) that the NorthPond board doesn't have. Giving it one is called out as a follow-up.
+4. Evidence window corrected from 'full 2-year history' to the truthful '28 dates with a real head-to-head comparison, 2026-06-16..2026-07-19, 715 loans on every one, zero datastore-only loans', plus a note that the job has produced nothing since 2026-07-20. The 2024-11-21 issuance-backfill cliff is now explicitly attributed to the earlier full-history run.
+5. Doc per-column table refreshed to the 2026-07-19 numbers: ADDED int_rate_at_purchase 98.74% (DEV-503, open), model_version 100% (new 2026-07-19, DEV-1024, open), is_home_owner_at_purchase 52.03%. CORRECTED principal_band ~19%->0.42%, scheduled_payment_amount ->0%, remaining_term 6->3 loans, bankruptcy 2->3 loans, ITD principal/interest 0%->3.22%/3.36%.
+
+NEW VALIDATION added: cross-checked every registered column against COLUMN_MAPPING datastore keys. northpond 18/18 valid; sofi, marlette, upstart, happymoney all clean. FOUND A PRE-EXISTING BUG: upgrade_verified.py has 6 dead entries keyed by silver names (itd_payment_* and itd_recovery_*) that are not COLUMN_MAPPING keys and therefore never match — same class of bug the bots caught in mine. NOT fixed here; noted in the PR body. Worth its own ticket.
+
+STILL NOT REGISTERED, flagged in the PR for reviewer input: is_home_owner_at_purchase (52.03%, silver strictly richer) and remaining_term_over_2 (0.42%) — both look like straightforward additions but I did not add them unasked.
