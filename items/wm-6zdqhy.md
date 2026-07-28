@@ -9,7 +9,7 @@ people: [Frank]
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-28T10:38:32Z
-updated: 2026-07-28T13:16:56Z
+updated: 2026-07-28T13:46:20Z
 source: claude-code
 ---
 
@@ -139,3 +139,18 @@ Verified after: 20 registered, 0 duplicates, all 20 valid COLUMN_MAPPING datasto
 GOTCHA (2nd time bitten by string anchors): 's.index("    ),")' matched the 8-space-indented closing paren of the reason= block, not the 4-space entry terminator, and silently spliced the new entries INTO an existing VerifiedDifference — caught only by ruff's parse error. Anchor on '\n    ),\n' (leading newline) when locating a top-level entry boundary, and always re-run ruff after a scripted splice.
 
 REMAINING UNADDRESSED: none on the PR. Still open for Abhishek's decision (flagged in the PR body, not bot-raised): is_home_owner_at_purchase 52.03% and remaining_term_over_2 0.42% unregistered; purchase_year/purchase_quarter semantics; int_rate_at_purchase 98.74% (DEV-503) and model_version 100% (DEV-1024) untraced; markup family untraced.
+- 2026-07-28T13:46Z [claude-code] PATTERN FIX 2026-07-28 — stopped playing whack-a-mole with the bots and audited every entry. PR #6058 at b4855d94c, 20 -> 21 columns.
+
+THE PATTERN: every bot finding was the same class — the registry asserting something the CODE or the DATA contradicts. (1) markup: reason cited a mechanism the formula rules out. (2) ITD: registered name wasn't the lookup key. (3) ITD legs: reason said siblings share the cause, siblings not registered. (4) scheduled_payment_amount: registered under terminal-status NULLing, which does not apply to it, at 0% mismatch. Fixing them one at a time just surfaced the next.
+
+SYSTEMATIC AUDIT now in scratch script audit.py — for each registered column, pull latest AND max mismatch % across all 28 clean dates from DEV_ABHISHEK.GOLD.POSITIONS_COMPARISON_DAILY, and check the name is a valid COLUMN_MAPPING datastore key. Any column with max=0 has never diverged and must not be registered. Result: scheduled_payment_amount was the only dead entry. Worth re-running this audit before any future *_verified.py change, on any platform.
+
+CHANGES:
+- DROPPED scheduled_payment_amount. Verified against code: build_positions_select() NULLs PRINCIPAL, ACCRUED_INTEREST, REMAINING_TERM, DAYS_PAST_DUE, PLATFORM_DAYS_PAST_DUE, EXPOSURE (positions_utils.py:550-555) — SCHEDULED_PAYMENT_AMOUNT is NOT in that list; northpond maps it straight from p.CURRENTSCHEDULEDPERIODICPMT (northpond/positions.py:337). Bot was right.
+- ADDED remaining_term_over_2 (0.42%, derives from REMAINING_TERM at positions_utils.py:644, so the terminal-NULLing cause is real).
+- ADDED is_home_owner_at_purchase (52.03%, traced: northpond/transfers.py:109 COALESCE(t.TAPE_IS_HOME_OWNER, fp..., gs...) -> pur.IS_HOME_OWNER at positions_utils.py:367; legacy first_seen never captured it).
+Both were previously listed in the doc as 'expected' but left unregistered — exactly the inconsistency the bots keep finding, so closing it preemptively.
+
+POST-STATE: 21 registered, every one with a nonzero max mismatch in the window, all valid COLUMN_MAPPING keys, no dupes. ruff + mypy clean.
+
+Monitor task be5ky7mat armed: polls PR #6058 every 90s, emits new review comments and each CI check as it reaches a terminal state, and stops once all checks are terminal with ~6 min of comment silence. NOT merging — user has not asked for that.
