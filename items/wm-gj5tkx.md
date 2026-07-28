@@ -7,7 +7,7 @@ priority: p2
 size: l
 people: [Nate, Trishit]
 tags: [northpond, edgex]
-links: [parent:wm-j523sq]
+links: [parent:wm-j523sq, relates:wm-5z3pjt]
 created: 2026-07-28T11:49:54Z
 updated: 2026-07-28T11:49:57Z
 source: claude-code
