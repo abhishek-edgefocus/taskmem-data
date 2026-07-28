@@ -7,9 +7,9 @@ priority: p2
 size: s
 tags: [oncall]
 links: [parent:wm-3y3ckv]
-refs: [PR5704=https://github.com/edgefocus/efp/pull/5704]
+refs: [DEV-503=https://linear.app/edge-focus/issue/DEV-503/int-rate-at-purchase-0-for-northpond-loans-in-positions, PR5704=https://github.com/edgefocus/efp/pull/5704]
 created: 2026-07-14
-updated: 2026-07-28T12:58:22Z
+updated: 2026-07-28T12:58:28Z
 source: dpx-tasks #9
 label: NorthPond int_rate root-cause
 ---
