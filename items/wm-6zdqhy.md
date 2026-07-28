@@ -9,7 +9,7 @@ people: [Frank]
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-28T10:38:32Z
-updated: 2026-07-28T10:49:51Z
+updated: 2026-07-28T11:16:33Z
 source: claude-code
 ---
 
@@ -45,3 +45,17 @@ Upstart did exactly this and COMMITTED it: docs/upstart/reconciliation_ledger.md
 FRANK COMMENT — searched exhaustively, no second ask exists. Swept every human comment on PRs 5504, 5551, 5579, 5584, 5610, 5624, 5704, 5749, 5874, 5876, 5917, 5925, 5936, 5965, 5967, 5993 (issue comments + review comments incl. outdated + review bodies). Frank's ONLY substantive NorthPond ask is the #5504 approval review of 2026-06-16 (comparison stats/graphs, pointing at Eshan's Upgrade board). He never commented on northpond_verified.py — it was removed 2026-06-22 19:30, his #5624-era review landed 2026-06-23 02:33. On #5624 he wrote only 'Ok great thanks for the updated int tests and additional changes. Looks good!'
 
 positions-validation.md updated with the recovery instructions and a candidate list of columns to add beyond the original 5 (is_joint, zip_code, pool_id, mgr_mark_dq_bucket, as_of_month, terminal-NULLing group, legacy one-day-offset group). Deliberately EXCLUDES the 8 issuance-derived columns — already 0% since 2024-11-21, suppressing them would mask a future regression.
+- 2026-07-28T11:16Z [claude-code] SHIPPED 2026-07-28: PR #6058 https://github.com/edgefocus/efp/pull/6058 — 'northpond: register verified positions differences + validation docs', branch abhishek/northpond-verified-differences off latest master (dfcf0695c), 9 files / +875.
+
+Built in a NEW git worktree at dpx ~/claude-ws/np-verified (created via 'git worktree add' from ~/repos-2/efp) specifically so none of the three existing checkouts were disturbed — ~/repos/efp has ~20 untracked/modified files on the openroad branch, ~/repos-3/efp is on the ramp branch, ~/tmp/np-pr is another copy on dev-1412. All left untouched.
+
+Contents:
+- northpond_verified.py: 21 columns registered (5 prediction + is_joint/zip_code + pool_id/mgr_mark_dq_bucket/as_of_month + 4 terminal-NULLing + 6 one-day-offset + itd_payment_transaction_received). Expanded from the original 5 using the Grafana board 98ba2ef7 annotations.
+- verified_differences.py: 6-line import block in _load_platform_verifications(). NOTE master already had upstart_verified registered.
+- docs/northpond-silver-vs-datastore/ (7 files) now COMMITTED — previously untracked for ~6 weeks.
+
+Verified before commit: get_verified_differences('northpond')=21 unique, all fields populated; other platforms unchanged (sofi 38, upstart 24, marlette 58, happymoney 10, upgrade 95); ruff check + format clean; mypy clean. Ran with ~/repos-2/efp/.venv (the worktree has no venv of its own).
+
+GOTCHA worth remembering: writing python via an ssh heredoc silently ate two dollar amounts ('$0-4k' -> '/bin/zsh-4k' via $0, '$4.29' -> '.29' via $4). Caught by a SyntaxWarning on import. For anything with $ in it, scp a file instead of heredoc-ing it.
+
+STILL OPEN — needs Abhishek's decision, called out explicitly in the PR body: purchase_year/purchase_quarter semantics (silver = efhyf TRANSFER_DATE, datastore = original acquisition; purchase_date itself is 0% mismatch). Deliberately NOT registered. Also not registered: the 8 issuance-derived columns (0% since 2024-11-21) and the >99%-match one-off blips.
