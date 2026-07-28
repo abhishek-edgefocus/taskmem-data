@@ -7,8 +7,9 @@ priority: p1
 size: m
 people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
+links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-28T11:01:04Z
+updated: 2026-07-28T11:01:09Z
 source: claude-code
 ---
 
