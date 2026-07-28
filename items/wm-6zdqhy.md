@@ -9,7 +9,7 @@ people: [Frank]
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-28T10:38:32Z
-updated: 2026-07-28T11:54:44Z
+updated: 2026-07-28T12:15:12Z
 source: claude-code
 ---
 
@@ -104,3 +104,14 @@ CONSISTENT: POOL_ID 56.64, AS_OF_MONTH 27.55, INTEREST_AT_PURCHASE 23.78, MGR_MA
 Not reported on: ACCOUNT_ID (per standing instruction).
 
 NOT YET ACTIONED — awaiting Abhishek's call on whether to amend PR #6058.
+- 2026-07-28T12:15Z [claude-code] BOT REVIEW on PR #6058 — both findings VALID, plus a third I found while checking them. Nothing fixed yet.
+
+1. ITD COLUMN NAME (flagged by BOTH sentry[bot] and cursor[bot], medium). VALID. compare_datastore_positions.py builds ColumnResult with column_name=old_col (line 578) = the DATASTORE column name, and COLUMN_MAPPING lines 169-174 map cum_payment_transaction_received -> ITD_PAYMENT_TRANSACTION_RECEIVED. So my entry column='itd_payment_transaction_received' never matches; must be 'cum_payment_transaction_received'. Precedent confirms: sofi_verified.py:75 and marlette_verified.py:304 both register cum_*. (upgrade_verified.py registers BOTH cum_* at 368-391 and itd_* at 853-880.)
+
+2. MARKUP ROOT CAUSE (cursor[bot] only, medium). VALID. positions_utils.py:937 defines MARKUP = NULLIF(PRICE_AT_PURCHASE,0)/NULLIF(PRINCIPAL_AT_PURCHASE,0) — a pure ratio of two purchase-tape fields, and EXPOSURE = PRINCIPAL*MARKUP + ACCRUED_INTEREST (line 953). interest_at_purchase never enters MARKUP. If the datastore's price is its principal x markup, a one-day principal offset cancels in the ratio. So attributing markup/markup_band/exposure to the at-purchase one-day offset is WRONG in both my reason strings and the doc. NOTE the dashboard's own annotation ('DS markup calculation uses slightly different interest-at-purchase input for efhyf') is equally untraced — markup was never traced to code by anyone. Real root cause UNKNOWN; must not be suppressed under a fabricated cause.
+
+3. FOUND WHILE VERIFYING — THE PR'S WHOLE PREMISE IS WRONG. compare_daily_summary.py, which writes gold.positions_comparison_daily (the Grafana board substrate), has ZERO references to verified differences — it emits raw mismatch % keyed by SNOWFLAKE column name (line 267: for sf_col in COLUMN_MAPPING.values()). The ONLY consumer of the Python registry is the CLI report compare_datastore_positions.py (the 'VERIFIED' tag + unverified_issues list). So registering northpond_verified.py does NOT make the board read clean.
+   How boards actually do it: Eshan's Upgrade board (uid 0f070087) has a Grafana CONSTANT variable 'verified_cols' — a hand-maintained list of SNOWFLAKE column names — plus a 'show_mode' custom variable ('Only unverified'/'All'), and every panel wraps each column in CASE WHEN '${show_mode}'='All' OR 'COL' NOT IN (${verified_cols}) THEN COL END. Entirely dashboard-side, independent of the Python registry. The NorthPond board 98ba2ef7 has NEITHER variable (only 'database').
+   => To make the NorthPond board read clean, someone must add show_mode + verified_cols to the dashboard JSON (Snowflake names), which is a separate change from this PR. The PR body, the doc opening, and the northpond_verified.py docstring all currently claim otherwise and need rewording.
+
+Awaiting Abhishek's call on all three.
