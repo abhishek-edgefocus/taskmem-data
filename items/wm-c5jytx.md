@@ -2,7 +2,7 @@
 id: wm-c5jytx
 type: task
 title: Set up northpond model for EDGEX EF scoring — at_orig predictions into silver.predicted_cashflows
-status: next
+status: done
 priority: p0
 size: l
 due: 2026-07-24
@@ -11,7 +11,7 @@ tags: [northpond]
 links: [parent:wm-h3dvpa]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-15T21:14:11Z
-updated: 2026-07-22T18:47:13Z
+updated: 2026-07-28T17:37:56Z
 source: claude-code
 label: EDGEX EF scoring setup
 ---
