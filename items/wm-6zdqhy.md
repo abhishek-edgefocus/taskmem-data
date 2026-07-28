@@ -9,7 +9,7 @@ people: [Frank]
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-28T10:38:32Z
-updated: 2026-07-28T10:38:32Z
+updated: 2026-07-28T10:49:51Z
 source: claude-code
 ---
 
@@ -32,3 +32,16 @@ Upstart did exactly this and COMMITTED it: docs/upstart/reconciliation_ledger.md
 2. Reply on PR #5504 linking the board + the doc, closing Frank's review thread.
 3. Follow-up ticket: create northpond_verified.py. NorthPond has NO verified-differences file (sofi/marlette/happymoney/upgrade all do, at edgefocus/transformations/silver/comparison/*_verified.py), so every expected/convention/harness-artifact diff still shows as a live mismatch on the board.
 4. Open decision: purchase_year/purchase_quarter semantics — silver reports the efhyf TRANSFER_DATE, datastore reports the original acquisition date. purchase_date itself is 0% mismatch. Pick one and register it.
+
+## Log
+- 2026-07-28T10:49Z [claude-code] CORRECTION to the 2026-07-28 entry: northpond_verified.py is NOT missing — it was WRITTEN and then PULLED from the PR. Recovered today.
+
+- Added in commit f268acda2 'DEV-1291: Register Northpond ANL/IRR/EF_SCORE as verified positions differences' (79 lines, 5 columns: anl, irr, anl_band, irr_band, ef_score; verified_by=abhishek, verified_date=2026-06-20) on branch abhishek/dev-1291-address-review-comments.
+- Removed in ec288e153 'Remove northpond verified differences files from PR' (2026-06-22 19:30) with the body: 'Will be added in a separate PR once the datastore comparison baseline has been established post-merge.' Self-initiated deferral, not a reviewer ask. PR #5624 merged without it.
+- The commit also added a 6-line northpond_verified import block to _load_platform_verifications() in verified_differences.py — that half must come back too or registration never fires.
+- Recover: git checkout f268acda2 -- edgefocus/transformations/silver/comparison/northpond_verified.py (done today into dpx ~/repos/efp working tree, unstaged).
+- The baseline that deferral was waiting on IS now established (full-history comparison, board 98ba2ef7 annotated per family), so the follow-up PR is due.
+
+FRANK COMMENT — searched exhaustively, no second ask exists. Swept every human comment on PRs 5504, 5551, 5579, 5584, 5610, 5624, 5704, 5749, 5874, 5876, 5917, 5925, 5936, 5965, 5967, 5993 (issue comments + review comments incl. outdated + review bodies). Frank's ONLY substantive NorthPond ask is the #5504 approval review of 2026-06-16 (comparison stats/graphs, pointing at Eshan's Upgrade board). He never commented on northpond_verified.py — it was removed 2026-06-22 19:30, his #5624-era review landed 2026-06-23 02:33. On #5624 he wrote only 'Ok great thanks for the updated int tests and additional changes. Looks good!'
+
+positions-validation.md updated with the recovery instructions and a candidate list of columns to add beyond the original 5 (is_joint, zip_code, pool_id, mgr_mark_dq_bucket, as_of_month, terminal-NULLing group, legacy one-day-offset group). Deliberately EXCLUDES the 8 issuance-derived columns — already 0% since 2024-11-21, suppressing them would mask a future regression.
