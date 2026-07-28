@@ -2,14 +2,14 @@
 id: wm-n7usn7
 type: task
 title: DEV-1474: parse Oliv purchase files at finalised purchase_file/v0 path (v1 + _test ignored)
-status: review
+status: done
 priority: p1
 size: s
 people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-28T17:28:30Z
+updated: 2026-07-28T17:37:17Z
 source: claude-code
 ---
 
