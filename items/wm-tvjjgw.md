@@ -6,8 +6,9 @@ status: next
 priority: p1
 size: m
 tags: [northpond, datastores, oncall]
+links: [related:wm-gxykru]
 created: 2026-07-28T13:40:28Z
-updated: 2026-07-28T13:40:28Z
+updated: 2026-07-28T13:40:36Z
 source: claude-code
 ---
 
