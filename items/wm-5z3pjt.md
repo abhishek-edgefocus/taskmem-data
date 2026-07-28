@@ -9,7 +9,7 @@ people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-28T11:49:42Z
+updated: 2026-07-28T12:19:31Z
 source: claude-code
 ---
 
@@ -38,3 +38,6 @@ Reading: the investor ID is NOT something Oliv will send — it's a label we sta
 His proposal: (a) everything INV103 by default, (b) punt INV103-vs-INV105 for a couple weeks, (c) start work on sharing the Nelnet loan + transaction files. Asked Abhishek for his view.
 
 STATUS: the investor-ID half is effectively settled — default INV103, no tape change needed now. STILL OPEN: neither Nate nor Trishit addressed EDGEX-vs-EFHYF fund attribution, which is the urgent one since purchasing starts today and FUND_WITH_PURCHASE_TAPE_EXPR hardcodes efhyf for every loan on the Oliv purchase tape.
+- 2026-07-28T12:19Z [claude-code] RESOLVED (Abhishek, 2026-07-28): all Oliv loans purchased from today onward belong to the EDGEX fund, so there is no EDGEX-vs-EFHYF discriminator needed on the purchase tape and no question to ask Oliv. The fund split is a DATE CUTOFF we own: purchase-tape loans with PURCHASE_DATE < 2026-07-28 -> efhyf, >= 2026-07-28 -> edgex20261NN.
+
+Remaining code work: FUND_WITH_PURCHASE_TAPE_EXPR in edgefocus/transformations/silver/statement_rows/northpond/constants.py currently returns FUNDS.EFHYF unconditionally for any loan on silver.northpond_stmt_purchase_tapes with PURCHASE_DATE <= AS_OF_DATE. Needs the date-based branch. Caveat to confirm with Trishit eventually: a pure date rule breaks if EFHYF resumes buying Oliv loans later.
