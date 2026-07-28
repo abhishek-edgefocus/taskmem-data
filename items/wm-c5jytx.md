@@ -11,7 +11,7 @@ tags: [northpond]
 links: [parent:wm-h3dvpa]
 refs: [slack=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1784139879078909?thread_ts=1784139879.078909&cid=C06RMEK095G]
 created: 2026-07-15T21:14:11Z
-updated: 2026-07-28T17:37:56Z
+updated: 2026-07-28T17:37:57Z
 source: claude-code
 label: EDGEX EF scoring setup
 ---
@@ -95,3 +95,9 @@ NAMING HAZARD PINNED BY TEST: issuance_v2_{date}.csv is safe (empirically verifi
 SCOPE DECISION (Abhishek, 2026-07-22): read ONLY the 3 model columns + loan identifier from v2. Do not infer anything from sample-file contents — both files Nate shared are schema samples, not representative data. My earlier 12.8%-ANL-coverage 'back-book gate has failed' conclusion was withdrawn as over-read.
 
 NEXT (PR 2): two-pass retarget in populate_predicted_cashflows post-seasoning (:814-:832) — pass-1 cfframe -> pandas ANL replica -> k -> clip(0.999) MANDATORY (sum-probs>1.001 ValueError is NOT caught by the retry loop) -> ratio-iterate 2-4 rebuilds -> audit cols RAW_ANL/TARGET_ANL/APPLIED_K on history tf + view text bump. Add TARGET_ANL to load_predictions SELECT + optional_first_cols. Still gated on the 1.36 net-vs-gross answer from Nate (decides numerator/denominator basis; payload agl is the ready-made gross denominator if he says gross).
+- 2026-07-28T17:37Z [claude-code] DONE — verified against GitHub, Linear and prod 2026-07-28. The ask in Abhijeet's original thread (EF scoring for EDGEX must run off the final Oliv model, with at_orig predictions landing in silver.predicted_cashflows) is DELIVERED, by the two tickets that grew out of this design item:
+- DEV-1468 (PR #5993, merged 2026-07-24) — issuance_v2 ingestion + TARGET_ANL on silver.predictions.
+- DEV-1445 (PR #6015, merged 2026-07-27) — the per-loan retarget k = anl_oliv/anl_ours applied to the default vector with re-amortisation.
+Both Done in Linear; live in prod and verified 2026-07-28: all 103 scored Oliv-ANL loans have at_orig cashflows landing 1.01% mean off Oliv's ANL, feeding generate_ef_score_sql. Steps 2-5 of this item's Next steps are therefore discharged, and design questions 2 (tie-out) and 3 (what gets scaled) were settled empirically — default-only scaling with re-amortisation measured 1.03% mean abs error vs 4.68% when both curves were scaled.
+STEP 1 WAS NEVER DONE, and I am NOT closing it silently. Nate was never asked whether his ANL is net of recoveries or effectively gross (the 1.36 question). Verified by Slack search 2026-07-28: no such question or answer exists in the group DM, and Nate's 2026-07-24 18:14 IST invitation ('let me know if there is anything else outstanding... so I can get that resolved today') passed unused. The retarget shipped without it, so if his ANL is gross while ours is net, the prod numbers now tie out to a gross target and overstate losses by roughly the recovery rate. Carried out to its own item so it survives this close.
+Tracking item wm-h3dvpa (the reply this was split from) is already done; execution now lives on [[wm-fzbz7m]] (closed) and [[wm-vye9hn]] (the stale ef_scores).
