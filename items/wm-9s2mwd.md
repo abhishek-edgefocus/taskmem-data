@@ -8,7 +8,7 @@ size: l
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-c5jytx]
 created: 2026-07-20T13:55:37Z
-updated: 2026-07-28T17:40:28Z
+updated: 2026-07-28T17:40:43Z
 source: claude-code
 ---
 
@@ -40,3 +40,4 @@ WHAT THIS TICKET NOW NEEDS: exactly the machinery the code verification above sa
 Still gated on the CURRENT PURCHASE-TAPE SCHEMA from Nate (overdue since 2026-07-21, wm-embhpy). Six open design questions against the retarget method are logged on wm-c5jytx — item 1 (whether Nate's ANL is net or gross) is now CRITICAL PATH, because it is the denominator-vs-numerator definition mismatch that would bias k.
 - 2026-07-28T17:40Z [claude-code] RECONCILED 2026-07-28: the premise moved under this item. DEV-1452/QR-23 proposed running our model over the Oliv purchase tape to produce a full CFFrame, as the alternative to ingesting an ANL scalar. What actually shipped instead is the per-loan retarget — DEV-1445 (PR #6015, merged 2026-07-27): our existing model's at_orig curves scaled by k = anl_oliv/anl_ours on the default vector with re-amortisation, live in prod and landing 1.01% mean off Oliv's ANL for all 103 scored loans. So Sean's 'fully self consistent set of logged CFFrames' requirement is now substantially met by a different route than this ticket describes.
 Linear DEV-1452 is still Backlog, unstarted, no PRs, last touched 2026-07-23. Worth deciding whether it should be closed as delivered-by-другой-route, rescoped to only what the retarget does not cover (a daily run over the purchase tape rather than the issuance feed), or left as-is. Not changing its status here — that is Abhishek's and Sean's call.
+- 2026-07-28T17:40Z [claude-code] Typo in the line above: 'delivered-by-другой-route' should read 'delivered by another route'. No change of meaning.
