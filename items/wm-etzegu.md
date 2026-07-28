@@ -9,7 +9,7 @@ people: [Trishit]
 tags: [northpond, dev-1445, alerting]
 links: [parent:wm-j523sq]
 created: 2026-07-27T14:05:01Z
-updated: 2026-07-28T17:39:41Z
+updated: 2026-07-28T17:39:51Z
 source: claude-code
 label: Oliv retarget fallback alert
 ---
@@ -24,3 +24,5 @@ Open Qs: which Slack channel; whether to also alert the 32 'Oliv ANL present but
 
 ## Log
 - 2026-07-27T14:57Z [claude-code] Decisions (2026-07-27): (1) Channel = NEW #northpond-data-monitoring (create it, invite bot + Trishit; no northpond channel exists today, only #best-egg-data-monitoring for Marlette). (2) Scope broadened per Abhishek: alert on ALL cases where k was not cleanly applied at full strength, categorized by reason -- (a) oliv_anl<=0, (b) our payload:anl<=0, (c) scaled default prob hit the cap>1, (d) hit floor<0 (defensive, expect 0), and likely (e) Oliv ANL present but loan not scored at all (32 no-model-response loans). EXCLUDE the expected no-Oliv-ANL back book (~717) = pure noise. Prepay is unscaled+unclamped now so no prepay category. Still planning, not implementing.
+- 2026-07-28T17:39Z [claude-code] FIELD REPAIR + RECONCILE 2026-07-28. The item was malformed: 'next' had been written into the type field (type=next) while status was 'open', so it never appeared in a next/active view and had no priority, size, tags, people, parent or label. Set type=task, status=next, and filled in the rest from the body — the tags line at the end of the body ('northpond dev-1445 alerting') had been written as prose instead of as fields. Nothing about the work itself changed.
+STATE CHECK: PR #6015, which the body says this must NOT be folded into, MERGED 2026-07-27 and DEV-1445 is Done — so the 'separate follow-up PR' constraint is now simply true rather than a sequencing worry, and this can be built whenever. Trishit's ask is still unimplemented; the 2026-07-27 decisions (new #northpond-data-monitoring channel, categorise by fallback reason, exclude the ~717 no-Oliv-ANL back book) stand.
