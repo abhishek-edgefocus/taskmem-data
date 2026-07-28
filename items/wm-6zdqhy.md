@@ -9,7 +9,7 @@ people: [Frank]
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-28T10:38:32Z
-updated: 2026-07-28T11:16:33Z
+updated: 2026-07-28T11:30:44Z
 source: claude-code
 ---
 
@@ -59,3 +59,12 @@ Verified before commit: get_verified_differences('northpond')=21 unique, all fie
 GOTCHA worth remembering: writing python via an ssh heredoc silently ate two dollar amounts ('$0-4k' -> '/bin/zsh-4k' via $0, '$4.29' -> '.29' via $4). Caught by a SyntaxWarning on import. For anything with $ in it, scp a file instead of heredoc-ing it.
 
 STILL OPEN — needs Abhishek's decision, called out explicitly in the PR body: purchase_year/purchase_quarter semantics (silver = efhyf TRANSFER_DATE, datastore = original acquisition; purchase_date itself is 0% mismatch). Deliberately NOT registered. Also not registered: the 8 issuance-derived columns (0% since 2024-11-21) and the >99%-match one-off blips.
+- 2026-07-28T11:30Z [claude-code] REVISED 2026-07-28 per Abhishek, PR #6058 amended + force-pushed (now 3 files / +410, was 9 files / +875):
+
+1. DOC IS A DOCUMENT, NOT AN INDEX. Stripped every reference to PR state / review comments / commit history from the docs AND the PR body: Frank's #5504 quote and the 'closes the open ask' framing, the f268acda2/ec288e153/#5624 history note, the bare 'PR: <url>' + 'PR #5504 ported...' lines in the README, 'not added in PR #5504' in transactions_itd. Rule going forward: these docs describe the platform, they do not narrate tickets or review threads.
+
+2. NO ACCOUNT_NAME / ACCOUNT_ID MISMATCH ANYWHERE. Removed the account_id row from the per-column table, the 'fund-aware account_id' clause from the DEV-1290 bullet, the 'Mismatch #1' annotation on the ACCOUNT_ID row in positions.md, row #1 + theme #5 + the decide-semantics bullet in the 2026-06-10 log, and the mention in the PR body. REASON: Abhishek had a prior discussion with Prasheet about possibly RENAMING the account names, so the mismatch is not settled and must not be written up as one. Neutral ACCOUNT_ID -> account_name mapping rows (transactions.md/transfers.md style) are fine; framing it as a mismatch/bug is not.
+
+3. FOLDER STRUCTURE. Collapsed docs/northpond-silver-vs-datastore/ (7 files) into docs/northpond/reconciliation_ledger.md — one folder named after the platform, one document, matching docs/upstart/. Dropped as unnecessary: positions.md, transactions.md, transfers.md, transactions_itd.md (per-table column maps), README.md (legend + source->target map), positions-mismatches-2026-06-10.md (superseded first-pass log). NOT LOST — all 7 still sit untracked at dpx ~/repos/efp/docs/northpond-silver-vs-datastore/ if any are wanted back.
+
+Preference to carry forward: he wants lean, self-contained platform docs — one folder per platform named for the platform, minimal files, no cross-references to tickets/PRs/review threads.
