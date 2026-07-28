@@ -1,15 +1,15 @@
 ---
 id: wm-gxykru
 type: task
-title: Root-cause int_rate_at_purchase=0 for northpond loans (DEV-503)
-status: next
+title: DEV-503 int_rate_at_purchase=0: get PR #5704 reviewed + merged
+status: review
 priority: p2
-size: m
+size: s
 tags: [oncall]
 links: [parent:wm-3y3ckv]
-refs: [DEV-503=https://linear.app/edge-focus/issue/DEV-503/int-rate-at-purchase-0-for-northpond-loans-in-positions]
+refs: [PR5704=https://github.com/edgefocus/efp/pull/5704]
 created: 2026-07-14
-updated: 2026-07-28T12:58:07Z
+updated: 2026-07-28T12:58:22Z
 source: dpx-tasks #9
 label: NorthPond int_rate root-cause
 ---
