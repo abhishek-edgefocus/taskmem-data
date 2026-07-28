@@ -9,7 +9,7 @@ people: [Nate, Trishit]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq, relates:wm-5z3pjt]
 created: 2026-07-28T11:49:54Z
-updated: 2026-07-28T12:31:24Z
+updated: 2026-07-28T12:35:23Z
 source: claude-code
 ---
 
@@ -51,3 +51,12 @@ BLOCKERS / asks for Nate:
 5. CSV rather than XLSX — the whole northpond pipeline ingests CSV (only the purchase tape is xlsx).
 6. Confirm delivery cadence, SFTP path and a stable filename pattern (samples carry two timestamps) for the parsing rules.
 7. Clarify NonCash='Non-Cash' on PAYMENT rows.
+- 2026-07-28T12:35Z [claude-code] Nate 2026-07-28 18:01: proposes SFTP paths 'nelnet/daily_loan/YYYY/MM' and 'nelnet/daily_transaction/YYYY/MM'. Confirms the samples are '1:1 with what we receive' from Nelnet — Oliv is FORWARDING raw servicer files, not transforming them. That means asks like CSV-instead-of-XLSX, PII suppression, or adding the OLV number to the transaction file require Oliv to build a transform step, not just relay. Nate is queuing the task regardless. Abhishek committed to comparing the samples against the current feeds and getting back.
+
+NOTE on proposed paths: every existing northpond parsing rule is anchored at 's3://.*/statements/northpond/...'. Nate's bare 'nelnet/...' prefix would sit outside that — either ask him to nest under statements/northpond/nelnet/... or extend the sync + rule prefixes.
+
+FIELD COMPARISON vs what we consume today:
+- Current FCC positions (silver.northpond_stmt_positions) reads NAMED CSV columns incl. OriginalFicoScore/UpdatedFicoScore(+dates), ChargeOffDate, ChargedOffPrincipalAmt, PrincipalRecoveredAmt/InterestRecoveredAmt/LateFeeRecovered/NsfFeeRecovered, CumulPrincipalPmtLTD/CumulInterestPmtLTD, Beginning/EndingPrincipalBalance, Beginning/EndingTotalBalance, Next*DueDate, LoanState, BoardingDate, ContractDate, APR, InterestAccrualMethod.
+- Velocity DF2 sample: profiled all 99 populated fields across 148 rows — NO field holds a FICO-range value (300-850). No charge-off/recovery values either. CAVEAT: the sample is 148 newly-originated loans (statuses only 'repayment'/'active'/'paid in full'), and 234 of 333 fields are empty, so those columns may exist positionally but be unpopulated for this cohort. Cannot distinguish 'absent from layout' vs 'empty for this cohort' without the record layout — reinforces that the DF2 spec is blocker #1.
+- Current FCC transactions (silver.northpond_stmt_transactions) reads TransactionId, TransactionDate, EffectiveDate, RemittedDate, SourceCode/Desc, TransactionCode/Desc, Amount, BalanceImpactCode, ReversalIndicator, ReversalReason.
+- Nelnet transaction file has NONE of: TransactionId (no idempotency/dedup key), ReversalIndicator/ReversalReason (reversals matter for cashflow correctness), RemittedDate, or the SourceCode/TransactionCode taxonomy — only 3 coarse Transaction Types (DISBURSEMENT/INTERESTACCRUAL/PAYMENT). This is a material downgrade in transaction fidelity and is the second big ask for Nate.
