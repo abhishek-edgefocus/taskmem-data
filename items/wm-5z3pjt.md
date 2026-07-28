@@ -9,7 +9,7 @@ people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-28T12:19:31Z
+updated: 2026-07-28T17:40:04Z
 source: claude-code
 ---
 
@@ -41,3 +41,6 @@ STATUS: the investor-ID half is effectively settled — default INV103, no tape 
 - 2026-07-28T12:19Z [claude-code] RESOLVED (Abhishek, 2026-07-28): all Oliv loans purchased from today onward belong to the EDGEX fund, so there is no EDGEX-vs-EFHYF discriminator needed on the purchase tape and no question to ask Oliv. The fund split is a DATE CUTOFF we own: purchase-tape loans with PURCHASE_DATE < 2026-07-28 -> efhyf, >= 2026-07-28 -> edgex20261NN.
 
 Remaining code work: FUND_WITH_PURCHASE_TAPE_EXPR in edgefocus/transformations/silver/statement_rows/northpond/constants.py currently returns FUNDS.EFHYF unconditionally for any loan on silver.northpond_stmt_purchase_tapes with PURCHASE_DATE <= AS_OF_DATE. Needs the date-based branch. Caveat to confirm with Trishit eventually: a pure date rule breaks if EFHYF resumes buying Oliv loans later.
+- 2026-07-28T17:40Z [claude-code] CODE STATE RE-VERIFIED ON MASTER 2026-07-28 — still genuinely open, and this is today's live risk. Read edgefocus/transformations/silver/statement_rows/northpond/constants.py at origin/master: FUND_WITH_PURCHASE_TAPE_EXPR is unchanged and still returns FUNDS.EFHYF unconditionally for any loan whose LoanNumber appears on silver.northpond_stmt_purchase_tapes with TRY_TO_DATE(PURCHASE_DATE) <= AS_OF_DATE. There is no date branch and no open PR touching it (checked all of Abhishek's PRs).
+So the rule settled on 2026-07-28 — purchase-tape loans before today -> efhyf, on or after today -> edgex20261NN — exists only as a decision, not as code, while EDGEX 2026-1NN purchasing starts today. Every Oliv loan purchased from now on will be labelled efhyf until this lands.
+The investor-ID half remains settled per Nate (default INV103, no tape change needed), so this item is now purely the fund-attribution code change.
