@@ -9,7 +9,7 @@ people: [Frank]
 tags: [northpond]
 links: [parent:wm-j523sq]
 created: 2026-07-28T10:38:32Z
-updated: 2026-07-28T11:30:44Z
+updated: 2026-07-28T11:33:42Z
 source: claude-code
 ---
 
@@ -68,3 +68,15 @@ STILL OPEN — needs Abhishek's decision, called out explicitly in the PR body: 
 3. FOLDER STRUCTURE. Collapsed docs/northpond-silver-vs-datastore/ (7 files) into docs/northpond/reconciliation_ledger.md — one folder named after the platform, one document, matching docs/upstart/. Dropped as unnecessary: positions.md, transactions.md, transfers.md, transactions_itd.md (per-table column maps), README.md (legend + source->target map), positions-mismatches-2026-06-10.md (superseded first-pass log). NOT LOST — all 7 still sit untracked at dpx ~/repos/efp/docs/northpond-silver-vs-datastore/ if any are wanted back.
 
 Preference to carry forward: he wants lean, self-contained platform docs — one folder per platform named for the platform, minimal files, no cross-references to tickets/PRs/review threads.
+- 2026-07-28T11:33Z [claude-code] RENAMED 2026-07-28: docs/northpond/reconciliation_ledger.md -> docs/northpond/snowflake-datastore-comparison.md. PR #6058 amended + force-pushed, title now 'northpond: register verified positions differences + datastore comparison doc'.
+
+Abhishek questioned whether 'reconciliation ledger' was a real cross-platform convention. It is NOT — verified against origin/master:
+- docs/upstart/reconciliation_ledger.md is the ONLY file in the repo using that name (Kushagra's Upstart work). Nothing else.
+- The other platform docs folder, docs/marlette/, uses plain kebab-case descriptive names: MARLETTE_CASHFLOWS.md, data-quality-issues.md, dedup-rationale.md.
+- Marlette also has edgefocus/transformations/silver/comparison/key_differences_marlette.md.
+
+His suspicion about underlying business terminology was CORRECT and this is the important bit: 'reconcile' already means something else entirely in efp. bin/reconcile/<platform>/<channel>.py is a separate established business process with per-channel scripts — including bin/reconcile/northpond/northpond_loan_fl.py. Calling a datastore-vs-Snowflake comparison doc a 'reconciliation ledger' would collide with that.
+
+New name matches the actual tooling: compare_datastore_positions.py / compare_datastore_transactions.py / compare_datastore_cashflows.py in edgefocus/transformations/silver/comparison/. Also dropped the 'follows docs/upstart/reconciliation_ledger.md precedent' line from the PR body — the precedent that matters is upstart_verified.py, not the doc name.
+
+RULE: don't copy a naming convention from a single platform's file without checking it is actually a convention and doesn't collide with existing domain vocabulary.
