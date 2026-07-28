@@ -48,3 +48,6 @@ is what the deal consumes.
 - Retarget PR: https://github.com/edgefocus/efp/pull/6015
 - Related alerting follow-up Trishit asked for: [[wm-etzegu]]
 - Project: [[wm-j523sq]]
+
+## Log
+- 2026-07-28T17:37Z [claude-code] Created 2026-07-28 during a full GitHub/Linear reconciliation. Split out of [[wm-fzbz7m]] so closing that item (both its PRs merged) does not bury the one thing still genuinely wrong in prod.
