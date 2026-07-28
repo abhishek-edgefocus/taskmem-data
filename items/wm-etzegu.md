@@ -1,11 +1,17 @@
 ---
 id: wm-etzegu
-type: next
+type: task
 title: Alert on silent Oliv-ANL retarget fallback (Trishit ask 2026-07-27)
-status: open
+status: next
+priority: p2
+size: m
+people: [Trishit]
+tags: [northpond, dev-1445, alerting]
+links: [parent:wm-j523sq]
 created: 2026-07-27T14:05:01Z
-updated: 2026-07-27T14:57:01Z
+updated: 2026-07-28T17:39:41Z
 source: claude-code
+label: Oliv retarget fallback alert
 ---
 
 Trishit (Slack DM thread 2026-07-27 19:17-19:18 IST): the retarget in northpond_api_predictions falls back to k=1 (keeps our predictions) when an ANL is non-positive/corrupt; that fallback is currently SILENT. He wants: keep falling back (better than erroring), but fire an alert when it happens for a loan Oliv DID provide an ANL for.
