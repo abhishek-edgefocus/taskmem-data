@@ -7,10 +7,10 @@ priority: p2
 size: m
 people: [Trishit, Nate, Nakula]
 tags: [northpond, ownership]
-links: [parent:wm-j523sq]
+links: [parent:wm-j523sq, relates:wm-9dx47e]
 refs: [dm-thread=https://edgefocuspartners.slack.com/archives/D0B8A1T4S0N/p1785262559117759]
 created: 2026-07-29T13:42:33Z
-updated: 2026-07-29T15:32:30Z
+updated: 2026-07-29T15:32:51Z
 source: claude-code
 label: Experian Activate model handover
 ---
@@ -40,7 +40,7 @@ NEXT STEPS, in order:
 Note on naming: `northpond_docker_model` is already an entry in models_by_channel.json (see
 [[wm-9s2mwd]]), so the container is registered on the model-artifact side.
 
-Nate's separate follow-up topic — early-results analyses on this model — is [[wm-htwqte]].
+Nate's separate follow-up topic — early-results analyses on this model — is [[wm-9dx47e]].
 
 ## Log
 - 2026-07-29T15:32Z [claude-code] CORRECTION 2026-07-29: this item was created earlier today titled 'Take over the Oliv v2 model Docker container'. Nate's DM at 20:53 IST names it precisely — it is the Experian model deployed into the EXPERIAN ACTIVATE MARKETING ENVIRONMENT, a packaged/dockerized model Experian Activate hosts to facilitate marketing for us. That is consistent with Trishit's 'the v2 model is hosted on Experian's website' (same container), but the purpose is marketing enablement, not only realtime loan scoring — the original title implied the latter. Title and body corrected.
