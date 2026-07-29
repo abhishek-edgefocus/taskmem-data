@@ -11,7 +11,7 @@ people: [Nate]
 tags: [northpond]
 links: [relates:wm-n7usn7]
 created: 2026-07-28T17:28:34Z
-updated: 2026-07-28T17:40:04Z
+updated: 2026-07-29T13:41:51Z
 source: claude-code
 ---
 
@@ -38,3 +38,14 @@ Verification already done on 2026-07-24 stubs + the full routing matrix is logge
 
 ## Log
 - 2026-07-28T17:40Z [claude-code] next -> waiting 2026-07-28: the next movement is Nate's, not ours. He said at 15:49 UTC (21:19 IST) he was running the test purchaser files 'at this moment' and asked us to validate they are not flowing through, but as of 17:27 UTC nothing new had landed under s3://efp-raw/statements/northpond/purchase_file/. Nothing to check until his files appear, so waiting on Nate with a nudge tomorrow rather than sitting in next as if it were actionable.
+- 2026-07-29T13:41Z [claude-code] 2026-07-29T13:45Z RE-CHECK (~20h after Nate's 'running test purchaser files' message): NOTHING NEW LANDED, PROD STILL CLEAN.
+
+S3: s3://efp-raw/statements/northpond/purchase_file/ still holds ONLY the two 2026-07-24 objects (purchase_file_v0_20260723_test.csv 1033 B, purchase_file_v1_20260723_test.csv 731 B). A full scan of the whole northpond prefix for 'purchase' and for 'test|latest' returns nothing else new — no 20260728/20260729 stubs at all. So whatever Nate ran on their side never reached Oliv's SFTP, hence never reached our mirror.
+
+PROD UNCHANGED: bronze.statement_files — both stubs still STATUS=ignore (statement_type/as_of_date/rule_name NULL); purchase_file_legacy_20260723.csv still STATUS=unknown. bronze.statement_rows northpond/purchase_tape — only the 6 x 2025 Pool events (72/111/73/60/59/75), zero 2026. silver.northpond_stmt_purchase_tapes — 372 rows / 372 loans / same 6 as_of_dates. Byte-for-byte the same as the 2026-07-28 check.
+
+PIPELINE IS ALIVE (so absence is real, not a stalled sensor): northpond registered 6 files on 2026-07-28 across three runs (05:43, 09:41, 11:42 PT). The 2026-07-29 loan tape + transaction tape landed in S3 at 13:38 UTC (06:38 PT) and were not yet registered at 13:40 UTC — that is the normal ~5 min lag, not a stall. Other platforms (lc, upgrade, prosper, anchored, openroad, sofi) all registered on 2026-07-29. The mirror demonstrably covers purchase_file/ since the 07-24 stubs arrived through it.
+
+SLACK: no further message from Nate in C0BJ1M304BU since 2026-07-28 21:19 IST.
+
+CONCLUSION: nothing to catch. The guard was never exercised by yesterday's run because no file arrived. Item stays waiting on Nate — either his test drop did not go to SFTP, or it goes to a path/environment we do not mirror. Worth asking him which, since 'we ran test files' with zero S3 arrival is itself information about their delivery path.
