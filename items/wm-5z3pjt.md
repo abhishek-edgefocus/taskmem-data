@@ -9,7 +9,7 @@ people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-29T17:02:55Z
+updated: 2026-07-29T18:09:45Z
 source: claude-code
 ---
 
@@ -58,3 +58,17 @@ CORRECTION to the 2026-07-28 log entry: EDGEX Oliv loans will NOT be mislabelled
 ALSO CORRECTED: stmt_utils.resolve_edgex_purchaser_fund DOES now have the 1NN cutoff (date >= 2026-07-28 -> edgex20261NN), added by #5942 'DEV-1394: edgex20261NN purchaser cutover 2026-07-28'. The earlier note saying it was missing is stale. It only helps platforms that route through EDGEX_PURCHASER though — northpond does not.
 
 NOT YET URGENT: prod.silver.positions has ZERO rows in edgex20261NN on any platform, and the only purchases in silver.transfers since 2026-07-20 are upgrade->efhyf (through 07-28). 1NN purchasing has not actually started anywhere, so nothing is mislabelled yet.
+- 2026-07-29T18:09Z [claude-code] PR OPENED 2026-07-29: https://github.com/edgefocus/efp/pull/6085 — 'DEV-1474: Attribute Oliv purchase-file loans to EDGEX 2026-1NN via account INV103'.
+
+Design Abhishek chose (over the pure date-cutoff rule logged 2026-07-28): derive fund from the purchase file's own ACCOUNT_NAME, keyed on the investor ID, with the date only as a guard.
+- bronze parsing rule for purchase_file/v0 (added by #6013) now uses account_name='INV103' instead of 'northpond_efhyf'.
+- NORTHPOND_ACCOUNT_FUND_MAP gains INV103 -> edgex20261NN; ACCOUNT_ID falls out of the inverse map, so silver.positions ACCOUNT_ID = INV103 for EDGEX Oliv loans. This closes the NorthPond half of Abhijeet's #platform-data-owners investor-ID ask.
+- FUND_WITH_PURCHASE_TAPE_EXPR rewritten from IFF(loan on tape -> hardcoded 'efhyf') to COALESCE(MAX_BY(FUND, PURCHASE_DATE) of the latest purchase-file row, account map).
+- NORTHPOND_EDGEX_PURCHASE_START = 2026-07-28 guards it via three new ValidationRules on NorthpondStmtPurchaseTapes.
+- INV105 deliberately left unmapped (Nate: everything is INV103; the split comes from the Nelnet loan file, wm-gj5tkx / DEV-1481).
+
+Proof: replaying old vs new expression over all 715 loans on the 2026-07-29 tape gives 0 mismatches (372 efhyf, 343 experimental, 0 NULL) — inert until INV103 files arrive. Synthetic INV103 row resolves to fund edgex20261NN + account_id INV103. 2359 passed / 1 skipped in edgefocus/transformations.
+
+Side effect to watch: v0 CSV and Pool N xlsx no longer share a supersession group (that key includes account_name). Intended — different books — and the date guard now catches the overlap case instead.
+
+NO LINEAR TICKET EXISTS for this; PR is titled DEV-1474 as the natural completion of the purchase-path work. Abhishek to create/retitle if he wants a dedicated ticket.
