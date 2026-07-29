@@ -6,12 +6,12 @@ status: waiting
 priority: p2
 size: xs
 waiting_on: Nate
-nudge: 2026-08-01
+nudge: 2026-07-30
 people: [Nate]
 tags: [northpond]
 links: [relates:wm-n7usn7]
 created: 2026-07-28T17:28:34Z
-updated: 2026-07-29T13:44:10Z
+updated: 2026-07-29T13:44:11Z
 source: claude-code
 ---
 
