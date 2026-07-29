@@ -9,7 +9,7 @@ people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-28T17:40:04Z
+updated: 2026-07-29T17:02:55Z
 source: claude-code
 ---
 
@@ -44,3 +44,17 @@ Remaining code work: FUND_WITH_PURCHASE_TAPE_EXPR in edgefocus/transformations/s
 - 2026-07-28T17:40Z [claude-code] CODE STATE RE-VERIFIED ON MASTER 2026-07-28 — still genuinely open, and this is today's live risk. Read edgefocus/transformations/silver/statement_rows/northpond/constants.py at origin/master: FUND_WITH_PURCHASE_TAPE_EXPR is unchanged and still returns FUNDS.EFHYF unconditionally for any loan whose LoanNumber appears on silver.northpond_stmt_purchase_tapes with TRY_TO_DATE(PURCHASE_DATE) <= AS_OF_DATE. There is no date branch and no open PR touching it (checked all of Abhishek's PRs).
 So the rule settled on 2026-07-28 — purchase-tape loans before today -> efhyf, on or after today -> edgex20261NN — exists only as a decision, not as code, while EDGEX 2026-1NN purchasing starts today. Every Oliv loan purchased from now on will be labelled efhyf until this lands.
 The investor-ID half remains settled per Nate (default INV103, no tape change needed), so this item is now purely the fund-attribution code change.
+- 2026-07-29T17:02Z [claude-code] VERIFIED 2026-07-29 against origin/master (0b025f36e) + prod Snowflake. Trishit's 'constant in our codebase, no action needed' is half right.
+
+TRUE: the investor ID is not a field Oliv sends; every platform stamps fund from a codebase constant. FALSE for northpond: those constants are all keyed on a discriminator that exists in the incoming data, and northpond has none.
+- upgrade/constants.py UPGRADE_INVESTOR_FUND_MAP: investor_id, taken from the ACCOUNT_NAME suffix (SPLIT_PART(ACCOUNT_NAME,'_',-1)). 9417954 -> EDGEX_2026_1 landed in #6060.
+- prosper/constants.py PROSPER_FUND_BY_ACCOUNT: ACCOUNT_NAME = account number. 15983181 -> EDGEX_2026_1 landed in #6070.
+- marlette/constants.py generate_fund_mapping: SUBPOOL. 241 -> EDGEX_2026_1 landed in #5818.
+- happymoney/constants.py HAPPYMONEY_PORTFOLIO_FUND_MAP: PORTFOLIOID. Dustin's 2026-1NN grantor trust = 70 is NOT mapped, in silver or in legacy base_statement_happymoney.py (only 54/56/60/62/64). Cross-platform gap, not ours.
+- northpond: bronze.statement_rows confirms ALL SIX statement types (positions, issuance, issuance_v2, transactions, transaction_boards, payment_configuration) arrive under a single ACCOUNT_NAME 'ef_northpond'. There is no investor/account/subpool/portfolio key to hang a mapping on.
+
+CORRECTION to the 2026-07-28 log entry: EDGEX Oliv loans will NOT be mislabelled efhyf. prod.silver.northpond_stmt_purchase_tapes is frozen — MAX(purchase_date) = MAX(as_of_date) = 2025-06-17, 372 loans, nothing since. So FUND_WITH_PURCHASE_TAPE_EXPR's IN-subquery misses new loans and they fall through to FUND_MAPPING_EXPR -> ef_northpond -> 'experimental'. Live proof: prod.silver.positions for northpond as of 2026-07-29 is only efhyf/northpond_efhyf (372 loans) and experimental/ef_northpond (343).
+
+ALSO CORRECTED: stmt_utils.resolve_edgex_purchaser_fund DOES now have the 1NN cutoff (date >= 2026-07-28 -> edgex20261NN), added by #5942 'DEV-1394: edgex20261NN purchaser cutover 2026-07-28'. The earlier note saying it was missing is stale. It only helps platforms that route through EDGEX_PURCHASER though — northpond does not.
+
+NOT YET URGENT: prod.silver.positions has ZERO rows in edgex20261NN on any platform, and the only purchases in silver.transfers since 2026-07-20 are upgrade->efhyf (through 07-28). 1NN purchasing has not actually started anywhere, so nothing is mislabelled yet.
