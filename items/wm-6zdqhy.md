@@ -10,7 +10,7 @@ tags: [northpond]
 links: [parent:wm-j523sq]
 refs: [PR6058=https://github.com/edgefocus/efp/pull/6058]
 created: 2026-07-28T10:38:32Z
-updated: 2026-07-28T17:40:12Z
+updated: 2026-07-29T16:38:17Z
 source: claude-code
 ---
 
@@ -169,3 +169,8 @@ Monitor task be5ky7mat is NO LONGER RUNNING (stopped without a completion record
 NOT MERGED — Abhishek has never asked me to merge and I have not. Ready for his review/merge whenever he wants.
 - 2026-07-28T17:40Z [claude-code] RECONCILED 2026-07-28: added the PR ref, which the item did not carry despite being about that PR — a reader had no way to jump to it. PR #6058 'northpond: register verified positions differences + datastore comparison doc' is OPEN, not a draft, REVIEW_REQUIRED, last updated today. Moved open -> review to match: it is out of your hands and waiting on a reviewer, not on more writing.
 Note it is attached in Linear to DEV-1024 ('Add a v2 exp filter on the following dashboard'), which is a different piece of work and was moved In Progress -> Todo today at 15:32Z. Worth checking that attachment is deliberate — DEV-1024 is the v1/v2 dashboard filter, not the positions-validation doc.
+- 2026-07-29T16:38Z [claude-code] MERGED 2026-07-29 per Abhishek. PR #6058 'northpond: register verified positions differences + datastore comparison doc' is in master.
+
+Shipped: northpond_verified.py (21 columns), the verified_differences.py registration block, and docs/northpond/snowflake-datastore-comparison.md. Frank's original ask on PR #5504 — 'do you have any stats/graphs/numbers that show the comparison and what is off / spot on' — is now answered by a committed document rather than only the Grafana board.
+
+Closing this item. Everything still outstanding has been split into its own item rather than left buried here: wm-* for the dead comparison job, the upgrade_verified.py dead entries, the untraced NorthPond columns, and the board filter. See links.
