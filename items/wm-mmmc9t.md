@@ -41,3 +41,7 @@ Note on naming: `northpond_docker_model` is already an entry in models_by_channe
 [[wm-9s2mwd]]), so the container is registered on the model-artifact side.
 
 Nate's separate follow-up topic — early-results analyses on this model — is [[wm-htwqte]].
+
+## Log
+- 2026-07-29T15:32Z [claude-code] CORRECTION 2026-07-29: this item was created earlier today titled 'Take over the Oliv v2 model Docker container'. Nate's DM at 20:53 IST names it precisely — it is the Experian model deployed into the EXPERIAN ACTIVATE MARKETING ENVIRONMENT, a packaged/dockerized model Experian Activate hosts to facilitate marketing for us. That is consistent with Trishit's 'the v2 model is hosted on Experian's website' (same container), but the purpose is marketing enablement, not only realtime loan scoring — the original title implied the latter. Title and body corrected.
+Also captured from Nate's DM: Abhishek confirmed ownership publicly to Nate at 21:00 IST and volunteered that no formal KT has happened yet. Promoted the KT from Nakula to step 1.
