@@ -9,7 +9,7 @@ people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-29T18:09:45Z
+updated: 2026-07-29T18:38:05Z
 source: claude-code
 ---
 
@@ -72,3 +72,12 @@ Proof: replaying old vs new expression over all 715 loans on the 2026-07-29 tape
 Side effect to watch: v0 CSV and Pool N xlsx no longer share a supersession group (that key includes account_name). Intended — different books — and the date guard now catches the overlap case instead.
 
 NO LINEAR TICKET EXISTS for this; PR is titled DEV-1474 as the natural completion of the purchase-path work. Abhishek to create/retitle if he wants a dedicated ticket.
+- 2026-07-29T18:38Z [claude-code] PR #6085 review round 1 (2026-07-30): Cursor Bugbot + Sentry both flagged the new purchase-tape guards as HIGH — real bug, fixed in e28f6697c.
+
+Transform._apply_validations builds every row-level ValidationRule as 'SELECT EFP_ID, AS_OF_DATE, <msg> FROM new_silver_data WHERE NOT (<check>)'. silver.northpond_stmt_purchase_tapes has AS_OF_DATE but NO EFP_ID (verified via information_schema) — its grain is one purchase-file row keyed on LOAN_ID. The projection is evaluated regardless of whether any row violates the check, so it fails at SQL COMPILATION on every purchase-tape run producing rows, not just on violation (the bots said 'when a validation fails'; it is worse than that). Reproduced against the live table: row-level form raises SQL compilation error.
+
+Fix: converted all three guards to validation_type='batch', which supply their own identifier column, so LOAN_ID AS EFP_ID. Entirely inside the northpond transform — no shared-framework change. Messages now interpolate the offending PURCHASE_DATE / ACCOUNT_NAME.
+
+Proof: the exact UNION ALL shape _apply_validations builds compiles and returns 0 rows over all 450 existing purchase-tape rows; all 3 guards fire on a synthetic batch (pre-cutover EDGEX row, post-cutover EFHYF row, unmapped account, plus one valid row left untouched). Added TestPurchaseTapeCutoverGuards pinning batch type + the (EFP_ID, AS_OF_DATE, ERROR_MESSAGE) contract. 2362 passed / 1 skipped.
+
+GENERAL LESSON for any parsed silver.<platform>_stmt_* table: row-level ValidationRules only work on tables that carry EFP_ID. Parsed stmt tables generally do not — use batch rules there.
