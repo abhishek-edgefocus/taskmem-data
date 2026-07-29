@@ -8,7 +8,7 @@ size: l
 tags: [northpond, edgex, predictions]
 links: [parent:wm-j523sq, blocked-by:wm-qs96kd]
 created: 2026-07-20T15:25:55Z
-updated: 2026-07-21T12:20:19Z
+updated: 2026-07-29T15:33:45Z
 source: claude-code
 ---
 
@@ -79,3 +79,4 @@ question if EDGEX scoring is in scope (relates to wm-c5jytx).
 ## Log
 - 2026-07-21T09:04Z [claude-code] DEPRIORITISED per Abhijeet DM 2026-07-20 (ts 1784564371/1784564375): CMOP+BEP predictions for NorthPond are 'not needed for EDGEX, at least immediately'. Critically, the EDGEX 'OP' ask is NOT this item — Abhijeet clarified 'OP for edgex is te integrated model vala' (the Oliv integrated model, tracked as wm-c5jytx). Do not conflate the two. This stays scoped but off the EDGEX critical path.
 - 2026-07-21T12:20Z [claude-code] 2026-07-21, from the raw 2026-07-16 Oliv call transcript (full log on wm-qjkp3x): CMOP and BEP CANNOT be sourced from Oliv's model — Nakula asked directly, "using their model we can't generate BPS or COP right, like using our model we can", and Trishit confirmed "Exactly. Exactly." Oliv outputs a single loss score per loan, scaled by fixed constants into CGL and ANL; there is no per-month, per-loan model output on their side to derive current-model or best-estimate projections from. This item's premise therefore stands and is now positively confirmed rather than assumed: enabling CMOP/BEP for NorthPond requires OUR model, which is the same machinery Sean's QR-23/DEV-1452 would need (see wm-9s2mwd). Worth scoping the two together rather than separately — they share the predictor, prep and cfframe config.
+- 2026-07-29T15:33Z [claude-code] STILL OPEN, CONFIRMED BY ABHISHEK 2026-07-29 (Abhijeet DM 19:52 IST): asked whether BEP had been added, Abhishek said no — 'Cmop and bep doni platforms cha baki aaje' (CMOP and BEP pending for both platforms), and confirmed 'ho' when Abhijeet asked specifically about NorthPond. So this item's premise is intact and Abhijeet is now tracking it. Created the OpenRoad counterpart, which had no item — see the relates link.
