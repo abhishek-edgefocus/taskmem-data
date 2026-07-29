@@ -9,7 +9,7 @@ people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-29T20:24:12Z
+updated: 2026-07-29T20:53:46Z
 source: claude-code
 ---
 
@@ -90,3 +90,12 @@ Fixed in 06d677f25: renamed to test_fund_uses_correlated_subquery_against_silver
 Cursor's original EFP_ID comment now shows against e28f6697c but that is GitHub repositioning the unresolved thread, not a new finding: cursor[bot] has no review on e28f6697c and its check passed. Sentry marked its own copy 'Resolved in e28f669'.
 
 CI on e28f6697c: Run Tests success, Select tests success, Cursor Bugbot success, Seer neutral, integration tests skipped. mergeStateStatus BLOCKED = awaiting human review approval, not a failing check.
+- 2026-07-29T20:53Z [claude-code] PR #6085 FINAL STATE 2026-07-30: all bot findings closed, CI fully green on head 06d677f25.
+
+3 commits: ce703774d (feature), e28f6697c (batch validations fix), 06d677f25 (re-point vacuous tests). 6 files, +247/-38.
+
+Checks on 06d677f25: Run Tests success, Select tests success, Cursor Bugbot success, Seer Code Review success, integration tests skipped.
+
+Outstanding bot comments: NONE that are live. Two threads anchored to head are both stale artifacts — cursor[bot]'s EFP_ID comment has original_commit_id=ce703774d (GitHub repositioned the unresolved thread; cursor filed no review on either later commit and its check passes), and sentry[bot]'s is literally 'Resolved in 06d677f'. Sentry also marked the earlier one 'Resolved in e28f669'.
+
+mergeState=BLOCKED / reviewDecision=REVIEW_REQUIRED — needs a human approver, no failing check. Abhishek to request review. Also still to do before merge per his style: swap the inline SQL/result markdown tables in the PR body for Snowflake screenshots with query+grid in frame; DAG line is correctly 'DAG - unchanged.'
