@@ -9,7 +9,7 @@ people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-29T18:38:05Z
+updated: 2026-07-29T20:24:12Z
 source: claude-code
 ---
 
@@ -81,3 +81,12 @@ Fix: converted all three guards to validation_type='batch', which supply their o
 Proof: the exact UNION ALL shape _apply_validations builds compiles and returns 0 rows over all 450 existing purchase-tape rows; all 3 guards fire on a synthetic batch (pre-cutover EDGEX row, post-cutover EFHYF row, unmapped account, plus one valid row left untouched). Added TestPurchaseTapeCutoverGuards pinning batch type + the (EFP_ID, AS_OF_DATE, ERROR_MESSAGE) contract. 2362 passed / 1 skipped.
 
 GENERAL LESSON for any parsed silver.<platform>_stmt_* table: row-level ValidationRules only work on tables that carry EFP_ID. Parsed stmt tables generally do not — use batch rules there.
+- 2026-07-29T20:24Z [claude-code] PR #6085 review round 2 (2026-07-30): Sentry flagged test_fund_uses_in_subquery_against_silver (TestPositionsSql + TestTransactionsSql) as HIGH, claiming it 'will fail' against the new subquery. FALSE — the tests pass, locally (2362) and in CI on e28f6697c.
+
+But the underlying point was valid in a different way: the assertion was VACUOUS. Both tests asserted 'IN (' in the generated SQL from when the fund expression used an IN subquery. After the MAX_BY rewrite the only 'IN (' left in the generated SQL is the unrelated as_of_date IN ('2026-05-18') date filter (verified by regex-scanning every occurrence in the rendered SQL), so it passed on a coincidence and no longer guarded the named behaviour.
+
+Fixed in 06d677f25: renamed to test_fund_uses_correlated_subquery_against_silver and asserted the real markers — MAX_BY(FUND, TRY_TO_DATE(PURCHASE_DATE)) and WHERE LOAN_ID = src.RAW_RECORD:"LoanNumber"::VARCHAR — keeping the table + as-of-date assertions.
+
+Cursor's original EFP_ID comment now shows against e28f6697c but that is GitHub repositioning the unresolved thread, not a new finding: cursor[bot] has no review on e28f6697c and its check passed. Sentry marked its own copy 'Resolved in e28f669'.
+
+CI on e28f6697c: Run Tests success, Select tests success, Cursor Bugbot success, Seer neutral, integration tests skipped. mergeStateStatus BLOCKED = awaiting human review approval, not a failing check.
