@@ -2,7 +2,7 @@
 id: wm-6zdqhy
 type: task
 title: Document validated NorthPond positions (Frank's ask on PR #5504)
-status: review
+status: done
 priority: p2
 size: s
 people: [Frank]
