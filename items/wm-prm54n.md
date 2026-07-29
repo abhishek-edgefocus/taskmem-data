@@ -10,7 +10,7 @@ people: [Abhijeet]
 tags: [openroad, datastores]
 links: [parent:wm-su6q4d, relates:wm-bvqkhh, relates:wm-tvjjgw]
 created: 2026-07-29T15:33:30Z
-updated: 2026-07-29T16:44:06Z
+updated: 2026-07-29T16:49:01Z
 source: claude-code
 label: OpenRoad datastore deprecation
 ---
@@ -62,3 +62,19 @@ silently starving as Oliv moves files).
 5. TRANSACTIONS PARITY HAS NEVER BEEN RUN for openroad. Milestones cover positions (DEV-1350, Done) and predictions (DEV-1331, In Review); northpond had DEV-1275 + DEV-1332 covering BOTH before registering. With silver.transactions at 7 rows there is nothing to compare yet anyway.
 
 6. GATING CHAIN unchanged: DEV-1331 / PR #5974 needs Abhijeet's approval -> merge -> prod rebuild in the mandatory order (openroad_offers FIRST, then a forced full predictions reprocess) -> notebook re-run -> close. Then the backfill, then parity, then the registry PR. CMOP/BEP scope for 08-03 still unresolved ([[wm-xe6w4q]]).
+- 2026-07-29T16:49Z [claude-code] CRITICAL PATH ESTABLISHED 2026-07-29 (user asked for an ordered plan to hit 08-03).
+
+KEY SCOPE FINDING: the deprecation registry only ever covers DatastorePositions + DatastoreTransactions — 12 entries = 6 platforms x 2, NO platform registers a predictions datastore. So DEV-1331 / PR #5974 (predictions) is NOT on the deprecation critical path; it gates the separate 07-31 'Validate predictions' milestone only. The backfill + parity + registry work can proceed in parallel with waiting on Abhijeet's review.
+
+BACKFILL IS SMALLER THAN IT SOUNDS: PROD bronze.statement_files has only 93 openroad files registered vs 2,247 in S3 (payments 15 rows_added + 15 rows_added_empty, positions 30, purchase_tape 33; ZERO 'transactions' statement_type files ever registered). Files are tiny — LoanTape 1.3KB (2023) to 16.6KB (2026), 35 loans total, so the whole 3-yr backfill is ~15MB across ~2,150 files. File-count-bound, hours not days => 08-03 is realistic if the backfill starts now.
+
+ORDERED PLAN:
+1. Create the Linear ticket in milestone b4cc3095 (mirrors DEV-1450) — milestone currently has zero issues, which is why Abhijeet sees 0%.
+2. Backfill the file registry: python -m edgefocus.transformations.bronze.ingest_statement_files backfill --platform openroad --env prod (supports --dry-run, --filter, --limit). Verify statement_files openroad 93 -> ~2,200 pending_statement_rows, incl. the 29 Transactions_Edge_Orl files.
+3. Let bronze parse: the ingest_statement_files Dagster job (schedule */30, max_runtime 2h, MULTIPROCESS_EXECUTOR) selects assets copy_from_efs, clean_pii_statements, sync_statement_files, statement_files, statement_rows — so pending files drain automatically. Verify bronze.statement_rows openroad positions min as_of_date moves 2026-06-29 -> 2023-07-24.
+4. Rebuild silver in prod via the statements_openroad job (9 assets, full history). Expect silver.positions openroad 280 rows/8 dates -> ~32K rows/~1,080 dates (matches what dev held on 2026-07-17), silver.transactions 7 rows -> real volume, openroad_stmt_transactions 0 -> populated, and FIRST_PAYMENT_DUE_DATE to stop being 100% NULL (the back-calc needs early snapshots).
+5. Parity-check positions AND transactions vs get_datastore_data(DatastorePositions/DatastoreTransactions, platforms=['openroad']). Transactions parity has never been run for openroad at all.
+6. Settle the 3 map settings from step 5's column diff: positions_snowflake_map.PLATFORM_RENAMES; HISTORY_DERIVED_PLATFORMS (early read: OUT, funding-anchored like northpond); transactions_snowflake_map.PLATFORM_NULL_COLUMNS (early read: nothing to null — openroad is single account 'Edge - ORL' / single fund efhyf, no fund movement, unlike northpond).
+7. Ship the registry PR: 2 DEPRECATION_REGISTRY entries + step 6's settings. ~3 files / ~50 lines, mirrors DEV-1450.
+
+SCOPE RISK TO SETTLE EARLY WITH ABHIJEET: step 5 will surface CREDIT_SCORE + CREDIT_SCORE_AT_PURCHASE as a hard parity failure (legacy populates from vantage4Score, silver is 280/280 NULL). Either document it as a known gap northpond-style and ship, or block on DEV-1396 — that decision is the only thing likely to push past 08-03. Ask before step 5, not after.
