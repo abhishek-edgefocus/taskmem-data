@@ -6,7 +6,7 @@ status: blocked
 priority: p3
 links: [follows:wm-rgwdyu]
 created: 2026-07-16T11:22:33Z
-updated: 2026-07-28T17:41:10Z
+updated: 2026-07-29T16:39:29Z
 source: claude
 label: TU/Experian breakdown decision
 ---
@@ -58,3 +58,4 @@ Links:
 - 2026-07-21T09:05Z [claude-code] Deferral RATIFIED by Abhijeet 2026-07-20. Abhishek: 'To v1/v2 feature la separate out kelay - nantar bazhu coz barich gadbad aahe tyat' (split the v1/v2 feature out, look at it later, it's messy) — Abhijeet replied 'ok' (ts 1784567602). So splitting it out of the deprecation milestone is agreed, which also green-lights wm-rsdgx8. Abhijeet additionally wants v1/v2 called out as a known remaining gap in the deprecation announcement (see wm-ugkjx7). Separately, Abhishek told Trishit on 2026-07-21 that 'the v1/v2 filters aren't supported yet - will be adding them soon' (ts 1784579257), so the expectation is set externally too.
 - 2026-07-28T17:41Z [claude-code] FACT CORRECTION 2026-07-28 (GitHub). The body says this is a follow-on from 'DEV-1395 / PR #5884 (which shipped the v1/v2 filter for the per-loan at-purchase panels only)'. PR #5884 was never merged — it is CLOSED, unmerged, last touched 2026-07-16. The at-purchase features actually shipped in PR #5917 (DEV-1428, 'Surface NorthPond at-purchase features via silver.positions'), merged 2026-07-17. Also worth noting PR #5925 (DEV-1024, the v1/v2 model_version breakdown for composition metrics) is still an OPEN DRAFT, untouched since 2026-07-17 — so the per-loan v1/v2 filter this item calls settled precedent may itself not be fully shipped. Nothing about the gold-grain analysis in the body changes; only the provenance was wrong.
 Status stays blocked/low: it remains a real design decision (MODEL_VERSION in the grain of gold.realized_cashflows_calendar_month_daily) that nobody has picked up, and no Linear ticket exists for it (see [[wm-rsdgx8]]).
+- 2026-07-29T16:39Z [claude-code] 2026-07-28: new evidence — MODEL_VERSION started mismatching at 100% on the NorthPond positions comparison board, first nonzero 2026-07-19 (the latest date in the substrate; it was 0% on every prior clean date back to 2026-06-16). Left unregistered in northpond_verified.py (PR #6058) since the cause is untraced and it plausibly relates to this v1/v2 breakdown work. Also tracked on wm-rzfews. Worth checking whether something shipped around 2026-07-19 started populating MODEL_VERSION in silver where the legacy datastore has nothing.
