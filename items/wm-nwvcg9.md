@@ -2,7 +2,7 @@
 id: wm-nwvcg9
 type: followup
 title: Reply to Nate with the Nelnet sample-file verdict + the blocking asks
-status: open
+status: next
 priority: p1
 size: xs
 due: 2026-07-30
@@ -11,7 +11,7 @@ tags: [northpond, edgex, needs-reply]
 links: [relates:wm-gj5tkx, relates:wm-5z3pjt]
 refs: [thread=https://edgefocuspartners.slack.com/archives/C0BJ1M304BU/p1785241457230439]
 created: 2026-07-29T13:42:01Z
-updated: 2026-07-29T13:42:01Z
+updated: 2026-07-29T13:43:30Z
 source: claude-code
 label: Nate Nelnet samples reply
 ---
