@@ -6,7 +6,7 @@ status: open
 priority: p3
 size: m
 tags: [northpond]
-links: [parent:wm-j523sq, relates:wm-unb6pr]
+links: [parent:wm-j523sq, relates:wm-unb6pr, relates:wm-gxykru]
 created: 2026-07-29T16:38:56Z
 updated: 2026-07-29T16:39:30Z
 source: claude-code
