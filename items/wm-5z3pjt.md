@@ -9,7 +9,7 @@ people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-30T16:19:12Z
+updated: 2026-07-30T16:19:33Z
 source: claude-code
 ---
 
@@ -128,3 +128,16 @@ ALSO VERIFIED this round: the PR body SQL runs verbatim and reproduces its state
 Added DISTINCT + test_both_fund_conflict_guards_deduplicate. 8-row synthetic batch now returns 6 rows instead of 7 (the duplicated loan reports once, every guard still fires exactly once, clean row untouched); prod still 0 across all six. 2366 passed / 1 skipped.
 
 Running tally of PR #6085 review findings: 7 raised, 7 real, 7 fixed. Sources: Cursor 1, Sentry 4 (one of them false-in-its-stated-form but a real vacuous-test problem underneath), human-relayed 4 (counted in the same set), self-caught 1 (the guard-5 correlated-EXISTS planner defect, the most serious). No finding has been dismissed as invalid.
+- 2026-07-30T16:19Z [claude-code] CORRECTION to the tally in the previous entry — it said '7 raised' but listed sources summing to 10. Both numbers were wrong. Accurate count of distinct findings on PR #6085, all real, all fixed, none dismissed:
+
+1. EFP_ID crash in row-level validations (Cursor + Sentry, same finding, 2 reporters) -> e28f6697c
+2. Vacuous 'IN (' test assertion (Sentry; false as stated — tests passed — but a real vacuous-guard problem underneath) -> 06d677f25
+3. NULL/unparseable PURCHASE_DATE silent fallback (human-relayed) -> 10e740c3e
+4. Stale docstrings in stmt_positions + stmt_transactions (human-relayed) -> 10e740c3e
+5. MAX_BY tie-break (human-relayed; correctly assessed as already prevented — comment only, no code change) -> 10e740c3e
+6. Loan-level exclusivity across the two feeds (human-relayed) -> 10e740c3e
+7. Guard 5 missed intra-batch conflicts, only checked the committed table (Sentry) -> 515f1250c
+8. Guard 5 correlated EXISTS is planner-dependent and fails to compile on some batches (SELF-CAUGHT while verifying the SQL at production fidelity; the most serious of the set) -> 2edcc9881
+9. Intra-batch guard emitted byte-identical duplicate errors (Sentry) -> 74b84b076
+
+TOTAL: 9 findings, 9 real, 9 addressed. By source: Sentry 4, human-relayed 4, Cursor 1 (shared with Sentry on #1), self-caught 1. Item 5 was resolved by documentation rather than a code change.
