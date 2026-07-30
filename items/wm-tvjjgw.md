@@ -8,7 +8,7 @@ size: m
 tags: [northpond, datastores, oncall]
 links: [related:wm-gxykru]
 created: 2026-07-28T13:40:28Z
-updated: 2026-07-28T13:40:36Z
+updated: 2026-07-30T15:40:48Z
 source: claude-code
 ---
 
@@ -38,3 +38,31 @@ Not a decision to make silently either way.
 
 ## Verification note
 All paths/patterns above read off origin/master on 2026-07-28. The xlsx-stops premise comes from Abhishek's own DEV-1474 closeout, not from Oliv directly — worth confirming a cutover date with Nate.
+
+## Log
+- 2026-07-30T15:40Z [claude-code] CORRECTION + CONCRETE BLOCKER AUDIT for abs_datasets_job.py (the file Chandra named in his last DEV-503 comment, 2026-06-26). Abhishek pushed back that backwards compat is good and it should be near a one-word change. He is MOSTLY RIGHT, and DEV-1457's framing — repeated by me earlier — is misleading.
+
+WHAT I GOT WRONG: I said the cfframes 'have no Snowflake version, the code was never written'. The ADAPTER was never written; the TABLES exist and are populated. Correcting that here so it does not propagate.
+
+ENUMERATED OFF origin/master 2026-07-28 (git grep over lib/efp/stats/edgex/, non-test): EDGEX constructs exactly 7 Datastore* classes — DatastorePositions, DatastoreTransfers, DatastoreCfframe, DatastoreCfframeFromPurch, DatastoreCalendarMonthCfframe, DatastorePredCfframeFromPurch, DatastoreSimPredCfframeFromPurch — plus 7 platform Statement* readers (lc StatementStatic, marlette StatementOriginations, upgrade StatementLoanCreditAttr, sofi StatementPlServicingReport + StatementPurchaseTape, happymoney StatementLoanBook + StatementLoanOriginations) = 14 distinct classes. Note DatastoreTransactions — one of only two classes with Snowflake support — is NOT used by EDGEX at all.
+
+DATA SIDE (exists in Snowflake):
+- silver.positions — yes, and lendingclub IS built (edgefocus/transformations/silver/statement_rows/lendingclub/ has positions.py, transactions.py, transfers.py, stmt_positions.py, stmt_loan_static.py, stmt_activity.py, manager_marks.py).
+- silver.transfers — yes, and EDGEX ALREADY queries it directly at abs_data_requests.py:417 for EVENT_TYPE='transfer'.
+- silver.realized_cashflows_from_purchase — yes, terraform + per-platform builders for happymoney, marlette, northpond, prosper, sofi, upgrade. CARRIES VALID_MASK as a column, which is precisely what DEV-1457 says EDGEX needs ('.cfframe(ids) to get the realised cashflow frame AND its valid mask'). Grain is EFP_ID x MOB with BOP/EOP principal, accrued interest, payments, chargeoff, recovery, DPD, delinquent-principal buckets, EOP_STATUS.
+- silver.realized_cashflows_from_origination, silver.realized_cashflows_calendar_month, silver.realized_cashflows_from_first_purchase — same 6 platforms each.
+- silver.predicted_cashflows_from_purch + gold_predicted_cashflows_mob/_from_purch/_calendar_month — exist.
+- Statement equivalents: silver/statement_rows/ has lendingclub, marlette, sofi, upgrade, happymoney, prosper, northpond, openroad, upstart, innovate, anchored, intex directories.
+
+ADAPTER SIDE (the actual gap): only TWO of 103 Datastore* classes implement _load_from_snowflake — datastore_positions.py and datastore_transactions.py. Every other class inherits base_datastore.py:310 which raises "source='snowflake' is not supported for %s". So for 13 of EDGEX's 14 classes the flag physically cannot be passed, even though the table is sitting there.
+
+SO THE REAL BLOCKER LIST IS SHORT:
+1. ADAPTER PLUMBING x5 cfframe classes + DatastoreTransfers — same shape as positions_snowflake_map.py / transactions_snowflake_map.py. Mechanical, not research. This is the bulk of it and it is NOT one word, but it is also not a data problem.
+2. LC NOT REGISTERED — lendingclub has silver positions/transactions/transfers but ZERO entries in DEPRECATION_REGISTRY (12 entries cover sofi/prosper/marlette/happymoney/upgrade/northpond only) and NO lc_realized_cashflows_* builder in edgefocus/transformations/silver/cashflows/. EDGEX needs all 7 platforms, so lc alone blocks it.
+3. MULTI-PLATFORM — datastore_positions.py:87 raises unless exactly one platform; EDGEX passes constants.PLATFORMS (all 7). Fix is a loop + concat, and the perf objection is gone: DEV-1398 'make interval=latest faster on snowflake' completed 2026-07-24.
+4. GENUINELY UNSOLVED — DatastoreSimPredCfframeFromPurch is pinned at index 1160 so historical EF grades never move under model updates. No Snowflake equivalent found offering that frozen-version guarantee. Only used for pre-Aug-2023 purchases on lc/upgrade/marlette/prosper, so it does not touch northpond.
+5. The 7 Statement* readers — silver equivalents exist per platform but no adapters; lowest risk, they only populate tape credit attributes.
+
+WHAT THIS MEANS FOR DEV-503: northpond specifically is clean on 1-4 (registered, has all four cashflow builders, not in the SimPred set). The thing keeping northpond on legacy inside abs_datasets_job is entirely OTHER PLATFORMS' gaps — chiefly lc — plus the missing cfframe adapters. So nobody needs to solve northpond to unblock northpond.
+
+RECOMMENDED REPLY ON DEV-1457 (it asks Eshan 'is there a Snowflake equivalent?' for each row): the answer for rows 1-8 is YES with a named table; row 9 (SimPred, pinned 1160) is the only genuine no. That ticket has sat in Backlog since 2026-07-17 partly because it reads as an open research question when most of it is already answered.
