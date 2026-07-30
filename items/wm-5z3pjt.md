@@ -9,7 +9,7 @@ people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-30T13:40:53Z
+updated: 2026-07-30T15:52:06Z
 source: claude-code
 ---
 
@@ -112,3 +112,14 @@ ROUND 4 (commit 515f1250c): Sentry then flagged that guard 5 only checks the COM
 SNOWFLAKE CONSTRAINT worth remembering: guards 5 and 6 CANNOT be merged into one rule. Snowflake rejects both single-query forms with '002031 Unsupported subquery type cannot be evaluated' — (a) a self-correlated EXISTS against the new_silver_data CTE, and (b) a correlated EXISTS against a real table issued from a derived table carrying window functions. Verified directly against Snowflake; recorded in a code comment so nobody retries the merge.
 
 Baseline that made all of this safe to add: existing tape is 372 rows, 0 NULL dates, 0 unparseable, 372 distinct LOAN_IDs. All six guards compile in the exact UNION ALL shape _apply_validations builds and return 0 rows on prod. 2364 passed / 1 skipped.
+- 2026-07-30T15:52Z [claude-code] PR #6085 round 5 (2026-07-30) — SELF-CAUGHT PRODUCTION DEFECT while verifying the SQL queries at production fidelity. Fixed in 2edcc9881.
+
+Guard 5 (committed-fund conflict, added in 10e740c3e) used a correlated EXISTS against silver.northpond_stmt_purchase_tapes. It compiles for SOME batches and fails for others with '002031 Unsupported subquery type cannot be evaluated'. Snowflake decides whether it can decorrelate from the chosen plan, and the plan depends on the temp table contents — the SAME rule passed a 1-row temp table and failed an 8-row one with identical column types. Reproduced deterministically.
+
+WHY EARLIER VERIFICATION MISSED IT (important methodology lesson): every prior check used new_silver_data = silver.northpond_stmt_purchase_tapes, i.e. the target table itself. That makes the EXISTS a SELF-join, which always plans. In production new_silver_data is the TEMP table — a DIFFERENT table from the one the EXISTS reads — which is the failing shape. Validating a batch rule against the target table is NOT equivalent to production; materialise the batch as a separate real table (a literal-CTE also does not reproduce it, it hits a different planner path).
+
+Fix: rewrite as SELECT DISTINCT ... FROM new_silver_data n JOIN silver.northpond_stmt_purchase_tapes pt ON pt.LOAN_ID = n.LOAN_ID AND pt.FUND IS DISTINCT FROM n.FUND. Joins always plan. DISTINCT because a loan may conflict with several committed rows and should raise one error. Added test_committed_fund_conflict_uses_a_join_not_a_correlated_exists so the EXISTS cannot return.
+
+Verified with the batch materialised as a real table: 1-row batch -> 1 violation; 8-row batch (one violating row per guard + a clean EDGEX row) -> previously failed to compile, now 7 rows with every guard firing correctly and the clean row untouched; all 6 guards vs the 372 real prod rows -> 0. 2365 passed / 1 skipped.
+
+ALSO VERIFIED this round: the PR body SQL runs verbatim and reproduces its stated table exactly (715 loans / 0 mismatches / 372 efhyf / 343 experimental / 0 null). The PR body's second claim (synthetic INV103 -> edgex20261NN + account_id INV103) had NO sql block in the body — only a result table; a runnable query for it is at ~/claude-ws/oliv-edgex-fund/prsql_1.sql on dpx and confirms both values.
