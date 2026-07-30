@@ -9,7 +9,7 @@ people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-29T20:53:46Z
+updated: 2026-07-30T13:40:53Z
 source: claude-code
 ---
 
@@ -99,3 +99,16 @@ Checks on 06d677f25: Run Tests success, Select tests success, Cursor Bugbot succ
 Outstanding bot comments: NONE that are live. Two threads anchored to head are both stale artifacts — cursor[bot]'s EFP_ID comment has original_commit_id=ce703774d (GitHub repositioned the unresolved thread; cursor filed no review on either later commit and its check passes), and sentry[bot]'s is literally 'Resolved in 06d677f'. Sentry also marked the earlier one 'Resolved in e28f669'.
 
 mergeState=BLOCKED / reviewDecision=REVIEW_REQUIRED — needs a human approver, no failing check. Abhishek to request review. Also still to do before merge per his style: swap the inline SQL/result markdown tables in the PR body for Snowflake screenshots with query+grid in frame; DAG line is correctly 'DAG - unchanged.'
+- 2026-07-30T13:40Z [claude-code] PR #6085 review rounds 3-4 (2026-07-30). Four human-relayed review points, all four confirmed real, plus one follow-on from Sentry.
+
+ROUND 3 (commit 10e740c3e):
+1. NULL/unparseable PURCHASE_DATE — REAL and worse than flagged. A row with a valid INV103 account (FUND=edgex20261NN) but blank/malformed PURCHASE_DATE passes all three original guards (both date comparisons go NULL), then vanishes TWICE: FUND_WITH_PURCHASE_TAPE_EXPR filters it on TRY_TO_DATE(PURCHASE_DATE) <= AS_OF_DATE so the loan falls back to experimental, AND transfers._purchase_tape_leg drops it on the same TRY_TO_DATE(...) IS NOT NULL predicate. Result: an EDGEX loan labelled experimental with no purchase event and no error. Added guard 4.
+2. Stale docstrings — REAL. stmt_positions.generate_sql and stmt_transactions.generate_sql both still said 'efhyf if the loan appears in silver.northpond_stmt_purchase_tapes'. Neither file was otherwise in the diff. Rewritten.
+3. MAX_BY tie-break — correctly assessed as prevented; cross-fund ties require same LOAN_ID + same PURCHASE_DATE with different funds, which the cutover guards reject. Documented only, no code change.
+4. Loan-level exclusivity across the two feeds — REAL latent gap. transfers._purchase_tape_leg hardcodes FROM_FUND=experimental, so a loan sold EFHYF->EDGEX would emit a second event claiming it came from experimental. Added guard 5 as a tripwire.
+
+ROUND 4 (commit 515f1250c): Sentry then flagged that guard 5 only checks the COMMITTED table. Real — validations run before delete_and_insert, so a loan arriving under two funds inside one batch (multi-date backfill, or first run ingesting both feeds) escapes. Added guard 6, a window over new_silver_data (MIN(FUND) != MAX(FUND) OVER (PARTITION BY LOAN_ID)).
+
+SNOWFLAKE CONSTRAINT worth remembering: guards 5 and 6 CANNOT be merged into one rule. Snowflake rejects both single-query forms with '002031 Unsupported subquery type cannot be evaluated' — (a) a self-correlated EXISTS against the new_silver_data CTE, and (b) a correlated EXISTS against a real table issued from a derived table carrying window functions. Verified directly against Snowflake; recorded in a code comment so nobody retries the merge.
+
+Baseline that made all of this safe to add: existing tape is 372 rows, 0 NULL dates, 0 unparseable, 372 distinct LOAN_IDs. All six guards compile in the exact UNION ALL shape _apply_validations builds and return 0 rows on prod. 2364 passed / 1 skipped.
