@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-embhpy]
 created: 2026-07-24T08:02:53Z
-updated: 2026-07-28T17:37:17Z
+updated: 2026-07-30T13:45:58Z
 source: claude-code
 ---
 
@@ -242,3 +242,14 @@ ONE STANDING ASK FOR NATE: keep the '_test' marker immediately before '.csv'. Th
 - 2026-07-28T17:37Z [claude-code] DONE — verified 2026-07-28. PR #6013 'DEV-1474: parse Oliv purchase files at the finalised v0/v1 paths' MERGED 2026-07-24, approved; companion PR #6011 (legacy purchase file from the new SFTP path) also MERGED 2026-07-24. Linear DEV-1474 status Done, completed 2026-07-24T19:32Z.
 Sat in 'review' for four days after merge. The routing matrix was already re-verified on this item on 2026-07-28 and the one remaining check (confirm Nate's fresh test stubs still route to ignore) was correctly spun out as [[wm-jewha5]] — nothing else is outstanding here.
 FOLLOW-UPS this PR deliberately left out, so they are not lost with the close: (1) stop the efp-derived/trades/northpond_ff -> statements/northpond/purchase_tape/ mirror in sync_statements.py once Oliv stops the Pool N xlsx — that decision now lives on [[wm-tvjjgw]]; (2) add a MonitoringSchedule once Oliv confirms real-file cadence — still uncaptured, flagged to Abhishek; (3) Oliv to remove the dummy file once testing is done.
+- 2026-07-30T13:45Z [claude-code] 2026-07-30T13:45Z: ABHISHEK ASKED WHETHER REAL (non-test) PURCHASE FILES HAVE LANDED — NorthPond buying was supposed to start today. ANSWER: NO. No purchase activity of any kind is visible.
+
+S3 (efp-raw): s3://efp-raw/statements/northpond/purchase_file/ still holds ONLY the two 2026-07-24 _test stubs. Nothing under v0/ or v1/ for 20260728/29/30. purchase_file_legacy/ still holds only the abandoned 20260723 dummy. efp-derived/trades/northpond_ff/ (the legacy Pool-xlsx source) unchanged since 2025-06-23 — still just Pools 1-6. NOTHING at all had landed under statements/northpond/ for 2026-07-30 as of 13:45 UTC; the 07-29 batch arrived normally (loan tape 13:38, issuance/issuance_v2/payment_config 16:37, transaction_on_board 18:39 UTC), so today's drop is simply not in yet, not missing.
+
+PROD DATA — NO PURCHASES: silver.northpond_stmt_purchase_tapes still 372 rows / 6 x 2025 pool events (table LAST_ALTERED 2026-07-27, a no-op re-run). silver.northpond_stmt_positions flat at 715 distinct loans for 14 consecutive snapshots (2026-07-16 -> 07-29), split 372 efhyf / 343 experimental every single day; ENDING_PRINCIPAL declining monotonically 1,618,518.74 -> 1,587,381.63, i.e. pure amortisation with no additions. ZERO loans first-seen in the book in the last 21 days. bronze.statement_files: the only purchase-shaped keys ever registered are the 6 Pool xlsx (rows_added, 2025 dates), the 2 _test stubs (ignore), the legacy dummy (unknown), and 2 old flat purchase_tape_efhyf_2025*.csv (ignore).
+
+WHAT *IS* MOVING: issuance_v2 is growing ~4-8 loans/day (silver rows by as_of_date: 07-24 863 -> 07-25 865 -> 07-26 869 -> 07-27 873 -> 07-28 879 -> 07-29 887; scored count 120 -> 144). So Oliv keeps originating and scoring, but nothing has been PURCHASED into the fund. Purchases only become visible to us via the purchase file, and none has arrived.
+
+CAVEAT: Slack/Sentry/Drive MCP connectors were disconnected this session, so this is S3 + Snowflake evidence only — no check of whether Nate announced anything about today's buying.
+
+NEXT: if buying really started 2026-07-30, the v0 purchase file should appear at purchase_file/v0/2026/07/purchase_file_v0_20260730.csv and route to northpond_purchase_tape_v0_csv. Re-check after today's Oliv drop completes (their batches land 13:38-18:39 UTC). If it does not appear, ask Nate whether purchase files are actually being generated on the agreed path.
