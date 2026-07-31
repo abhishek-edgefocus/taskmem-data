@@ -8,7 +8,7 @@ size: m
 tags: [openroad, gold]
 links: [parent:wm-su6q4d, relates:wm-prm54n, relates:wm-xe6w4q]
 created: 2026-07-31T18:52:58Z
-updated: 2026-07-31T20:15:53Z
+updated: 2026-07-31T20:34:50Z
 source: claude-code
 ---
 
@@ -111,3 +111,6 @@ PROD DATA REALITY CHECK (queried 2026-08-01, PROD):
 
 NOT A PROBLEM: openroad_api_credit_attributes (new on PR #5974) is already selected in
 orchestration/jobs/ingest_api_output.py, so it will not land orphaned.
+- 2026-07-31T20:34Z [claude-code] 2026-08-01: Ticket assigned DEV-1500 (Setup OpenRoad Gold Metrics, Development team, Todo, label OpenRoad). Branch renamed to abhishek/dev-1500-setup-openroad-gold-metrics (Linear's own suggested name), committed 612900d54 (8 files, +453/-2), pushed, and opened as DRAFT PR #6128 -> https://github.com/edgefocus/efp/pull/6128, based on abhishek/dev-1331-openroad-payload-cashflow-config (stacked on #5974; retarget to master after that merges).
+
+Left as DRAFT deliberately: the PR body has no DAG screenshot and no Snowflake proof, because the assets have never been materialized and cannot be until #5974 lands. Per ~/pr-style.md the body states explicitly what is unvalidated and why, and carries a numbered Deployment section with the backfill order. Abhishek needs to (1) paste the Dagster asset-graph screenshot at the 'DAG:' placeholder, (2) run the backfill, (3) attach Snowflake evidence, then 'gh pr ready 6128'.
