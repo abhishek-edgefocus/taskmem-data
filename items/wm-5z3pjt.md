@@ -9,7 +9,7 @@ people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-30T16:19:33Z
+updated: 2026-07-31T12:56:14Z
 source: claude-code
 ---
 
@@ -141,3 +141,5 @@ Running tally of PR #6085 review findings: 7 raised, 7 real, 7 fixed. Sources: C
 9. Intra-batch guard emitted byte-identical duplicate errors (Sentry) -> 74b84b076
 
 TOTAL: 9 findings, 9 real, 9 addressed. By source: Sentry 4, human-relayed 4, Cursor 1 (shared with Sentry on #1), self-caught 1. Item 5 was resolved by documentation rather than a code change.
+- 2026-07-31T12:56Z [claude-code] GITHUB + TIMELINE SYNC 2026-07-31. PR #6085 'DEV-1474: Attribute Oliv purchase-file loans to EDGEX 2026-1NN via account INV103' is OPEN, MERGEABLE, **REVIEW_REQUIRED** (last push 2026-07-31 12:22Z). Abhishek asked Abhijeet to review it directly in DM on 2026-07-30 23:10 IST ('He pr bagh na - investor update chi') and explained the INV103 default; Abhijeet asked 'What is inv', got 'Investor', and has not reviewed since. So the sole blocker is a human review. Linear DEV-1474 moved back to In Review 2026-07-30 15:38Z accordingly.
+URGENCY CORRECTION — the 'every Oliv loan bought since 07-28 is being mislabelled efhyf' framing I used on 07-29 has NOT materialised. Purchasing never started. Trishit 2026-07-30 23:08 IST: 'They are sort of already building a backbook but nothing so far on direct edgex bookings' and 'Dustin mentioned a delay in account creation'. Abhishek relayed that per Frank some platforms are deliberately holding purchases until Monday to catch next month's warehouse triggers. A parallel session confirmed on 07-30 that no purchase activity of any kind is visible ([[wm-n7usn7]]). So this is still urgent-before-Monday, not actively-corrupting-data-now.
