@@ -2,9 +2,14 @@
 id: wm-9dfnnt
 type: task
 title: Validate the new EDGEX purchase tapes for Oliv (first real landing)
-status: open
+status: next
+priority: p1
+size: s
+due: 2026-08-03
+people: [Nate, Trishit]
+tags: [northpond, edgex]
 created: 2026-07-31T14:19:39Z
-updated: 2026-07-31T14:19:39Z
+updated: 2026-07-31T14:19:44Z
 source: claude-code
 ---
 
