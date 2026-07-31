@@ -11,7 +11,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-9s2mwd, relates:wm-j2prpv]
 refs: [PR6082=https://github.com/edgefocus/efp/pull/6082, sean-thread=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1785264036485469]
 created: 2026-07-29T13:42:21Z
-updated: 2026-07-31T17:35:50Z
+updated: 2026-07-31T18:03:33Z
 source: claude-code
 label: PR 6082 oliv statement model
 ---
@@ -93,3 +93,12 @@ PARITY GATE PASSED (prod inputs -> s3://efp-sandbox/abhishek/oliv_exp_parity): s
 OPEN:
 1. Model artifact NOT built -- nothing at s3://efp-derived/modeling/statics/oliv.*. bin/model_backtest/oliv_exp_statement_model_backtest.py --mode production must run before real generation.
 2. Pre-existing gap (not this PR's): northpond has no branch in api_predictions_utils._get_dq_strat_for_date, so DQ_STRAT_NAME/VALUE are NULL on every northpond api row; populate_predicted_cashflows falls back to get_dq_strat -> term_band with no per-loan strat value to join on. Affects the TU rows too.
+- 2026-07-31T18:03Z [claude-code] Abhishek redirected the scheduling (2026-07-31): the exp generation should be a Dagster asset inside the broader statements_northpond job, NOT the generic hourly run.py predictions cron. Implemented as commit e2c169938:
+- new asset northpond_exp_predictions in orchestration/assets/northpond_assets.py, deps=[northpond_stmt_issuance, northpond_stmt_issuance_v2], group SILVER, with an OlivExpPredictionsConfig (force / output_prefix)
+- added to the statements_northpond job selection right after northpond_api_predictions
+- UNREGISTERED from run.py FORWARD_FLOW_PREDICTORS: two schedulers would each see a loan as unpredicted and write it twice (dedup is at selection time, not write time). The asset is now the single trigger; Dagster materialization is the manual/backfill path.
+- predictor now subclasses Predictor directly (ForwardFlowPredictor only supplied the silver.positions universe this channel overrides)
+Rationale: the predictions depend on the issuance + issuance_v2 files, so generating them in the job that lands those files orders the work instead of racing it hourly. NOTE the asset writes parquet only -- rows land in silver.predictions when s3_prediction_files -> s3_predictions next run (ingest_prediction_files job).
+Verified: Dagster repo loads, asset resolves in the job (21 assets) with both deps, 31 tests pass, parity unchanged.
+
+ALSO CONFIRMED for Abhishek's 'modify once at the top of the DAG' question: after this PR the Oliv ANL is applied in exactly ONE place. northpond_stmt_issuance_v2 is read by only 4 files -- the ingest transform that populates it, its 2 orchestration wirings, and the predictor. Zero other retarget/oliv_anl logic anywhere in the codebase, and no northpond special-casing in the downstream prediction/cashflow/gold transforms. Downstream reads the stored curve as-is.
