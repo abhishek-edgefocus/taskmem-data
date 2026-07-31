@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [DEV-503=https://linear.app/edge-focus/issue/DEV-503/int-rate-at-purchase-0-for-northpond-loans-in-positions, PR5704=https://github.com/edgefocus/efp/pull/5704]
 created: 2026-07-14
-updated: 2026-07-29T16:39:29Z
+updated: 2026-07-31T12:56:35Z
 source: dpx-tasks #9
 label: NorthPond int_rate root-cause
 ---
@@ -73,3 +73,5 @@ FOLLOW-UP WORTH FILING (not filed): DEV-1457 is High priority, unstarted since 2
 - 2026-07-28T17:39Z [claude-code] RECONCILED 2026-07-28 (GitHub + Linear) — no change in verdict, still needed, but pinning the live state: PR #5704 is OPEN and STILL A DRAFT (isDraft=true), REVIEW_REQUIRED, untouched since 2026-07-01, mergeable. Linear DEV-503 is still Todo (regressed there 2026-07-22T11:33Z) with due date 2025-12-31, i.e. seven months overdue. So the 'ask for review' action recorded here cannot actually be taken until the PR comes out of draft — that is the first step, not the review request.
 - 2026-07-28T17:42Z [claude-code] review -> next 2026-07-28. 'review' asserts the ball is in a reviewer's court; it is not. PR #5704 is a DRAFT, so no reviewer can see it and none has been requested — the next movement is Abhishek's (mark it ready, request review). Keeping it in 'review' also left [[wm-3y3ckv]] with no child in next/active, i.e. an active project with no actionable step.
 - 2026-07-29T16:39Z [claude-code] 2026-07-28 evidence for DEV-503, from the positions comparison board (DEV_ABHISHEK.GOLD.POSITIONS_COMPARISON_DAILY, 2026-07-19): INT_RATE_AT_PURCHASE mismatches 98.74% — 706 of 715 loans, the LARGEST mismatch on the NorthPond board by a wide margin. First nonzero 2026-06-16 and flat at 98.74% on every clean date since. Deliberately NOT registered in northpond_verified.py (PR #6058) precisely because it is a real open defect, so it will keep showing as an unverified issue in the comparison report until #5704 lands — which is the correct behaviour. Recorded as Open/untraced in docs/northpond/snowflake-datastore-comparison.md.
+- 2026-07-31T12:56Z [claude-code] STATE CORRECTION 2026-07-31: this item says 'get PR #5704 reviewed + merged', but #5704 is still a **DRAFT** on GitHub (REVIEW_REQUIRED, untouched since 2026-07-01). A draft cannot be reviewed — so the actual next step is to finish and un-draft it, not to chase a reviewer.
+MOVEMENT TODAY: Abhishek DM'd Chandra Shekhar at 18:20 IST — 'we recently deprecated the NorthPond data stores. I came across this NorthPond Datastores ticket, which had been deprioritized, and wanted to check with you about the blockers to move to SnowFlake.' So DEV-503 is being reopened from the blockers angle with Chandra, who is the person named on the DEV-503 thread. Awaiting his reply.
