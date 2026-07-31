@@ -9,7 +9,7 @@ people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-31T14:44:55Z
+updated: 2026-07-31T16:58:22Z
 source: claude-code
 ---
 
@@ -172,3 +172,4 @@ STYLE RULE LEARNED (Abhijeet, generalises beyond this PR): code comments must no
 Final diff is now ONE file, +4/-1: four lines in northpond/constants.py (two map entries plus a two-line factual comment). PR body rewritten to match.
 
 Sentry also flagged (2026-07-31) the FUND_WITH_PURCHASE_TAPE_EXPR hardcoded 'efhyf' — the same gap already documented in the PR body. Deliberately out of scope per Abhishek's simplification; still needs its own follow-up.
+- 2026-07-31T16:58Z [claude-code] PR #6085 IS NOW APPROVED (2026-07-31 15:20Z) — mergeable, mergeState CLEAN, checks green (3 SUCCESS / 1 SKIPPED). Retitled 'DEV-1474: Map Oliv EDGEX 2026-1NN investor IDs to their funds' after the scope reset to a ~2-3 line change. Nothing now blocks the merge. Given Oliv purchasing is expected to start Monday 2026-08-03, this wants to land before then — it is the change that stops EDGEX purchases being labelled efhyf.
