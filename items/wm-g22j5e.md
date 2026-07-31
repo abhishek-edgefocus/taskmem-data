@@ -11,7 +11,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-9s2mwd, relates:wm-j2prpv]
 refs: [PR6082=https://github.com/edgefocus/efp/pull/6082, sean-thread=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1785264036485469]
 created: 2026-07-29T13:42:21Z
-updated: 2026-07-31T16:58:22Z
+updated: 2026-07-31T17:35:50Z
 source: claude-code
 label: PR 6082 oliv statement model
 ---
@@ -74,3 +74,22 @@ the inline SQL retarget this PR removes.
 - Trishit 21:44: stepping out in 45 mins, back late, will check messages.
 - Nakula 22:20: '@Abhishek Let me know if you need any assistance/want me to take over if you are busy' — DIRECT, UNANSWERED ask. Nakula is available and volunteering; a one-line reply either hands it to him or keeps it.
 NOTHING IS BLOCKING THE MERGE MECHANICALLY, which is the risk: the PR's own description says the generator, transform revert and Dagster wiring were never run, and that shipping the v1-only gate without the generator scheduled would DROP exp at_orig rows. Green + approved is not the same as safe. If this merges tonight without the generator scheduled and the parity gate run, exp predictions break.
+- 2026-07-31T17:35Z [claude-code] 2026-07-31 session (workspace ~/claude-ws/oliv-exp/efp on dpx, branch oliv_exp_statement_model).
+
+VERIFIED IN PROD what actually lands in silver.predictions (the 'are we double-writing?' question):
+- api_version 1 and 2 are DISJOINT: 0 applications carry both a v1 and a v2 model_response. The PR's api_version=1 gate therefore cannot double-write a loan; no exp loan gets a TU row alongside its model row.
+- The exp slice today = 135 loans / 4,860 rows, all source='api', MODEL_NAME='northpond_exp_model'. No duplicates exist yet.
+- Those rows are ALREADY Oliv-retargeted (133 scaled by k=oliv_anl/our_anl; 2 unscaled because Oliv published no ANL). So 'original vs modified' resolves to: the leftovers are the OLD retargeted rows, and they collide with the new source='s3' rows once the generator runs.
+- Removal is a TRANSFORM RE-RUN, not a manual DELETE. The swap deletes WHERE as_of_date IN (processed dates) AND source='api' AND platform='northpond', then re-inserts the v1-gated temp table. Checked: the 32 exp as_of_dates contain ONLY exp rows (0 non-exp api rows), so a re-run deletes exactly those 4,860 and re-inserts nothing, leaving the 25,740 TU rows on other dates untouched. Command: northpond_api_predictions.py --date all.
+
+RESTRUCTURED the generator to the SoFi predictor+prep pattern (Abhishek's ask). Committed locally as ed7476c41, NOT pushed:
+- deleted northpond/oliv_exp_predictions.py (standalone SQL + main())
+- added northpond/prep.py + northpond/predictor.py (OlivExpStatementPredictor) + predictor_test.py
+- registered in run.py FORWARD_FLOW_PREDICTORS as 'northpond_exp'
+- ANSWERS THE DAGSTER-WIRING QUESTION: no new asset needed. run.py --prediction-type at_orig already runs HOURLY in cron (execution/cron/dumbledore/ubuntu/existing.cron:419) and iterates every registered predictor. Registering = scheduled.
+
+PARITY GATE PASSED (prod inputs -> s3://efp-sandbox/abhishek/oliv_exp_parity): same 135 loans / 4,860 rows, every column bit-matches the api rows except DEFAULT_PROBABILITY on exactly 2 loans, both where the new 6.5% ANL floor binds (oliv_anl 0.0644, 0.0637). That is the intended policy change.
+
+OPEN:
+1. Model artifact NOT built -- nothing at s3://efp-derived/modeling/statics/oliv.*. bin/model_backtest/oliv_exp_statement_model_backtest.py --mode production must run before real generation.
+2. Pre-existing gap (not this PR's): northpond has no branch in api_predictions_utils._get_dq_strat_for_date, so DQ_STRAT_NAME/VALUE are NULL on every northpond api row; populate_predicted_cashflows falls back to get_dq_strat -> term_band with no per-loan strat value to join on. Affects the TU rows too.
