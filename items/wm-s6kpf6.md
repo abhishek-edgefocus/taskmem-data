@@ -11,7 +11,7 @@ tags: [northpond, oncall, ownership]
 links: [parent:wm-j523sq]
 refs: [dm=https://edgefocuspartners.slack.com/archives/D0B2A3WSJ5N/p1785263143379249]
 created: 2026-07-29T13:42:49Z
-updated: 2026-07-29T13:42:49Z
+updated: 2026-07-31T12:56:51Z
 source: claude-code
 label: NorthPond API ownership handover
 ---
@@ -39,3 +39,7 @@ Experian/NorthPond error tickets (ERROR-1178, ERROR-400, ERROR-1647; Abhishek: "
 assign"). Tracked separately.
 
 Adjacent ownership handover in flight: the Oliv v2 model Docker container — [[wm-mmmc9t]].
+
+## Log
+- 2026-07-31T12:56Z [claude-code] HUDDLE HAPPENED 2026-07-31 17:18 IST (D0B2A3WSJ5N). Abhijeet at 17:07: 'free jhalas ki sang' (tell me when you're free); Abhishek at 17:12: '5 mins ne huddle karto'; Slackbot logged a huddle start at 17:18. This is the Friday conversation this item was created for.
+CONTENT UNKNOWN — huddles leave no transcript, so whether the NorthPond API ownership boundary, the Kabeer handover, or the realtime-scoring-model scope question actually got settled cannot be read from Slack. Leaving status=next rather than assuming it closed; needs Abhishek to confirm what was agreed, or to mark done.
