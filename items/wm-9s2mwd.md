@@ -8,7 +8,7 @@ size: l
 tags: [northpond]
 links: [parent:wm-j523sq, relates:wm-c5jytx, relates:wm-g22j5e]
 created: 2026-07-20T13:55:37Z
-updated: 2026-07-29T13:43:44Z
+updated: 2026-07-31T12:55:58Z
 source: claude-code
 ---
 
@@ -46,3 +46,5 @@ This matters here because 'multiplying the predictions by a factor' IS the k = a
 CAVEAT, unresolved: Sean wrote 'statement model', while this item and DEV-1452/QR-23 are scoped to the PURCHASE TAPE. Whether he means this ticket or a separate statement-side model object is genuinely ambiguous and must be confirmed before anyone scopes work — tracked on [[wm-g22j5e]].
 OWNERSHIP IN FLUX: Trishit offered on 2026-07-29 18:55 to take Sean's setup work since he has free cycles; Abhishek has not yet read the requirement and said he would leave it to Trishit for now. So this may move off Abhishek's plate entirely.
 Linear DEV-1452 unchanged: still Backlog, unstarted, no PRs, last touched 2026-07-23.
+- 2026-07-31T12:55Z [claude-code] AMBIGUITY RESOLVED 2026-07-31: the 07-29 entry flagged that Sean's 'statement model' might or might not mean this ticket. It does not. Trishit has shipped PR #6082 'oliv_exp_statement_model' — a genuinely statement-side model artifact for the exp default-curve retarget + a new 6.5%% ANL floor (details on [[wm-g22j5e]]). DEV-1452/QR-23, this item, remains the separate PURCHASE-TAPE model. So Sean's models_by_channel.json ruling is being satisfied elsewhere and does NOT by itself reopen this ticket.
+What that leaves unchanged: the open decision on this item — close DEV-1452 as delivered by another route, rescope it to only a daily run over the purchase tape, or build the forward-flow predictor. Linear DEV-1452 still Backlog, unstarted.
