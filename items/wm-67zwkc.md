@@ -8,7 +8,7 @@ size: m
 tags: [openroad, gold]
 links: [parent:wm-su6q4d, relates:wm-prm54n, relates:wm-xe6w4q]
 created: 2026-07-31T18:52:58Z
-updated: 2026-07-31T20:53:12Z
+updated: 2026-07-31T21:01:04Z
 source: claude-code
 ---
 
@@ -117,3 +117,12 @@ Left as DRAFT deliberately: the PR body has no DAG screenshot and no Snowflake p
 - 2026-07-31T20:53Z [claude-code] 2026-08-01: #5974 (DEV-1331) was squash-merged to master as 52026b99f at 20:43. Rebased DEV-1500 off the old PR branch onto master with 'git rebase --onto origin/master 65ad902fe' — replayed the single commit only, NO conflicts, diff unchanged at 8 files +453/-2. New SHA 20465759a (was 612900d54); force-pushed with --force-with-lease. PR #6128 base retargeted DEV-1331 branch -> master, and the body updated (dropped the 'stacked, retarget later' line, dropped 'merge #5974 first' from the Deployment steps, softened the 'cannot run before #5974 lands' wording).
 
 Re-verified everything AFTER the rebase against current master: ruff check + format clean, mypy clean on 7 modules, Dagster definitions resolve (6 assets register, deps correct, statements_openroad still selects 14), all 5 transforms generate parseable Snowflake SQL, 24 unit tests pass. Still DRAFT — DAG screenshot + Snowflake proof + backfill remain.
+- 2026-07-31T21:01Z [claude-code] 2026-08-01 review round 1 on PR #6128 (Abhijeet APPROVED with comments; PR is no longer draft). Addressed all three, amended to 028cbc982 (was 20465759a), force-pushed. Diff now 8 files +458/-2.
+
+1. Abhijeet: 'is there a reason to not add openroad_realized_cashflows_from_first_purchase?' -> No good reason; ADDED to the statements_openroad selection (now 15 assets, was 14). CORRECTION to what I told Abhishek earlier: the claim that from_first_purchase is on-demand/orphaned on EVERY platform came from wm-qs96kd (2026-07-20) and is now STALE — on current master statements_northpond (line 73) and statements_lc (line 81) both select it. Only happymoney/marlette/prosper/sofi/upgrade/upstart still leave it out.
+
+2. Abhijeet: 'shorten the PR description' -> rewrote it to ~1/3 length: one-line problem statement, 3 What-changed bullets, DAG placeholder, 2-line Validation, 4-step Deployment. Dropped the builder-defaults justification table and the prod-state table (kept the two blocking facts as one sentence).
+
+3. Sentry bot inline comment on openroad_positions_daily.py L19-28 (missing required=True) -> REAL BUG, fixed. Root cause worth remembering: I copied the template from ~/repos/efp which is parked on branch abhishek/dev-1393-fixes-in-openroad-positions, an OLD checkout. Master's version gates silver.positions with filters={'platform': ...} + required=True (without it, positions_daily_utils' FULL OUTER JOIN phantom-zeros principal for dates where transactions landed but positions had not). Diffed ALL SIX new files against their master northpond equivalents afterwards — that was the only drift; the other five differ only in intentional docstring wording.
+
+LESSON: when copying a per-platform template, diff against origin/master, not against whatever the local checkout has.
