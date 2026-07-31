@@ -9,7 +9,7 @@ people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-31T14:26:29Z
+updated: 2026-07-31T14:44:55Z
 source: claude-code
 ---
 
@@ -161,3 +161,14 @@ DROPPED from the previous version (all of it — recorded here so the analysis i
 STILL TRUE AND STILL UNADDRESSED: FUND_WITH_PURCHASE_TAPE_EXPR returns a hardcoded efhyf for ANY loan on silver.northpond_stmt_purchase_tapes. Harmless today (that tape is frozen at MAX(purchase_date)=2025-06-17, 372 loans) but it will mislabel EDGEX purchases as efhyf once Oliv delivers real purchase files at purchase_file/v0/. Flagged in the PR body's 'Note for review'. Needs its own follow-up.
 
 Also: no local dev env on the Mac can run this repo (python 3.9 only, no deps) and dpx was unreachable during this change, so the edit was made in a blobless clone at /private/tmp/.../scratchpad/efp and verified by simulating the dict comprehension + rendering FUND_MAPPING_EXPR by hand. pytest/ruff NOT run locally — relying on CI.
+- 2026-07-31T14:44Z [claude-code] PR #6085 — Abhijeet reviewed 2026-07-30 17:42-17:44 IST (on the OLD 7-commit version, before the 2026-07-31 force-push, so two of the three files he pointed at no longer exist). His three asks and how they were handled in the rewritten branch (now commit 129c2fa7):
+
+1. 'Let's remove these tests, I don't think they are useful' — targeted TestFundWithPurchaseTapeExpr (MAX_BY / does_not_hardcode_efhyf assertions on generated SQL strings). Those are gone with the rewrite. Applied the same judgement to the one test the minimal version had added (test_maps_edgex_2026_1nn_investor_ids, same flavour: asserting substrings of FUND_MAPPING_EXPR) and removed it too.
+2. "'from Dustin's mapping' etc should not go in the code" — STILL APPLIED to the current diff: the minimal version's comment said 'investor IDs from Dustin's account mapping'. Removed.
+3. 'Please also remove the "mirroring the UG, prosper" etc' — also still applied: comment said 'mirrors Upgrade (UPGRADE_INVESTOR_FUND_MAP) and Prosper (PROSPER_FUND_BY_ACCOUNT)'. Removed.
+
+STYLE RULE LEARNED (Abhijeet, generalises beyond this PR): code comments must not name people, Slack sources, or cross-platform precedent. Keep them to what the code does. This is the code-comment analogue of the existing platform-doc convention (no ticket/PR/review-thread narration). Rationale belongs in the commit message / PR body, not in the source.
+
+Final diff is now ONE file, +4/-1: four lines in northpond/constants.py (two map entries plus a two-line factual comment). PR body rewritten to match.
+
+Sentry also flagged (2026-07-31) the FUND_WITH_PURCHASE_TAPE_EXPR hardcoded 'efhyf' — the same gap already documented in the PR body. Deliberately out of scope per Abhishek's simplification; still needs its own follow-up.
