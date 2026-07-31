@@ -11,7 +11,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-9s2mwd, relates:wm-j2prpv]
 refs: [PR6082=https://github.com/edgefocus/efp/pull/6082, sean-thread=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1785264036485469]
 created: 2026-07-29T13:42:21Z
-updated: 2026-07-31T18:03:33Z
+updated: 2026-07-31T18:07:52Z
 source: claude-code
 label: PR 6082 oliv statement model
 ---
@@ -102,3 +102,8 @@ Rationale: the predictions depend on the issuance + issuance_v2 files, so genera
 Verified: Dagster repo loads, asset resolves in the job (21 assets) with both deps, 31 tests pass, parity unchanged.
 
 ALSO CONFIRMED for Abhishek's 'modify once at the top of the DAG' question: after this PR the Oliv ANL is applied in exactly ONE place. northpond_stmt_issuance_v2 is read by only 4 files -- the ingest transform that populates it, its 2 orchestration wirings, and the predictor. Zero other retarget/oliv_anl logic anywhere in the codebase, and no northpond special-casing in the downstream prediction/cashflow/gold transforms. Downstream reads the stored curve as-is.
+- 2026-07-31T18:07Z [claude-code] PUSHED to PR #6082 (2026-07-31, Abhishek approved): commits 182e9fe91 (predictor+prep restructure) and 912f350f0 (Dagster asset in statements_northpond). Fast-forward from bb09105c7, remote tip verified unmoved twice before pushing, no force. Both carry the Co-Authored-By trailer per repo convention.
+
+Net effect on the PR file list: run.py and oliv_exp_predictions.py no longer appear at all (added then removed within the branch), so the PR now shows northpond/predictor.py + prep.py + predictor_test.py as the generator, plus the two orchestration files.
+
+STALE: the PR description still describes oliv_exp_predictions.py as the generator and still carries the 'runnable but not wired in Dagster / could drop exp at_orig rows' risk note, both of which are now resolved. Trishit should refresh it (Abhishek to raise -- agents do not edit shared data).
