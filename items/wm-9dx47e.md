@@ -2,7 +2,7 @@
 id: wm-9dx47e
 type: followup
 title: Discuss Nate's early-results analysis on the Experian Activate model
-status: waiting
+status: done
 priority: p3
 size: s
 waiting_on: Nate
@@ -12,7 +12,7 @@ tags: [northpond, experian-activate]
 links: [relates:wm-mmmc9t]
 refs: [dm=https://edgefocuspartners.slack.com/archives/D0BAD46CT27/p1785338639008019]
 created: 2026-07-29T15:32:47Z
-updated: 2026-07-29T16:24:08Z
+updated: 2026-07-31T12:54:39Z
 source: claude-code
 label: Nate Activate early results
 ---
