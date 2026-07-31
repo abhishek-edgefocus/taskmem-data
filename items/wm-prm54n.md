@@ -11,7 +11,7 @@ tags: [openroad, datastores]
 links: [parent:wm-su6q4d, relates:wm-bvqkhh, relates:wm-tvjjgw]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-07-29T15:33:30Z
-updated: 2026-07-31T22:03:28Z
+updated: 2026-07-31T22:05:48Z
 source: claude-code
 label: OpenRoad datastore deprecation
 ---
@@ -93,3 +93,4 @@ THE 3 MAP DECISIONS ARE NOW SETTLED FROM CODE + PROD DATA (the audit had them as
 VERIFIED LIVE against prod through the legacy interface (DatastorePositions(platforms=['openroad'], source='snowflake').DATA) on the 8 as-of dates silver holds: 280 rows/35 loans; first_purchase_date==purchase_date 280/280; principal and price likewise; account_name all NaN; only 5 legacy columns NaN-filled (account_name, errors, p_prob_at_purchase, p_ytm_at_purchase, valuation_at_purchase — the Foursight base NULLs p_prob/p_ytm for openroad anyway). DatastoreTransactions routing returns 7 rows, 18/18 columns non-null. This is SHAPE validation only, not row-level parity.
 
 ENV NOTE for whoever runs this next: the legacy datastore stack cannot be imported from repos/efp/.venv or a uv orchestration env (no dask/distributed/GitPython/mypy-boto3-*). It DOES import cleanly under the notebook conda env /home/abhishek/.conda/envs/abhishek_env_dev/bin/python3.11 with PYTHONPATH=<worktree>:<worktree>/lib. The dataframe attribute is .DATA, not .df.
+- 2026-07-31T22:05Z [claude-code] 2026-08-01: PR #6133 description trimmed to 3 bullets on Abhishek's instruction (same treatment as #6128). REMOVED from the PR body: the 'Do not merge yet' section (the 280-rows-vs-1,101-files evidence and the 4 ordered prerequisites) and the validation table. The merge blocker is now signalled ONLY by the PR being a draft — it is NOT written anywhere on GitHub. If anyone marks #6133 ready without running the backfill + parity first, source='snowflake' will silently serve 8 of ~1,100 days of OpenRoad positions and 7 transaction rows. Prerequisites and evidence are preserved in the 22:03Z log entry above.
