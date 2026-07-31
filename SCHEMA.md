@@ -13,11 +13,11 @@ One markdown file per item at `items/<id>.md`:
 ---
 id: wm-k3f9a2
 type: followup
-title: Ask Rahul about the pricing API timeline
+title: Ask Dana about the pricing API timeline
 status: open
 priority: p2
 due: 2026-07-16
-people: [Rahul]
+people: [Dana]
 tags: [pricing]
 links: [relates:wm-8d2c1f]
 created: 2026-07-14T09:12:33Z
@@ -25,11 +25,11 @@ updated: 2026-07-14T09:12:33Z
 source: claude-code
 ---
 
-Came up while reviewing the pricing integration. Rahul owns the upstream
+Came up while reviewing the pricing integration. Dana owns the upstream
 API; we need his timeline before scheduling our work.
 
 ## Log
-- 2026-07-14T09:12Z [claude-code] created; inferred from "need to ask Rahul"
+- 2026-07-14T09:12Z [claude-code] created; inferred from "need to ask Dana"
 ```
 
 Frontmatter is deliberately a **flat YAML subset**: string scalars and flat
@@ -44,7 +44,7 @@ contain commas. Files remain valid YAML for other tooling (Obsidian, pandoc…).
 | id       | taskmem        | Immutable. `wm-` + 6 chars. Filename = `<id>.md`. |
 | type     | agents    | Open vocabulary; see below. |
 | title    | agents    | Short, specific, imperative where possible. |
-| label    | agents    | 3–5 keywords for glanceable naming — person, project, and/or core issue ("Abhijeet EDGEX reply", "NorthPond panels inventory"). Used as the heading of `delegate` prompts, so a delegated chat names itself something skimmable. No ids, no sentences. Optional; `delegate` falls back to truncating the title. |
+| label    | agents    | 3–5 keywords for glanceable naming — person, project, and/or core issue ("Sam pricing reply", "billing dashboard inventory"). Used as the heading of `delegate` prompts, so a delegated chat names itself something skimmable. No ids, no sentences. Optional; `delegate` falls back to truncating the title. |
 | status   | agents    | Open vocabulary; see below. Default `open`. |
 | priority | agents    | `p0` (drop everything) … `p3` (someday). Optional. |
 | size     | agents    | Effort: `xs` <15m · `s` <1h · `m` 2–4h · `l` ~1d · `xl` multi-day. An `xl` must be decomposed into children. Optional. |
@@ -170,7 +170,7 @@ set it in a folder's `.claude/settings.json` `env` to never track there;
   correctly, and a date compares correctly against a timestamp).
 - `null` matches absent/empty: `due!=null`, `priority=null`.
 - Date sugar: `today`, `today+7`, `today-14`, `now` expand before comparing.
-- On list fields, `=` means membership: `tags=pricing`, `people=Rahul`.
+- On list fields, `=` means membership: `tags=pricing`, `people=Dana`.
 - Relationship queries need no special syntax — links are just a field:
   `links~blocks:` (has outbound blocks), `links~:wm-x` (any edge to wm-x).
 
@@ -178,7 +178,7 @@ Composition examples (this is how "specialized" queries are expressed):
 
 ```bash
 taskmem find --where "status!=done,dropped" --where "due<=today" --sort due     # due/overdue
-taskmem find --where status=waiting --where people=Rahul                        # waiting on Rahul
+taskmem find --where status=waiting --where people=Dana                        # waiting on Dana
 taskmem find --where "status!=done,dropped" --where "updated<today-14"          # stale
 taskmem find --where "links~blocks:" --where "status!=done,dropped"             # blocking items
 taskmem find --where type=decision --sort created:desc --limit 10               # recent decisions

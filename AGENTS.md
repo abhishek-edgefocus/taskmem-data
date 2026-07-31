@@ -101,7 +101,7 @@ nothing is correct — don't manufacture items.
 ## When NOT to write (read-only asks)
 
 Many asks are questions *about* the memory, not work *on* it: "what's on my
-plate today," "where did DEV-1395 come from," "what's left of X," "give me a
+plate today," "where did DEV-1234 come from," "what's left of X," "give me a
 delegation prompt for this," "walk me through it," "how is `due` stored."
 **Answering these is read-only — the correct number of item mutations is
 ZERO.** Opening an item to read, list, quote, present, or delegate it is
@@ -119,7 +119,7 @@ This is about reading the **memory**. Reading inbound **messages** is the
 opposite — it is intake, and every unanswered ask you read still becomes an
 item on the spot (see "Reading messages counts as intake"). And a read-only
 *question* that also carries a genuine new commitment ("what's on my plate?
-— oh, and I promised Rahul the schema doc by Friday") still gets that one
+— oh, and I promised Dana the schema doc by Friday") still gets that one
 commitment captured: answer read-only, capture the promise, touch nothing
 else.
 
@@ -140,10 +140,10 @@ conversation or work implies future action, capture it. Signals:
 | Heard / observed | Capture as |
 |---|---|
 | "We'll revisit this next week." | `followup`, `due=today+7` |
-| "Need to ask Rahul." | `followup`, `people=Rahul` |
+| "Need to ask Dana." | `followup`, `people=Dana` |
 | "Let's fix this after launch." | `task`, `tags=post-launch`, no due date |
 | "I'll review that tomorrow." | `reminder`, `due=today+1` |
-| "I told Kushagra I'd send him the link by EOD." (a promise already made to a named person) | `followup` or `reminder` — never `task`; `people=<them>`, `due=<the promised date>` |
+| "I told Alex I'd send him the link by EOD." (a promise already made to a named person) | `followup` or `reminder` — never `task`; `people=<them>`, `due=<the promised date>` |
 | "We should look into X someday." | `idea` or `research`, `priority=p3` |
 | "Why does Y behave like this?" (unresolved) | `question` |
 | We chose A over B (and why) | `decision` — record the why in the body |
@@ -172,13 +172,13 @@ Rules of thumb:
   must land *before* an event, `due` is the day **before** it, not the day
   of — "before the 07-22 audit" is `due=2026-07-21`; a due date that fires
   the morning it's already too late is worse than none.
-- Title = the action ("Ask Rahul about pricing API timeline", not "Rahul").
+- Title = the action ("Ask Dana about pricing API timeline", not "Dana").
   Body = pickup-ready (see the section below — this is a hard requirement,
   not a nicety). Set `source` to where it came from. Log a first line
   saying what you inferred it from.
 - **Also set `label`: 3–5 keywords** — the person, project, and/or core issue,
-  the way you'd name a browser tab: "Abhijeet EDGEX reply", "Ramp account
-  setup", "NorthPond panels inventory". No ids, no sentences, not just the
+  the way you'd name a browser tab: "Sam pricing reply", "vendor account
+  setup", "billing dashboard inventory". No ids, no sentences, not just the
   truncated title — pick the words that make it recognizable at a glance among
   a dozen others. It becomes the heading of `taskmem delegate` prompts, so a
   delegated chat names itself something the human can skim. Only you can do
@@ -265,9 +265,9 @@ item alone, without the originating conversation. Body structure:
   where it came from, what's already been decided or tried, constraints,
   who's involved and what they said.
 - **`## Next steps`** — 2–5 concrete, verb-first steps starting with the
-  literal first action ("open the sheet", "reply in the thread", "ssh dp").
+  literal first action ("open the sheet", "reply in the thread", "ssh the box").
   Sketch the likely approach if you can see it; where something is unknown,
-  make finding out the step ("ask Kushagra where the acknowledgment sheet
+  make finding out the step ("ask Alex where the acknowledgment sheet
   lives"). If writing this section surfaces several distinct work items,
   decompose into children instead of a long list.
 - **`## Links`** — every jumpable pointer you have, one per line with a
@@ -409,7 +409,7 @@ by hand.
 
 **Give the action, not just the name.** Whenever you list items for the
 human (plate, plans, briefs), pair every title with its concrete next
-action — the first step from its `## Next steps`: "Reply in Kushagra's thread
+action — the first step from its `## Next steps`: "Reply in Alex's thread
 with the per-file verdicts", not just "Check missing statement files". The
 title identifies the work; the action is what they can do right now. If an
 item is too thin to have a next step, *infer and state the best next action
@@ -438,9 +438,9 @@ in plain words) · plus whatever else the answer needs (Group, status,
 effort…). Drop a column only when it's empty for every row; never merge
 two of these into one cell. If an item you mention carries
 `refs`, render at least its primary ref as a markdown link in the reply —
-naming DEV-1234 or "Kushagra's thread" without linking it is a defect, not
+naming DEV-1234 or "Alex's thread" without linking it is a defect, not
 a style choice. Read the URL off the item's `refs`; **never emit a
-placeholder link** like `[Kushagra's thread](#)`. A link that goes nowhere is
+placeholder link** like `[Alex's thread](#)`. A link that goes nowhere is
 worse than plain text — it looks jumpable and isn't, and the real permalink
 was sitting in `refs` the whole time. If you genuinely have no URL, say the
 name unlinked. Always show full titles — never bare ids as the only
@@ -470,8 +470,8 @@ delegated agent later reports back, record the outcome on the item.
 Generating a delegation prompt is a read-only export — it is never a reason
 to enrich, re-ref, or reschedule the underlying item; leave it untouched
 unless the human asks. Speak plain language, never field syntax:
-say "now waiting on Kushagra for the schema doc — I'll flag it Friday", not
-`waiting_on=Kushagra nudge=2026-07-17`. Any weekday or
+say "now waiting on Alex for the schema doc — I'll flag it Friday", not
+`waiting_on=Alex nudge=2026-07-17`. Any weekday or
 "yesterday/today/tomorrow" you put in a reply or log line must be derived
 from the digest's actual date, never guessed; describe a slip from the
 item's *original* scheduled date, not just its last bump ("scheduled 07-14,
