@@ -1151,16 +1151,29 @@ def cmd_sync(args):
     if not remotes:
         emit({"synced": False, "note": "no git remote configured; local history only"})
         return
+    # The DATA remote is origin (or the first remote that isn't the tool mirror);
+    # `tool` is the data-free colleague repo, pushed separately via publish-tool.
+    data = "origin" if "origin" in remotes else \
+        next((r for r in remotes if r != "tool"), None)
+    if not data:
+        emit({"synced": False, "note": "only a `tool` remote is configured; no data remote"})
+        return
     branch = git("branch", "--show-current").stdout.strip() or "main"
-    pull = git("pull", "--rebase", "-q", remotes[0], branch)
+    pull = git("pull", "--rebase", "-q", data, branch)
     if pull.returncode and "couldn't find remote ref" not in pull.stderr:
         git("rebase", "--abort")  # leave the repo clean, never mid-rebase
         die("sync pull failed (conflict? resolve in %s, then sync again): %s"
             % (WM_DIR, (pull.stderr or pull.stdout).strip()))
-    push = git("push", "-q", remotes[0], "HEAD")
+    push = git("push", "-q", data, "HEAD")
     if push.returncode:
         die("sync push failed: %s" % (push.stderr or push.stdout).strip())
-    emit({"synced": True, "remote": remotes[0], "branch": branch})
+    out = {"synced": True, "remote": data, "branch": branch}
+    # Keep the data-free tool repo current — fail-soft, never break a data sync.
+    if "tool" in remotes:
+        pub = subprocess.run([str(WM_DIR / "bin" / "publish-tool")],
+                             capture_output=True, text=True)
+        out["tool"] = pub.stdout.strip() or pub.stderr.strip()
+    emit(out)
 
 
 # ----------------------------------------------------------------------- main
