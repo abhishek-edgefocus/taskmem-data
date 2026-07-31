@@ -66,3 +66,6 @@ helper in `northpond_api_predictions.py` might do instead of a separate
 Knock-on for two existing items: [[wm-etzegu]] (alert on silent k=1 retarget fallback) and
 [[wm-vye9hn]] (force ef_scores re-derive of the 33 stale loans) were both written against
 the inline SQL retarget this PR removes.
+
+## Log
+- 2026-07-31T12:55Z [claude-code] REFRAMED 2026-07-31: created as 'get back to Trishit on ownership + Sean's ruling'. Both halves are now settled — Trishit owns it and has shipped PR #6082 (APPROVED, open), and Sean's 'statement model' is confirmed statement-side, not the purchase tape. The item is retitled to what is actually still owed: inputs on his bot-reply comment (asked 2026-07-31 16:36 IST) and the Dagster-wiring discussion he explicitly wants Abhishek to drive (asked 2026-07-31 02:34 IST). Due set to today since both asks are from today and one is 2 days old.
