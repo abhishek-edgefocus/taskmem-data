@@ -8,7 +8,7 @@ size: m
 tags: [openroad, gold]
 links: [parent:wm-su6q4d, relates:wm-prm54n, relates:wm-xe6w4q]
 created: 2026-07-31T18:52:58Z
-updated: 2026-07-31T18:53:07Z
+updated: 2026-07-31T20:15:53Z
 source: claude-code
 ---
 
@@ -71,3 +71,43 @@ silver.positions, so the (as_of_date, platform, fund) grain of positions_daily w
 Gated on PR #5974 (DEV-1331) merging + prod re-materialisation ([[wm-bvqkhh]]).
 Relevant to the 2026-08-03 deprecation milestone ([[wm-prm54n]]) — UNRESOLVED whether the
 gold layer is in scope for that date or follow-on; Abhijeet has not been asked directly.
+
+## Log
+- 2026-07-31T20:15Z [claude-code] Code WRITTEN (uncommitted) 2026-08-01 in worktree /home/abhishek/claude-ws/openroad-gold/efp on temp branch abhishek/openroad-gold-wip, branched off origin/abhishek/dev-1331-openroad-payload-cashflow-config @ 65ad902fe (PR #5974 head). Awaiting a ticket number to rename the branch + open the PR; nothing committed or pushed.
+
+SHIPPED SHAPE: 6 new files (341 LOC) + 2 wiring edits (+112/-2) = 453 LOC, all additive, no shared-file edits.
+  gold/openroad_positions_daily.py 38; gold/openroad_realized_cashflows_calendar_month_daily.py 19;
+  silver/cashflows/openroad_realized_cashflows_calendar_month.py 109, _from_origination.py 60,
+  _from_purchase.py 60, _from_first_purchase.py 55;
+  orchestration/assets/openroad_assets.py +88; orchestration/jobs/statements_openroad.py +26/-2.
+from_first_purchase is deliberately NOT in the job selection (on-demand on every platform).
+Job selection went 9 -> 14 assets.
+
+VERIFIED: ruff check + ruff format clean; mypy clean on all 7 modules; Dagster definitions resolve
+(all 6 assets register, deps correct, statements_openroad selects 14); all 5 transforms generate
+parseable Snowflake SQL; 24 related unit tests pass.
+
+DESIGN CALL: the calendar_month builder is used with ALL DEFAULTS (no recovery_amount_expr /
+transaction_type_filter / net_cash_flow_expr override). Justification from the OpenRoad data model:
+every silver.transactions row is transaction_type='payment' (built from the payments file), recovery
+rows carry recovered principal in principal_amount (legacy DatastoreTransactionsOpenroad maps
+payment_principal identically for RECOVERY), and transaction_amount = principal+interest+fees per row
+(enforced by the existing transaction-amount validation).
+
+PROD DATA REALITY CHECK (queried 2026-08-01, PROD):
+- silver.positions openroad: 280 rows, 35 loans, as_of_date 2026-06-29..2026-07-06 ONLY.
+- silver.transactions openroad: 7 rows, ALL description='payment' — ZERO recovery rows exist yet,
+  so the recovery path is unexercised in prod and cannot be validated from data today.
+- bronze.statement_rows openroad: positions to 2026-07-30 (32 dates), payments to 2026-07-30 (16
+  dates), purchase_tape 2023-07-13..2024-12-14. So SILVER IS ~3.5 WEEKS STALE vs bronze — the
+  openroad statements job has not processed since ~07-06 (matches the 'openroad_* chain 8d stale,
+  possible dead sensor' note on [[wm-j523sq]]). Gold will be near-empty until that is unstuck.
+- silver.transfers openroad: 35 rows but EFP_ID is NULL on ALL of them (written before transfers_utils
+  started deriving EFP_ID = PLATFORM||'_'||POSITION_ID; see the DEV-1301 TODO in transfers_utils.py).
+  The purchase-anchored MOB builders join transfers on efp_id -> openroad_transfers MUST be
+  re-materialised before/with the cashflow backfill or from_purchase / from_first_purchase come out empty.
+- gold.positions_daily and silver.realized_cashflows_from_origination have ZERO openroad rows (expected —
+  no transform existed).
+
+NOT A PROBLEM: openroad_api_credit_attributes (new on PR #5974) is already selected in
+orchestration/jobs/ingest_api_output.py, so it will not land orphaned.
