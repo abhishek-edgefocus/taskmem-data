@@ -7,7 +7,7 @@ priority: p1
 size: s
 people: [Abhijeet]
 tags: [northpond, edgex]
-links: [relates:wm-5z3pjt]
+links: [relates:wm-5z3pjt, parent:wm-j523sq]
 created: 2026-07-31T17:01:37Z
 updated: 2026-07-31T17:01:41Z
 source: claude-code
