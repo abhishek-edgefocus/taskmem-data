@@ -11,7 +11,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-9s2mwd, relates:wm-j2prpv]
 refs: [PR6082=https://github.com/edgefocus/efp/pull/6082, sean-thread=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1785264036485469]
 created: 2026-07-29T13:42:21Z
-updated: 2026-07-31T18:07:52Z
+updated: 2026-07-31T18:26:54Z
 source: claude-code
 label: PR 6082 oliv statement model
 ---
@@ -107,3 +107,8 @@ ALSO CONFIRMED for Abhishek's 'modify once at the top of the DAG' question: afte
 Net effect on the PR file list: run.py and oliv_exp_predictions.py no longer appear at all (added then removed within the branch), so the PR now shows northpond/predictor.py + prep.py + predictor_test.py as the generator, plus the two orchestration files.
 
 STALE: the PR description still describes oliv_exp_predictions.py as the generator and still carries the 'runnable but not wired in Dagster / could drop exp at_orig rows' risk note, both of which are now resolved. Trishit should refresh it (Abhishek to raise -- agents do not edit shared data).
+- 2026-07-31T18:26Z [claude-code] CI on PR #6082 failed after the first push -- ruff format --check on the 3 new files. The job aborts at that step, so mypy/pytest/dagster-check never ran; re-running them locally surfaced 2 more real mypy errors (~ on Series.values union type in _issuance_positions_frame, and an unannotated parametrized test arg). Fixed in b386d48d2 and pushed. Note the repo AGENTS.md says not to run ruff, but CI enforces ruff format + ruff check + mypy, so new files must be formatted before pushing -- worth remembering for future PRs here.
+Verified locally before pushing: ruff format --check clean tree-wide, ruff check clean, mypy clean on 924 files, orchestration/scripts/check_definitions.py passes, 31 tests pass, parity run byte-identical.
+
+For the DAG screenshot (Abhishek's pr-style.md requires one): the deployed Dagster on :13053 cannot show it, since northpond_exp_predictions only exists on the branch. Started an ISOLATED dagster-webserver for him on dpx: 127.0.0.1:13077, DAGSTER_HOME=~/claude-ws/oliv-exp/dagster_home, webserver only (no daemon, so no sensor/schedule can fire), log at ~/claude-ws/oliv-exp/webserver.log. Reachable via VSCode Remote-SSH port forwarding. Kill with: pkill -f 'dagster-webserver.*13077'.
+DAG delta to capture: the issuance_v2 edge MOVES -- northpond_api_predictions goes from [issuance, issuance_v2] to [issuance], and the new northpond_exp_predictions takes [issuance, issuance_v2].
