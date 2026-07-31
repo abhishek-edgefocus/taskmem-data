@@ -34,3 +34,7 @@ Sentry: https://edgefocus.sentry.io/issues/7125718855/?project=4510478928510976&
 
 Related, deliberately separate: [[wm-9kvv8c]] (does EFP-ERRORS-AW carry live applicant
 PII?) is a Sentry-hygiene question, not this auth bug.
+
+## Log
+- 2026-07-31T12:55Z [claude-code] PRIORITY p3 -> p2 (2026-07-31). Nate in #team-devops 2026-07-30: 'as total volume is picking up, the absolute error volume is also picking up', and he asked for a spot check confirming the failures really are the token issue (unanswered — tracked as its own followup, see relates). The 'low impact, ~1-2 apps/day, within normal range' framing this item inherited from the 07-24 triage was measured before Oliv volume ramped, so it should not keep holding the priority down. The fix shape is unchanged: refresh-on-401 + retry on the shared gateway token.
+Also note the two are now coupled — the spot check is the evidence that would confirm or kill this ticket's diagnosis, so doing it first is cheap and de-risks the fix.
