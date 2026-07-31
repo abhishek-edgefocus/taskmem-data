@@ -8,7 +8,7 @@ size: m
 tags: [openroad, gold]
 links: [parent:wm-su6q4d, relates:wm-prm54n, relates:wm-xe6w4q]
 created: 2026-07-31T18:52:58Z
-updated: 2026-07-31T21:01:04Z
+updated: 2026-07-31T21:04:12Z
 source: claude-code
 ---
 
@@ -126,3 +126,4 @@ Re-verified everything AFTER the rebase against current master: ruff check + for
 3. Sentry bot inline comment on openroad_positions_daily.py L19-28 (missing required=True) -> REAL BUG, fixed. Root cause worth remembering: I copied the template from ~/repos/efp which is parked on branch abhishek/dev-1393-fixes-in-openroad-positions, an OLD checkout. Master's version gates silver.positions with filters={'platform': ...} + required=True (without it, positions_daily_utils' FULL OUTER JOIN phantom-zeros principal for dates where transactions landed but positions had not). Diffed ALL SIX new files against their master northpond equivalents afterwards — that was the only drift; the other five differ only in intentional docstring wording.
 
 LESSON: when copying a per-platform template, diff against origin/master, not against whatever the local checkout has.
+- 2026-07-31T21:04Z [claude-code] 2026-08-01: PR #6128 description cut again on Abhishek's instruction ('just three, four bullets of what has changed') — now the Linear link, 4 what-changed bullets, 'No new SQL logic; additive only', and the DAG placeholder. REMOVED from the PR body (deliberately, not lost): the Validation section and the Deployment/backfill section. The backfill procedure now lives ONLY here — see the earlier log entries. Before merge someone still has to: (1) re-materialize openroad_transfers so EFP_ID is populated (all 35 prod rows NULL), (2) wave 1 at as_of_date:'all' = positions_daily + from_origination + from_purchase + calendar_month, (3) wave 2 = from_first_purchase + calendar_month_daily, (4) paste the DAG screenshot and Snowflake evidence. Also unresolved: statements_openroad has not processed since ~2026-07-06 while bronze has files to 07-30.
