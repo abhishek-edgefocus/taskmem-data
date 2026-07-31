@@ -11,7 +11,7 @@ tags: [openroad, datastores]
 links: [parent:wm-su6q4d, relates:wm-bvqkhh, relates:wm-tvjjgw]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-07-29T15:33:30Z
-updated: 2026-07-31T12:56:35Z
+updated: 2026-07-31T22:03:28Z
 source: claude-code
 label: OpenRoad datastore deprecation
 ---
@@ -80,3 +80,16 @@ ORDERED PLAN:
 
 SCOPE RISK TO SETTLE EARLY WITH ABHIJEET: step 5 will surface CREDIT_SCORE + CREDIT_SCORE_AT_PURCHASE as a hard parity failure (legacy populates from vantage4Score, silver is 280/280 NULL). Either document it as a known gap northpond-style and ship, or block on DEV-1396 — that decision is the only thing likely to push past 08-03. Ask before step 5, not after.
 - 2026-07-31T12:56Z [claude-code] Linear ticket now exists: DEV-1486 'Deprecate OpenRoad Datastores' (Development, Todo, labels OpenRoad + Datastores), created 2026-07-29 16:16Z — i.e. right after Abhijeet's 'on track for 3rd aug?' DM. Ref added. Still unstarted as of 2026-07-31, with the milestone target two days away (2026-08-03), and its upstream gate PR #5974 is approved but unmerged.
+- 2026-07-31T22:03Z [claude-code] 2026-08-01: DRAFT PR #6133 raised — https://github.com/edgefocus/efp/pull/6133 (branch abhishek/dev-1486-deprecate-openroad-datastores off master, commit 46f103101, 2 files +32/-0). This is step 7 of the ordered plan; steps 2-6 (backfill -> silver rebuild -> parity) are still NOT done, so it is deliberately a draft and the PR body carries a 'Do not merge yet' section.
+
+WHAT SHIPPED: datastore_deprecations.py 2 entries (DatastorePositions/DatastoreTransactions, openroad, snowflake_routable=True, deprecate_after 2026-08-03); positions_snowflake_map.py openroad entry with 3 renames. transactions_snowflake_map.py NEEDS NO CHANGE.
+
+THE 3 MAP DECISIONS ARE NOW SETTLED FROM CODE + PROD DATA (the audit had them as open questions):
+1. Registry key — confirmed correct as ('DatastorePositions','openroad'): is_snowflake_routable is called with self.__class__.__name__ from datastore_positions.py:92 / datastore_transactions.py:110, where self IS DatastorePositions. The openroad-specific DatastoreStandardizedPositionsOpenroad is a generation-side class and never reaches the routing check. The audit's worry was unfounded.
+2. first_purchase_* -> PURCHASE_DATE / PRINCIPAL_AT_PURCHASE / PRICE_AT_PURCHASE (sofi-shaped, NOT northpond's origination-anchored shape). Mechanism: base_datastore_standardized_positions_foursight NULLs all three, openroad never calls add_purchase_fields (its PRE_GENERATED_FILENAMES has no 'first_seen'), and datastore_standardized_positions.py:574-585 backfills each from its purchase_* counterpart. Prod agrees: 35/35 loans have exactly 1 fund and 1 purchase_date. => openroad stays OUT of HISTORY_DERIVED_PLATFORMS.
+3. NO account_name rename — NEW FINDING, differs from sofi/prosper/marlette/happymoney/northpond which all map account_name->ACCOUNT_ID. The OpenRoad loan tape's raw_record has 50 columns including account_id ('Edge - ORL') but NO account_name column at all, so legacy returns NULL; the NaN fill matches. Mapping it would invent a value. openroad behaves like upgrade here.
+4. transactions PLATFORM_NULL_COLUMNS not needed: legacy and silver both take account_id from the payments file; prod shows 'Edge - ORL' on both sides, single fund efhyf, no fund movement (unlike northpond).
+
+VERIFIED LIVE against prod through the legacy interface (DatastorePositions(platforms=['openroad'], source='snowflake').DATA) on the 8 as-of dates silver holds: 280 rows/35 loans; first_purchase_date==purchase_date 280/280; principal and price likewise; account_name all NaN; only 5 legacy columns NaN-filled (account_name, errors, p_prob_at_purchase, p_ytm_at_purchase, valuation_at_purchase — the Foursight base NULLs p_prob/p_ytm for openroad anyway). DatastoreTransactions routing returns 7 rows, 18/18 columns non-null. This is SHAPE validation only, not row-level parity.
+
+ENV NOTE for whoever runs this next: the legacy datastore stack cannot be imported from repos/efp/.venv or a uv orchestration env (no dask/distributed/GitPython/mypy-boto3-*). It DOES import cleanly under the notebook conda env /home/abhishek/.conda/envs/abhishek_env_dev/bin/python3.11 with PYTHONPATH=<worktree>:<worktree>/lib. The dataframe attribute is .DATA, not .df.
