@@ -11,7 +11,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-9s2mwd, relates:wm-j2prpv]
 refs: [PR6082=https://github.com/edgefocus/efp/pull/6082, sean-thread=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1785264036485469]
 created: 2026-07-29T13:42:21Z
-updated: 2026-07-31T19:48:10Z
+updated: 2026-07-31T20:20:50Z
 source: claude-code
 label: PR 6082 oliv statement model
 ---
@@ -128,3 +128,23 @@ Next: Abhishek to decide positions, then I draft the PR replies (he posts them).
   COMMITMENT: Abhishek decided to REMOVE the override in the SAME PR, as the LAST commit before merge -- after the ANL/EF-score validation run, which depends on it. Do not merge with it still present.
 
 AUTHORSHIP finding (matters for routing review work): the functions Nakula flagged are NOT Trishit's. _resolve_model_spec, _to_wide/_denormalize and _issuance_positions_frame were all written by me in the restructure; they did not exist in Trishit's oliv_exp_predictions.py. What IS Trishit's is the SQL inside the two loader functions (all 5 CTEs, the efp_default_monthly_ unpivot, the payload:anl > 0 filter). Nakula's only comment on Trishit's own file (model.py:60, OfferModel inheritance) was already answered by Sean: 'It does not, it only has to satisfy the protocol... it probably shouldn't.'
+- 2026-07-31T20:20Z [claude-code] DEV VALIDATION COMPLETE (2026-08-01, DEV_ABHISHEK) -- the run Nakula asked for. Full chain exercised on committed code 27799af4e; no code changes were needed to run it.
+1. Built the artifact: bin/model_backtest/oliv_exp_statement_model_backtest.py --mode production -> s3://efp-derived/modeling/statics/oliv.oliv_exp_statement_model.2026-07-29_production_model...pkl.zst (204 bytes).
+2. Materialized the northpond_exp_predictions Dagster asset for real (first exercise of the asset wrapper AND of load_model(); the earlier parity run had faked the model). 4,860 rows / 32 dates, output to s3://efp-sandbox/predictions/.
+3. s3_prediction_files + s3_predictions -> 4,860 rows in DEV silver.predictions, source='s3', MODEL_NAME=oliv.oliv_exp_statement_model.2026-07-29_production_model.
+4. populate_predicted_cashflows over 32 s3_base keys: 32 ok, 0 failed.
+5. populate_ef_scores: 32 ok, 135 loans scored.
+
+RESULT -- rebuilt EF_ANL vs Oliv's published ANL (133 comparable loans):
+  mean diff +0.0009 (9bps high), median +0.0005, mean ratio 1.008
+  100% within 1pp, 99.2% within 0.5pp, 63.9% within 0.1pp; worst +0.0067 (OLV12563452)
+EF GRADES: E3=82, E4=53. Zero loans graded E1 or E2, so the floor's stated purpose holds.
+
+THREE FINDINGS TO RAISE:
+a) Grade split is 61/39 E3/E4, but Eric predicted ~90/10. Materially different from forecast -- this is the answer to Sean's question on the PR.
+b) Floor headroom is thinner than the PR implies. The PR justifies 6.5% vs a '~6.31% E2/E3 boundary', but the score is ROUNDed before bucketing so the EFFECTIVE boundary is ANL ~5.96%; and the floor is applied to the model payload's ANL while the grade uses the cfframe-REBUILT ANL. OLV12563409 was floored to a 6.5% target and rebuilt at 6.31%. Still E3, but the mechanism is not as tight as '6.5% > 6.31%' reads.
+c) Every cashflow build logged 'Failed to add DQ information to cfframe ... Returning cfframe without DQ rows' because dq_strat_value is NULL. So these ANLs are computed WITHOUT DQ roll rates. Pre-existing (prod api rows carry the same NULL), not a regression, but it distorts the ANL comparison and is the strongest argument for adding a northpond branch to api_predictions_utils._get_dq_strat_for_date in the follow-up.
+
+DEV ENV GAP FIXED: DEV_ABHISHEK.BRONZE.PREDICTION_FILES_STREAM did not exist (terraform-managed; the clone predates it). Created just that stream by hand rather than running make tf-apply, because the tf has replace_triggered_by on the table and a full apply could recreate DEV tables. Reversible via DROP STREAM.
+GOTCHA worth remembering: the ingest regex is s3://[^/]+/predictions/ -- 'predictions' must come immediately after the BUCKET, so a nested sandbox path like s3://efp-sandbox/abhishek/foo/predictions/ will NOT be parsed. Use s3://efp-sandbox/predictions/.
+Also: S3Predictions consumes the silver.predictions target stream itself, so populate_predicted_cashflows sees 0 pending afterwards and must be driven with explicit s3_base keys.
