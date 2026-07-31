@@ -9,7 +9,7 @@ tags: [ai-billing]
 links: [parent:wm-r45vp3]
 refs: [DEV-970=https://linear.app/edge-focus/issue/DEV-970/add-tracking-of-ai-billing-to-slack, PR-5880=https://github.com/edgefocus/efp/pull/5880, PR-5388=https://github.com/edgefocus/efp/pull/5388]
 created: 2026-07-14
-updated: 2026-07-31T14:23:21Z
+updated: 2026-07-31T19:38:34Z
 source: dpx-tasks #10
 label: AI billing to Slack
 ---
@@ -57,3 +57,4 @@ FRANK'S FORMAL REJECTION 2026-07-28 19:36Z reads 'Oops. I meant to request chang
 5. Sentry HIGH from 07-27 on consume_stream() orphaning (line 263) was answered by Abhishek — 'Nothing is lost - next run catches it' — and a LOW on undocumented start_date='all' was resolved in 3db069c.
 
 NET: this is not 'address a few comments'. Item 1 is an unmade product decision with two people waiting, and it determines whether the ingest keeps all Ramp transactions or only category 5510.
+- 2026-07-31T19:38Z [claude-code] DECISION (team, 2026-07-30): waterfall dropped. The QuickBooks GL account 5510 is the ONLY filter; untagged AI charges are fixed at source - ops tags them in Ramp, then a full re-ingest (as_of_date=all) picks them up. Implemented in 72808aa8c: bronze predicate is has_ai_category=1 only; ramp_ai_vendors.py + vendor_match_sql + matched_by_category/matched_by_vendor removed from PR #5880 and left to PR #5388. Dev re-runs: backfill 3e111fea-d963-46f2-9f47-cbd819d19d60 (2724 fetched -> 188 kept, 109 dates, 2026-02-11..2026-07-30; silver rows_deleted=278/inserted=188, which also demonstrates the windowed delete clearing the old fallback rows) and single-day 40cf0271-2184-451e-9dbb-3d3792723d0e on 2026-07-27 (7 fetched -> 3 kept). Snowflake: bronze=silver=188, no dupes, dates_mismatched=0; merchants Cursor 53, Anthropic 115, OpenAI 19, OpenWhispr 1. History now starts 2026-02-11 because that is when the 5510 tag first appears in Ramp. OPS BACKLOG generated: 91 untagged candidates worth $21,346.33 (Cursor 49/$14,027.49, OpenAI 34/$6,245.11, Anyscale 1/$799, Anthropic 7/$274.73), CSV at ~/ramp_untagged_ai_candidates.csv on both the Mac and dpx - hand to operations to tag, then re-ingest. PR description updated with the new numbers; screenshots still need retaking.
