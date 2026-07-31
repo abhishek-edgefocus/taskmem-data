@@ -2,9 +2,12 @@
 id: wm-67zwkc
 type: task
 title: Set up gold tables + metrics for OpenRoad (positions_daily + realized cashflows)
-status: open
+status: next
+priority: p1
+size: m
+tags: [openroad, gold]
 created: 2026-07-31T18:52:58Z
-updated: 2026-07-31T18:52:58Z
+updated: 2026-07-31T18:53:02Z
 source: claude-code
 ---
 
