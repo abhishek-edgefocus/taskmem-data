@@ -1,55 +1,68 @@
 ---
 id: wm-g22j5e
 type: followup
-title: Get back to Trishit on the Oliv statement model: ownership + Sean's models_by_channel.json ruling
+title: Give Trishit inputs on PR #6082 (oliv_exp_statement_model) + the Dagster wiring discussion
 status: next
 priority: p1
 size: xs
-due: 2026-07-30
-people: [Trishit, Sean]
+due: 2026-07-31
+people: [Trishit, Nakula, Sean]
 tags: [northpond, needs-reply]
 links: [relates:wm-9s2mwd, relates:wm-j2prpv]
-refs: [sean-thread=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1785264036485469]
+refs: [PR6082=https://github.com/edgefocus/efp/pull/6082, sean-thread=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1785264036485469]
 created: 2026-07-29T13:42:21Z
-updated: 2026-07-29T13:42:21Z
+updated: 2026-07-31T12:55:41Z
 source: claude-code
-label: Trishit Oliv statement model
+label: PR 6082 oliv statement model
 ---
 
-Two live threads converge here, both from 2026-07-28/29.
+RESOLVED SINCE THIS ITEM WAS OPENED (2026-07-29): Trishit took the work, and Sean's
+"put it in a real model object" ruling has been implemented as **PR #6082** —
+`oliv_exp_statement_model: retarget + ANL floor as a real model artifact`. Status on
+2026-07-31: **APPROVED, still open**. Discussion is happening in the new group DM
+C0BLXJE8534 (Trishit, Abhijeet, Nakula, Abhishek).
 
-SEAN'S RULING (#north-pond-tech, 2026-07-29 00:10 IST, ts 1785264036.485469, @-ing
-Abhishek and Trishit): "For the Oliv statement model, I strongly suggest that we put this
-in a real model object contained in `models_by_channel.json` for consistency with how we
-compute predictions for every other platform. I understand a script can do the same thing
-(just multiplying the predictions by a factor), but I think if we start having scripts
-outside this config represent the 'true' model it becomes hard to track over time."
+THE AMBIGUITY THIS ITEM FLAGGED IS ALSO RESOLVED: Sean's "statement model" is genuinely a
+STATEMENT-side model and is **not** DEV-1452/QR-23 (the purchase-tape model, [[wm-9s2mwd]]).
+They are separate pieces of work.
 
-That "multiplying the predictions by a factor" is exactly the per-loan retarget
-k = anl_oliv / anl_ours that shipped as DEV-1445 / PR #6015 ([[wm-fzbz7m]]). So Sean is
-saying the retarget should not live as a transform script — it should be a registered model
-object. This is a direct constraint on [[wm-9s2mwd]] (DEV-1452/QR-23) and reinforces the
-predictor-class route already scoped there.
+WHAT PR #6082 ACTUALLY DOES — worth reading before replying, because it changes what
+DEV-1445 shipped:
+- Registers `oliv_exp_statement_model` in models_by_channel.json as a real serialized
+  artifact resolved by model_name + git tag, satisfying `ModelProtocol` (patterned on
+  `prosper_cde_statement_model`).
+- `predict()`: `target = max(oliv_anl if published else our_anl, 6.5%)`, `k = target/our_anl`,
+  `default' = clamp(default*k, 0, 1)`, prepay untouched. **The 6.5% ANL floor is new policy**
+  — it sits just above the ~6.31% E2/E3 boundary so every exp loan grades minimally E3, and
+  it is applied by scaling the curve, never by clamping the ANL.
+- **Reverts the inline retarget in `northpond_api_predictions.py` and gates it to
+  `api_version=1`**, so exp predictions come only from the model. Exp at_orig moves
+  `source='api'` -> `source='s3'`.
+- Renames the model in `silver.predictions` from the gateway `northpond_exp` to the Oliv
+  statement model — Trishit's deliberate choice so the owned portfolio can be fetched
+  directly rather than matched via IDs, and he explicitly asked whether the dev team is OK
+  with it.
 
-TRISHIT'S ASK (DM, 2026-07-29 18:55 IST): "for the set up of the statement model for Oliv
-as pointed by Sean, are you taking that up or should I? I have some free cycles to work on
-it if you are busy." Abhishek: "I read his message but I haven't looked exactly whats
-required over there, let me check and get back." Trishit then said he has started an Opus
-prompt to check the requirement; Abhishek: "Cool, then I will leave it to you for now. Lmk
-if you need anything from my end."
+TWO OPEN ASKS DIRECTED AT ABHISHEK:
+1. Trishit, 2026-07-31 16:36 IST: "I have a comment in the last of this updated PR as a
+   reply to one of the bots where I'd need your inputs" (@-ing Nakula and Abhishek).
+2. Trishit, 2026-07-31 02:34 IST: "had to make changes to the structure here so let's
+   connect tomorrow to discuss what else needs to be done. Claude mentioned addition to some
+   Dagster assets and all so I'll rely on your expertise on the subject" — i.e. the Dagster
+   wiring is the part he wants Abhishek to own.
 
-SO THE OUTSTANDING REPLY IS: check what Sean's ask actually requires, then close the loop
-with Trishit on ownership. Trishit is provisionally driving it, but Abhishek has not yet
-looked at the requirement, so the handoff is not clean yet.
+RISK TO RAISE IF NOBODY HAS: the PR's own verification section says the generator, the
+transform revert and the Dagster wiring were **not run** on the authoring box, and that
+**shipping the v1-only gate without the generator scheduled would drop exp at_orig rows**.
+It also requires a parity gate (generated curves bit-match the old inline retarget on the
+same inputs) before promotion. Approved is not the same as safe to merge here.
 
-AMBIGUITY TO RESOLVE FIRST — Sean says "statement model", not "purchase tape model".
-[[wm-9s2mwd]] / DEV-1452 / QR-23 are scoped to the purchase tape. Confirm with Sean or
-Trishit whether these are the same thing or whether a separate statement-side model object
-is intended, before scoping anything.
+Nakula's read (C0BLXJE8534, 2026-07-30): largely a refactor; no predictions are actually
+made from the model, its only purpose is to mark in silver.predictions that these are not
+gateway-derived; no downstream Snowflake consequences beyond the model name. He suggested a
+helper in `northpond_api_predictions.py` might do instead of a separate
+`oliv_exp_statement_model.py` — Trishit disagreed, wanting tagging and version control.
 
-Existing code facts (verified on master 2026-07-28, logged on [[wm-9s2mwd]]):
-models_by_channel.json already carries model_northpond, model_northpond_exp,
-northpond_docker_model, northpond_loan_fl, northpond_exp_loan_fl. What is missing is the
-predictor class + prep + cfframe config + registry entry in
-edgefocus/modeling/predictions/run.py (northpond is in neither FORWARD_FLOW_PREDICTORS nor
-TURNDOWN_PREDICTORS). ~400-550 LOC, not a config change.
+Knock-on for two existing items: [[wm-etzegu]] (alert on silent k=1 retarget fallback) and
+[[wm-vye9hn]] (force ef_scores re-derive of the 33 stale loans) were both written against
+the inline SQL retarget this PR removes.
