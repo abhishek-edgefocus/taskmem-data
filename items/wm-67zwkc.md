@@ -8,7 +8,7 @@ size: m
 tags: [openroad, gold]
 links: [parent:wm-su6q4d, relates:wm-prm54n, relates:wm-xe6w4q]
 created: 2026-07-31T18:52:58Z
-updated: 2026-07-31T20:34:50Z
+updated: 2026-07-31T20:53:12Z
 source: claude-code
 ---
 
@@ -114,3 +114,6 @@ orchestration/jobs/ingest_api_output.py, so it will not land orphaned.
 - 2026-07-31T20:34Z [claude-code] 2026-08-01: Ticket assigned DEV-1500 (Setup OpenRoad Gold Metrics, Development team, Todo, label OpenRoad). Branch renamed to abhishek/dev-1500-setup-openroad-gold-metrics (Linear's own suggested name), committed 612900d54 (8 files, +453/-2), pushed, and opened as DRAFT PR #6128 -> https://github.com/edgefocus/efp/pull/6128, based on abhishek/dev-1331-openroad-payload-cashflow-config (stacked on #5974; retarget to master after that merges).
 
 Left as DRAFT deliberately: the PR body has no DAG screenshot and no Snowflake proof, because the assets have never been materialized and cannot be until #5974 lands. Per ~/pr-style.md the body states explicitly what is unvalidated and why, and carries a numbered Deployment section with the backfill order. Abhishek needs to (1) paste the Dagster asset-graph screenshot at the 'DAG:' placeholder, (2) run the backfill, (3) attach Snowflake evidence, then 'gh pr ready 6128'.
+- 2026-07-31T20:53Z [claude-code] 2026-08-01: #5974 (DEV-1331) was squash-merged to master as 52026b99f at 20:43. Rebased DEV-1500 off the old PR branch onto master with 'git rebase --onto origin/master 65ad902fe' — replayed the single commit only, NO conflicts, diff unchanged at 8 files +453/-2. New SHA 20465759a (was 612900d54); force-pushed with --force-with-lease. PR #6128 base retargeted DEV-1331 branch -> master, and the body updated (dropped the 'stacked, retarget later' line, dropped 'merge #5974 first' from the Deployment steps, softened the 'cannot run before #5974 lands' wording).
+
+Re-verified everything AFTER the rebase against current master: ruff check + format clean, mypy clean on 7 modules, Dagster definitions resolve (6 assets register, deps correct, statements_openroad still selects 14), all 5 transforms generate parseable Snowflake SQL, 24 unit tests pass. Still DRAFT — DAG screenshot + Snowflake proof + backfill remain.
