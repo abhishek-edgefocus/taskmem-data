@@ -79,3 +79,4 @@ ORDERED PLAN:
 7. Ship the registry PR: 2 DEPRECATION_REGISTRY entries + step 6's settings. ~3 files / ~50 lines, mirrors DEV-1450.
 
 SCOPE RISK TO SETTLE EARLY WITH ABHIJEET: step 5 will surface CREDIT_SCORE + CREDIT_SCORE_AT_PURCHASE as a hard parity failure (legacy populates from vantage4Score, silver is 280/280 NULL). Either document it as a known gap northpond-style and ship, or block on DEV-1396 — that decision is the only thing likely to push past 08-03. Ask before step 5, not after.
+- 2026-07-31T12:56Z [claude-code] Linear ticket now exists: DEV-1486 'Deprecate OpenRoad Datastores' (Development, Todo, labels OpenRoad + Datastores), created 2026-07-29 16:16Z — i.e. right after Abhijeet's 'on track for 3rd aug?' DM. Ref added. Still unstarted as of 2026-07-31, with the milestone target two days away (2026-08-03), and its upstream gate PR #5974 is approved but unmerged.
