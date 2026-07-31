@@ -10,7 +10,7 @@ tags: [northpond]
 links: [parent:wm-j523sq, follows:wm-fzbz7m, relates:wm-etzegu]
 refs: [DEV-1445=https://linear.app/edge-focus/issue/DEV-1445/retarget-northpond-at-orig-cashflows-to-olivs-anl]
 created: 2026-07-28T17:37:00Z
-updated: 2026-07-28T17:37:07Z
+updated: 2026-07-31T12:55:57Z
 source: claude-code
 label: Oliv ef_scores stale 33
 ---
@@ -51,3 +51,4 @@ is what the deal consumes.
 
 ## Log
 - 2026-07-28T17:37Z [claude-code] Created 2026-07-28 during a full GitHub/Linear reconciliation. Split out of [[wm-fzbz7m]] so closing that item (both its PRs merged) does not bury the one thing still genuinely wrong in prod.
+- 2026-07-31T12:55Z [claude-code] CONTEXT SHIFT (2026-07-31): the 33 stale loans are fallout from the DEV-1445 inline retarget, which Trishit's PR #6082 now reverts in favour of the oliv_exp_statement_model artifact (see [[wm-g22j5e]]). Two consequences worth checking before spending time here: (1) the PR requires a parity gate — generated curves bit-matching the old inline retarget on the same inputs — so whatever re-derivation happens for #6082 may cover these 33 anyway; (2) the model introduces a 6.5% ANL floor that did not exist when these loans were scored, so a re-derive after #6082 merges could produce DIFFERENT numbers than a re-derive today. Worth deciding whether to force the re-derive now or wait for #6082.
