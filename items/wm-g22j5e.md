@@ -11,7 +11,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-9s2mwd, relates:wm-j2prpv]
 refs: [PR6082=https://github.com/edgefocus/efp/pull/6082, sean-thread=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1785264036485469]
 created: 2026-07-29T13:42:21Z
-updated: 2026-07-31T18:26:54Z
+updated: 2026-07-31T18:53:38Z
 source: claude-code
 label: PR 6082 oliv statement model
 ---
@@ -112,3 +112,13 @@ Verified locally before pushing: ruff format --check clean tree-wide, ruff check
 
 For the DAG screenshot (Abhishek's pr-style.md requires one): the deployed Dagster on :13053 cannot show it, since northpond_exp_predictions only exists on the branch. Started an ISOLATED dagster-webserver for him on dpx: 127.0.0.1:13077, DAGSTER_HOME=~/claude-ws/oliv-exp/dagster_home, webserver only (no daemon, so no sensor/schedule can fire), log at ~/claude-ws/oliv-exp/webserver.log. Reachable via VSCode Remote-SSH port forwarding. Kill with: pkill -f 'dagster-webserver.*13077'.
 DAG delta to capture: the issuance_v2 edge MOVES -- northpond_api_predictions goes from [issuance, issuance_v2] to [issuance], and the new northpond_exp_predictions takes [issuance, issuance_v2].
+- 2026-07-31T18:53Z [claude-code] CI on PR #6082 fully green after b386d48d2 (Run Tests, integration tests, Select tests, Seer all pass; Bugbot skipped). Integration tests passing confirms the reverted transform agrees with the restored md_test fixture.
+
+NAKULA REVIEW (2026-07-31, 5 comments on predictor.py) -- assessed, NOT yet replied to. Abhishek agrees with some but not all; he asked me to check the silver.positions one specifically:
+- :27/:194 'run the predictor off silver.positions instead of overriding load_candidate_loans' -- RIGHT TARGET, NOT FEASIBLE TODAY. Verified in prod: 133 of 135 exp loans have no silver.positions row (the entire July book; only the Jan + Apr loans are there), and silver.northpond_stmt_purchase_tapes is stale since 2025-06-17 (372 rows, no new experimental-fund purchases since 2026-04-16). A positions-gated predictor shipped today emits 2 loans and drops 133 -- the same data loss the Sentry bot flagged as CRITICAL, reached from the other side. Revisit once EDGEX purchase tapes land ([[wm-9dfnnt]]).
+- Cycle question, checked properly and do NOT overstate it: adding a positions dep would NOT create a literal Dagster cycle for this asset, because s3_prediction_files has no upstream deps (the ingest path is decoupled). It IS a real cycle for a transform-based path, which is what the repo comment 'not silver.positions, which joins ef_scores and would close a Dagster cycle' refers to. What it does create is lagged coupling exp_predictions -> positions -> ef_scores -> predicted_cashflows.
+- :27 also implies a DIFFERENT ARCHITECTURE worth settling explicitly: gateway OP stays as source='api' and the Oliv model adds an 'updated' prediction later. That conflicts with Abhishek's stated ideal state (only the modified curve in silver.predictions, applied once at the top of the DAG).
+- :170 CMOP/BEP eventually -- fair follow-up; needs :239 first.
+- :239 store model requests in silver.northpond_credit_attributes -- agree as the long-term path for CMOP/BEP; not needed for OPs.
+- :286 move the model-spec fallback into base.py -- cuts against Abhishek's no-shared-code-changes rule; also the fallback is only a pre-merge crutch and could simply be DELETED after merge (third option nobody has raised).
+Next: Abhishek to decide positions, then I draft the PR replies (he posts them).
