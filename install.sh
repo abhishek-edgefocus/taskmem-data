@@ -83,7 +83,22 @@ if [ -n "$REMOTE" ]; then
         exit 1
     fi
 elif git -C "$DIR" remote get-url origin >/dev/null 2>&1; then
-    echo "ok: origin -> $(git -C "$DIR" remote get-url origin)"
+    ORIGIN_URL="$(git -C "$DIR" remote get-url origin)"
+    if [ -z "$(git -C "$DIR" ls-files items/ 2>/dev/null | head -1)" ]; then
+        # Cloned the shared, data-free TOOL repo (no items). It may be PUBLIC —
+        # never let this machine's items sync there. Move it to the `tool`
+        # remote and require a private data repo before anything syncs.
+        git -C "$DIR" remote remove origin
+        git -C "$DIR" remote get-url tool >/dev/null 2>&1 || \
+            git -C "$DIR" remote add tool "$ORIGIN_URL"
+        echo "note: this is the shared TOOL repo (no items) — kept it as the 'tool'"
+        echo "      remote, NOT origin, so your task data can never sync to it."
+        echo "      Create a PRIVATE data repo and plug it in:"
+        echo "        $DIR/install.sh --remote <your-private-data-repo-url>"
+        echo "      Until then the memory is local-only and nothing syncs."
+    else
+        echo "ok: origin -> $ORIGIN_URL"
+    fi
 else
     echo "note: no data remote — memory is local-only. Plug in your private repo"
     echo "      any time with:  $DIR/install.sh --remote <url>"

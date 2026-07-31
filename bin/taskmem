@@ -1158,6 +1158,14 @@ def cmd_sync(args):
     if not data:
         emit({"synced": False, "note": "only a `tool` remote is configured; no data remote"})
         return
+    # Never push items to the data-free tool repo (it may be public).
+    if "tool" in remotes:
+        du = git("remote", "get-url", data).stdout.strip()
+        tu = git("remote", "get-url", "tool").stdout.strip()
+        if du and du == tu:
+            die("refusing to sync: data remote '%s' points at the tool repo (%s) — "
+                "your items must not go there. Set origin to your PRIVATE data repo."
+                % (data, du))
     branch = git("branch", "--show-current").stdout.strip() or "main"
     pull = git("pull", "--rebase", "-q", data, branch)
     if pull.returncode and "couldn't find remote ref" not in pull.stderr:

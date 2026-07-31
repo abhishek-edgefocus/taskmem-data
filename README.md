@@ -54,40 +54,57 @@ taskmem history wm-xxxxxx                                          # who did wha
 Requirements: `python3` (3.9+) and `git`. The CLI has zero Python
 dependencies. An AI agent can run this whole section unattended.
 
-Two repos, two jobs — **the tool is shared, the items are yours**:
+Two repos, two jobs — **the tool is public and shared; your items are private
+and yours**:
 
-- **Tool repo** (this code, no task data) — where everyone starts.
-- **Your data repo** (private, under your own profile) — your entire memory:
-  items *and* the tool that manages them, one working tree. Created once via
-  `install.sh --remote`; every machine after that clones *it*, not the tool.
+- **Tool repo** — this public code, no task data. Anyone adopting taskmem
+  starts here.
+- **Your data repo** — a private repo under your OWN profile holding your
+  whole memory (items *and* a copy of the tool, one working tree). You create
+  it once; every machine you own clones *it*. Your items only ever sync here —
+  `install.sh` moves the public tool repo aside so your data can never sync to
+  it, and `taskmem sync` refuses to push items there.
 
-**The one-prompt way** — paste this into a fresh Claude Code session on the
-new machine (fill in the repo URL and your identity):
+### Adopting taskmem (first machine, or a new user)
 
-> Set up my shared task memory on this machine. Clone
-> `https://github.com/<me>/taskmem-data.git` (my private data repo — if I
-> don't have one yet, clone the tool repo instead and pass
-> `--remote <a new empty private repo>` below) to `~/taskmem` — if the clone
-> hits an auth wall, walk me through `gh auth login` (device flow) first.
-> Then run `TASKMEM_USER_NAME="<name>" TASKMEM_SLACK_USER_ID="<slack-id>"
-> ~/taskmem/install.sh --cron` and verify: `tm find --count` answers,
-> `~/taskmem/bin/session-context --plain` prints a digest, the crontab
-> block exists, and `tm sync` round-trips. Then read `~/taskmem/AGENTS.md` —
-> from now on you are one of this memory's maintainer agents. Finish by
-> showing me the memory's current state.
-
-The short way:
+Clone the public tool, make an EMPTY private repo for your data, and seed it:
 
 ```bash
-# first machine ever (no data repo yet): start from the tool, plug in yours
-git clone <tool-repo> ~/taskmem
-~/taskmem/install.sh --remote git@github.com:<you>/taskmem-data.git   # seeds it
-
-# every machine after that: your data repo IS the memory
-git clone git@github.com:<you>/taskmem-data.git ~/taskmem
-~/taskmem/install.sh          # symlinks, session hooks, CLAUDE.md pointer
-~/taskmem/install.sh --cron   # …plus reminder crons, autosync, dashboard refresh
+git clone https://github.com/abhishek-edgefocus/taskmem.git ~/taskmem
+gh repo create <you>/taskmem-data --private          # your data lives here
+TASKMEM_USER_NAME="<name>" TASKMEM_SLACK_USER_ID="<slack id>" \
+  ~/taskmem/install.sh --cron --remote git@github.com:<you>/taskmem-data.git
 ```
+
+`--remote` seeds your private repo with this memory and makes it `origin`;
+from then on `taskmem sync` converges every machine you own against it.
+
+### Another of your own machines (data repo already exists)
+
+```bash
+git clone git@github.com:<you>/taskmem-data.git ~/taskmem
+TASKMEM_USER_NAME="<name>" TASKMEM_SLACK_USER_ID="<slack id>" ~/taskmem/install.sh --cron
+```
+
+### The one-prompt way
+
+Paste into a fresh Claude Code session on the new machine — it picks the right
+path:
+
+> Set me up on this machine with taskmem.
+> - If I already have my private **data** repo, clone it to `~/taskmem`.
+> - If this is my first machine / I'm a new user, clone the public **tool**
+>   repo `https://github.com/abhishek-edgefocus/taskmem.git` to `~/taskmem`,
+>   then help me create an EMPTY private repo for my data and pass it as
+>   `--remote` below.
+>
+> Then run `TASKMEM_USER_NAME="<name>" TASKMEM_SLACK_USER_ID="<slack id>"
+> ~/taskmem/install.sh --cron [--remote <my private data repo>]` (auth wall →
+> walk me through `gh auth login` first). Verify `tm find --count` answers,
+> `~/taskmem/bin/session-context --plain` prints a digest, the crontab block
+> exists, and `tm sync` round-trips **to my private data repo, never the
+> public tool repo**. Then read `~/taskmem/AGENTS.md` — you are now one of
+> this memory's maintainer agents. Finish by showing me the current state.
 
 Manual equivalent (or for non-Claude runners):
 
@@ -232,9 +249,11 @@ that already has the memory:
 ```
 
 Keep task data out of the shared tool repo — items belong only in your
-private data repo. (Publishing tool changes back is a separate, deliberate
-act: snapshot the non-data files onto the tool repo, never `push` your
-working history to it.)
+private data repo. Publishing tool/doc improvements back to the shared repo is
+automatic: if a `tool` remote is set, `taskmem sync` runs `bin/publish-tool`,
+which pushes a filtered snapshot (everything **except** `items/`, `archive/`,
+`DASHBOARD.md`) as a fast-forward commit — never your working history, never a
+single item. It is a no-op when the tool files haven't changed.
 
 Every additional host, container, or dev environment just follows "Setup on
 a fresh machine" above. From then on `taskmem sync` (commit → pull --rebase →
