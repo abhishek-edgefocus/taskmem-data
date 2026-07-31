@@ -11,7 +11,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-9s2mwd, relates:wm-j2prpv]
 refs: [PR6082=https://github.com/edgefocus/efp/pull/6082, sean-thread=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1785264036485469]
 created: 2026-07-29T13:42:21Z
-updated: 2026-07-31T18:53:38Z
+updated: 2026-07-31T19:48:10Z
 source: claude-code
 label: PR 6082 oliv statement model
 ---
@@ -122,3 +122,9 @@ NAKULA REVIEW (2026-07-31, 5 comments on predictor.py) -- assessed, NOT yet repl
 - :239 store model requests in silver.northpond_credit_attributes -- agree as the long-term path for CMOP/BEP; not needed for OPs.
 - :286 move the model-spec fallback into base.py -- cuts against Abhishek's no-shared-code-changes rule; also the fallback is only a pre-merge crutch and could simply be DELETED after merge (third option nobody has raised).
 Next: Abhishek to decide positions, then I draft the PR replies (he posts them).
+- 2026-07-31T19:48Z [claude-code] Refactor comments resolved in-PR (2026-08-01):
+- nakula :335 (_to_wide duplicates create_denormalized_preds) -- FIXED in 27799af4e, pushed. Turned out NO shared-code change was needed: create_denormalized_preds keeps only ID/PERIOD/DEFAULT_MONTHLY/PREPAY_MONTHLY and unstacks on period, which is what the hand-rolled pivot did; it just wanted the efp_columns names, so renaming the frame onto them lets us call it directly. Avoided a signature change that would have touched ~30 call sites (every platform producer + rate/price producers + off_market + compute_owned_loans_ef_score).
+- nakula :286 (_resolve_model_spec duplicates base) -- DECIDED: do NOT promote to base.py. For the other 10 channels a missing model history is a genuine misconfiguration that should raise loudly; softening it in base would weaken that for all 13 predictors. The override is only a pre-merge shim (get_model_spec_for_date walks models_by_channel.json history on master, and this channel isn't there until merge).
+  COMMITMENT: Abhishek decided to REMOVE the override in the SAME PR, as the LAST commit before merge -- after the ANL/EF-score validation run, which depends on it. Do not merge with it still present.
+
+AUTHORSHIP finding (matters for routing review work): the functions Nakula flagged are NOT Trishit's. _resolve_model_spec, _to_wide/_denormalize and _issuance_positions_frame were all written by me in the restructure; they did not exist in Trishit's oliv_exp_predictions.py. What IS Trishit's is the SQL inside the two loader functions (all 5 CTEs, the efp_default_monthly_ unpivot, the payload:anl > 0 filter). Nakula's only comment on Trishit's own file (model.py:60, OfferModel inheritance) was already answered by Sean: 'It does not, it only has to satisfy the protocol... it probably shouldn't.'
