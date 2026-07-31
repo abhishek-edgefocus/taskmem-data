@@ -11,7 +11,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-9s2mwd, relates:wm-j2prpv]
 refs: [PR6082=https://github.com/edgefocus/efp/pull/6082, sean-thread=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1785264036485469]
 created: 2026-07-29T13:42:21Z
-updated: 2026-07-31T12:55:41Z
+updated: 2026-07-31T16:58:22Z
 source: claude-code
 label: PR 6082 oliv statement model
 ---
@@ -69,3 +69,8 @@ the inline SQL retarget this PR removes.
 
 ## Log
 - 2026-07-31T12:55Z [claude-code] REFRAMED 2026-07-31: created as 'get back to Trishit on ownership + Sean's ruling'. Both halves are now settled — Trishit owns it and has shipped PR #6082 (APPROVED, open), and Sean's 'statement model' is confirmed statement-side, not the purchase tape. The item is retitled to what is actually still owed: inputs on his bot-reply comment (asked 2026-07-31 16:36 IST) and the Dagster-wiring discussion he explicitly wants Abhishek to drive (asked 2026-07-31 02:34 IST). Due set to today since both asks are from today and one is 2 days old.
+- 2026-07-31T16:58Z [claude-code] LIVE STATE 2026-07-31 22:27 IST. PR #6082 is APPROVED, mergeable, mergeState CLEAN, checks green (4 SUCCESS / 1 NEUTRAL), last pushed 15:00Z. Sequence this evening in C0BLXJE8534:
+- Trishit 20:38: 'Have refreshed the PR to make the changes needed. Feel free to take over' (@Nakula @Abhishek).
+- Trishit 21:44: stepping out in 45 mins, back late, will check messages.
+- Nakula 22:20: '@Abhishek Let me know if you need any assistance/want me to take over if you are busy' — DIRECT, UNANSWERED ask. Nakula is available and volunteering; a one-line reply either hands it to him or keeps it.
+NOTHING IS BLOCKING THE MERGE MECHANICALLY, which is the risk: the PR's own description says the generator, transform revert and Dagster wiring were never run, and that shipping the v1-only gate without the generator scheduled would DROP exp at_orig rows. Green + approved is not the same as safe. If this merges tonight without the generator scheduled and the parity gate run, exp predictions break.
