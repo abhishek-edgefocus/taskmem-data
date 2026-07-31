@@ -6,7 +6,7 @@ status: next
 priority: p1
 size: m
 tags: [openroad, gold]
-links: [parent:wm-su6q4d]
+links: [parent:wm-su6q4d, relates:wm-prm54n]
 created: 2026-07-31T18:52:58Z
 updated: 2026-07-31T18:53:07Z
 source: claude-code
