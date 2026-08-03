@@ -2,14 +2,14 @@
 id: wm-5z3pjt
 type: task
 title: Map EDGEX 2026-1NN Oliv investor IDs (INV105 / INV103) into the northpond fund mapping
-status: next
+status: done
 priority: p1
 size: m
 people: [Dustin, Abhijeet]
 tags: [northpond, edgex]
 links: [parent:wm-j523sq]
 created: 2026-07-28T11:01:04Z
-updated: 2026-07-31T16:58:22Z
+updated: 2026-08-03T13:44:01Z
 source: claude-code
 ---
 
