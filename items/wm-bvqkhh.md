@@ -2,7 +2,7 @@
 id: wm-bvqkhh
 type: task
 title: Finalize DEV-1331 OpenRoad predictions datastore-comparison notebook
-status: review
+status: done
 priority: p1
 size: s
 due: 2026-07-31
@@ -10,7 +10,7 @@ tags: [openroad]
 links: [parent:wm-su6q4d]
 refs: [notebook=http://dexterplus.edgefocus.net:12053/notebooks/repos/efp/slop/dev1331_openroad_predictions_datastore_comparison.ipynb, DEV-1331=https://linear.app/edge-focus/issue/DEV-1331]
 created: 2026-07-14
-updated: 2026-07-31T17:26:55Z
+updated: 2026-08-03T13:44:01Z
 source: dpx-tasks #13
 label: OpenRoad predictions notebook
 ---
