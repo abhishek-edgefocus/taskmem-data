@@ -11,7 +11,7 @@ tags: [openroad, datastores]
 links: [parent:wm-su6q4d, relates:wm-bvqkhh, relates:wm-tvjjgw]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-07-29T15:33:30Z
-updated: 2026-08-03T13:44:20Z
+updated: 2026-08-03T17:13:17Z
 source: claude-code
 label: OpenRoad datastore deprecation
 ---
@@ -99,3 +99,14 @@ PR #6133 is now **draft=false** (last updated 2026-07-31 22:06Z). The 22:05Z ent
 THE HAZARD, unchanged: steps 2-6 of the ordered plan (backfill -> silver rebuild -> parity) were NOT done as of the last entry. The registry sets deprecate_after=2026-08-03, i.e. TODAY. If this merges before the backfill, source='snowflake' silently serves **8 of ~1,100 days** of OpenRoad positions and **7 transaction rows** through the legacy DatastorePositions/DatastoreTransactions interface — a silent, near-total data loss for anything reading that path, with nothing on the PR to warn a reviewer.
 Whoever picks this up: either re-add the 'Do not merge yet' note to the PR body, or convert it back to a draft, or complete the backfill+parity today. Linear DEV-1486 is 'In Review' as of 2026-07-31 22:16Z, which reads as ready and is misleading.
 Validation done so far is SHAPE only (280 rows/35 loans over the 8 as-of dates silver holds), never row-level parity.
+- 2026-08-03T17:13Z [claude-code] 2026-08-03: Resolved merge conflicts on PR #6133 — now MERGEABLE (was CONFLICTING/DIRTY). Rebased onto master, new SHA 495cc8d43 (was 46f103101), diff 2 files +31/-0 (was +32). Note #6133 is no longer a draft — someone marked it ready.
+
+CONFLICT CAUSE + THE REAL FINDING: two deprecations landed while this sat — #6130 (upstart) and #6132 (anchored). #6132 did NOT just append; it REFACTORED positions_snowflake_map.py. COMMON_RENAMES now carries first_purchase_date -> PRIOR_PURCHASE_DATE, principal_at_first_purchase -> PRIOR_PRINCIPAL_AT_PURCHASE, original_markup -> PRIOR_PRICE_FRAC, fully_paid_date, transfer_out_date for ALL platforms, plus a new _FIRST_PURCHASE_FALLBACKS that does PRIOR_x.combine_first(current_x). price_at_first_purchase gets a dedicated branch (PRIOR_PRINCIPAL_AT_PURCHASE * PRIOR_PRICE_FRAC, else PRICE_AT_PURCHASE). HISTORY_DERIVED_PLATFORMS IS GONE ENTIRELY. sofi/prosper/marlette/happymoney entries were reduced to just account_name.
+
+=> All three of my explicit openroad renames were made redundant. Keeping them would have been ACTIVELY WRONG, not merely noisy: the fallback only fires when renames.get(col) == fallback[0] ('PRIOR_PURCHASE_DATE'), so an explicit 'first_purchase_date': 'PURCHASE_DATE' BYPASSES the shared mechanism — same answer today (priors all NULL) but silently divergent the moment openroad ever gets a prior transfer. Resolved by making the openroad entry COMMENT-ONLY, like upgrade's and anchored's.
+
+Verified in prod 2026-08-03: PRIOR_PURCHASE_DATE / PRIOR_PRINCIPAL_AT_PURCHASE / PRIOR_PRICE_FRAC / PRIOR_FUND are NULL on 280/280 openroad rows; PURCHASE_DATE / PRICE_AT_PURCHASE / MARKUP 0 NULL. Re-ran the live routing check after the rebase: byte-identical results to before (first_purchase_date==purchase_date 280/280, principal and price likewise, account_name all NaN, same 5 NaN-filled columns) — so the resolution is behaviour-preserving and now goes through the shared path.
+
+Commit message and PR body both rewritten (the old ones cited HISTORY_DERIVED_PLATFORMS and the 3 renames, all stale).
+
+STILL TRUE AND STILL NOT ON GITHUB: the backfill + parity prerequisites. mergeStateStatus is BLOCKED (branch protection/checks), not conflict.
