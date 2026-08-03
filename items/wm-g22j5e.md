@@ -11,7 +11,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-9s2mwd, relates:wm-j2prpv]
 refs: [PR6082=https://github.com/edgefocus/efp/pull/6082, sean-thread=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1785264036485469]
 created: 2026-07-29T13:42:21Z
-updated: 2026-07-31T20:20:50Z
+updated: 2026-08-03T13:44:41Z
 source: claude-code
 label: PR 6082 oliv statement model
 ---
@@ -148,3 +148,10 @@ c) Every cashflow build logged 'Failed to add DQ information to cfframe ... Retu
 DEV ENV GAP FIXED: DEV_ABHISHEK.BRONZE.PREDICTION_FILES_STREAM did not exist (terraform-managed; the clone predates it). Created just that stream by hand rather than running make tf-apply, because the tf has replace_triggered_by on the table and a full apply could recreate DEV tables. Reversible via DROP STREAM.
 GOTCHA worth remembering: the ingest regex is s3://[^/]+/predictions/ -- 'predictions' must come immediately after the BUCKET, so a nested sandbox path like s3://efp-sandbox/abhishek/foo/predictions/ will NOT be parsed. Use s3://efp-sandbox/predictions/.
 Also: S3Predictions consumes the silver.predictions target stream itself, so populate_predicted_cashflows sees 0 pending afterwards and must be driven with explicit s3_base keys.
+- 2026-08-03T13:44Z [claude-code] STATE 2026-08-03 19:12 IST — PR #6082 is AT THE MERGE BUTTON, WITH ONE UNANSWERED QUESTION.
+Review is complete: Trishit 2026-08-01 03:21 'It looks good to me but I'd let Nakula comment'; Nakula today 18:34 'I think it looks okay for now. Will need some refactoring in the follow-up PRs'. Abhishek 18:48: 'I will go ahead and merge.' Then 18:51, to Trishit: 'before merging do we need someone from QR to review? I see you have requested a review from Garvit' — **Trishit has not replied.** That is the only thing between this PR and master right now.
+WHAT ABHISHEK STILL OWES ON IT, in his own words (2026-08-01 01:45-01:48):
+- 'Testing is in progress - <PR #6082 review comment r3692657199> - this is required for testing will be removed before merge.' **Test-only code is still in the branch and must come out before merging.**
+- 'I haven't responded to the PR directly - will respond with appropriate comments and follow up tickets before merging.' Both follow-up tickets now exist (DEV-1498 for credit attributes/CMOP/BEP, and draft PR #6131 for sourcing exp per-loan fields from silver.positions), but whether the PR comments were actually answered on GitHub is unconfirmed.
+NAKULA'S PARITY ASK, partially discharged: he asked (08-01 00:19-00:25) for the ANLs and other metrics to be cross-checked against Oliv's loss metrics, since ANL is what determines EF Scores, and suggested checking whether naive multiplication produces equivalent predictions. Abhishek could not use experimental/efhyf loans (no Oliv ANL for them), so he tested against Nate's issuance_v2 sample loans and posted screenshots on 08-01 02:32, landing ~1%% off Oliv's ANL as PR #6015 did. He also flagged the one real logic difference: **the 6.5%% ANL floor**, which Trishit confirmed is intentional — 'we want to min cap ANLs to 6.5%%'. Nakula explicitly said remaining comments can go to follow-up PRs because this is time-sensitive.
+UNCHANGED RISK from the PR description: the generator, transform revert and Dagster wiring were never run on the authoring box, and shipping the v1-only gate without the generator scheduled drops exp at_orig rows. [[wm-3rsskm]] is the item that covers building/promoting the artifact and re-running northpond_api_predictions — it should land with or immediately after this merge, not later.
