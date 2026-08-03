@@ -37,3 +37,6 @@ the difference between a p1 sprint item and background work.
 Sizing note: no OpenRoad-specific analysis has been done here. The ~400-550 LOC figure on
 [[wm-79k8df]] is the NorthPond estimate for the same machinery (predictor + prep + cfframe
 config + registry entry) and is carried over only as a rough analogue.
+
+## Log
+- 2026-08-03T13:44Z [claude-code] Linear ticket now exists: DEV-1499 'Setup OpenRoad CMOP/BEP' (Todo, created 2026-07-31 20:27Z). Ref added. The NorthPond counterpart got its own ticket the same evening — DEV-1498, on [[wm-79k8df]] — so the 'both platforms pending' state Abhishek described to Abhijeet on 07-29 is now formally tracked on each side.
