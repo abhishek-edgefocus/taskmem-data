@@ -8,8 +8,9 @@ size: l
 people: [Abhijeet]
 tags: [openroad, predictions]
 links: [parent:wm-su6q4d, relates:wm-79k8df, relates:wm-prm54n]
+refs: [DEV-1499=https://linear.app/edge-focus/issue/DEV-1499/setup-openroad-cmopbep]
 created: 2026-07-29T15:33:45Z
-updated: 2026-07-29T15:33:45Z
+updated: 2026-08-03T13:44:20Z
 source: claude-code
 label: OpenRoad CMOP + BEP
 ---
