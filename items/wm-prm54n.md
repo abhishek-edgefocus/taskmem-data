@@ -11,7 +11,7 @@ tags: [openroad, datastores]
 links: [parent:wm-su6q4d, relates:wm-bvqkhh, relates:wm-tvjjgw]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-07-29T15:33:30Z
-updated: 2026-07-31T22:05:48Z
+updated: 2026-08-03T13:44:20Z
 source: claude-code
 label: OpenRoad datastore deprecation
 ---
@@ -94,3 +94,8 @@ VERIFIED LIVE against prod through the legacy interface (DatastorePositions(plat
 
 ENV NOTE for whoever runs this next: the legacy datastore stack cannot be imported from repos/efp/.venv or a uv orchestration env (no dask/distributed/GitPython/mypy-boto3-*). It DOES import cleanly under the notebook conda env /home/abhishek/.conda/envs/abhishek_env_dev/bin/python3.11 with PYTHONPATH=<worktree>:<worktree>/lib. The dataframe attribute is .DATA, not .df.
 - 2026-07-31T22:05Z [claude-code] 2026-08-01: PR #6133 description trimmed to 3 bullets on Abhishek's instruction (same treatment as #6128). REMOVED from the PR body: the 'Do not merge yet' section (the 280-rows-vs-1,101-files evidence and the 4 ordered prerequisites) and the validation table. The merge blocker is now signalled ONLY by the PR being a draft — it is NOT written anywhere on GitHub. If anyone marks #6133 ready without running the backfill + parity first, source='snowflake' will silently serve 8 of ~1,100 days of OpenRoad positions and 7 transaction rows. Prerequisites and evidence are preserved in the 22:03Z log entry above.
+- 2026-08-03T13:44Z [claude-code] *** MERGE GUARD IS GONE — CHECK THIS BEFORE ANYTHING ELSE (2026-08-03 19:12 IST) ***
+PR #6133 is now **draft=false** (last updated 2026-07-31 22:06Z). The 22:05Z entry above recorded that the 'Do not merge yet' section and the 4 ordered prerequisites had been REMOVED from the PR body, leaving draft status as the ONLY signal that it must not merge. That signal no longer exists. Current GitHub state: OPEN, not a draft, reviewDecision=REVIEW_REQUIRED, mergeStateStatus=BLOCKED — so branch protection is the only thing still holding it, and one approval clears it.
+THE HAZARD, unchanged: steps 2-6 of the ordered plan (backfill -> silver rebuild -> parity) were NOT done as of the last entry. The registry sets deprecate_after=2026-08-03, i.e. TODAY. If this merges before the backfill, source='snowflake' silently serves **8 of ~1,100 days** of OpenRoad positions and **7 transaction rows** through the legacy DatastorePositions/DatastoreTransactions interface — a silent, near-total data loss for anything reading that path, with nothing on the PR to warn a reviewer.
+Whoever picks this up: either re-add the 'Do not merge yet' note to the PR body, or convert it back to a draft, or complete the backfill+parity today. Linear DEV-1486 is 'In Review' as of 2026-07-31 22:16Z, which reads as ready and is misleading.
+Validation done so far is SHAPE only (280 rows/35 loans over the 8 as-of dates silver holds), never row-level parity.
