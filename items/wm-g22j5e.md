@@ -11,7 +11,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-9s2mwd, relates:wm-j2prpv]
 refs: [PR6082=https://github.com/edgefocus/efp/pull/6082, sean-thread=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1785264036485469]
 created: 2026-07-29T13:42:21Z
-updated: 2026-08-03T13:44:41Z
+updated: 2026-08-04T21:16:25Z
 source: claude-code
 label: PR 6082 oliv statement model
 ---
@@ -155,3 +155,10 @@ WHAT ABHISHEK STILL OWES ON IT, in his own words (2026-08-01 01:45-01:48):
 - 'I haven't responded to the PR directly - will respond with appropriate comments and follow up tickets before merging.' Both follow-up tickets now exist (DEV-1498 for credit attributes/CMOP/BEP, and draft PR #6131 for sourcing exp per-loan fields from silver.positions), but whether the PR comments were actually answered on GitHub is unconfirmed.
 NAKULA'S PARITY ASK, partially discharged: he asked (08-01 00:19-00:25) for the ANLs and other metrics to be cross-checked against Oliv's loss metrics, since ANL is what determines EF Scores, and suggested checking whether naive multiplication produces equivalent predictions. Abhishek could not use experimental/efhyf loans (no Oliv ANL for them), so he tested against Nate's issuance_v2 sample loans and posted screenshots on 08-01 02:32, landing ~1%% off Oliv's ANL as PR #6015 did. He also flagged the one real logic difference: **the 6.5%% ANL floor**, which Trishit confirmed is intentional — 'we want to min cap ANLs to 6.5%%'. Nakula explicitly said remaining comments can go to follow-up PRs because this is time-sensitive.
 UNCHANGED RISK from the PR description: the generator, transform revert and Dagster wiring were never run on the authoring box, and shipping the v1-only gate without the generator scheduled drops exp at_orig rows. [[wm-3rsskm]] is the item that covers building/promoting the artifact and re-running northpond_api_predictions — it should land with or immediately after this merge, not later.
+- 2026-08-04T21:16Z [claude-code] 2026-08-05 state: PR #6082 still OPEN at b41dbfac3 (shim removed, 5 commits from this session, CI green, description carries the Validation section with 6 screenshots). Garvit reviewed 2026-08-03 and APPROVED -- his review is AFTER the final commit, so it supersedes the stale-approval concern (Nakula's approval predated the restructure). Garvit's only substantive point: we do not subclass ForwardFlowPredictor 'as Nakula mentioned (although might be deliberate choice)'; he had not reviewed the SQL in detail. Abhishek is replying that positions lookups come in a follow-up PR.
+
+FOLLOW-UP PR OPENED: #6131 'Source the exp per-loan fields from silver.positions where available' -- branch oliv_exp_positions_source, DRAFT, stacked on oliv_exp_statement_model (retarget to master after #6082 merges), commit b17d643a6.
+SCOPE DECISION recorded there: it delivers Nakula's :414 (per-loan FIELDS from positions via load_and_enrich_positions, with the issuance-derived fallback for loans positions lacks) but deliberately NOT :27/:194 (the loan UNIVERSE from positions), because the sets are disjoint -- 133 loans have an Oliv ANL and no position, 2 have a position and no Oliv ANL, intersection 0 -- so a positions universe would exercise the retarget on zero loans and drop 133.
+Measured effect of #6131 vs issuance-only over the full slice: INSTALLMENT changes on 72 rows / 2 loans (positions carries the SERVICED installment 183.25 / 81.37, the gateway payload the QUOTED 206.12 / 91.61); every other column byte-identical. ruff + mypy + 22 tests clean.
+Also noted in #6131: existing_predicted_efp_ids skips already-predicted loans, so rows written from issuance are NOT re-derived when a position later arrives -- moving a cohort onto positions needs a deliberate force backfill.
+DQ_STRAT_VALUE is still nulled in #6131, so positions' real '<=36' value is discarded; lifting that is the separate DQ fix affecting both TU and exp slices.
