@@ -10,7 +10,7 @@ people: [Nate, Trishit]
 tags: [northpond, edgex]
 links: [relates:wm-jewha5, relates:wm-n7usn7, relates:wm-tvjjgw]
 created: 2026-07-31T14:19:39Z
-updated: 2026-07-31T14:19:44Z
+updated: 2026-08-05T22:17:54Z
 source: claude-code
 ---
 
@@ -38,3 +38,6 @@ What to validate when the tapes arrive:
    Trust = INV103 — see [[wm-5z3pjt]] for the fund mapping.
 6. Legacy datastore feed — the legacy StatementPurchaseTape path that EDGEX ABS
    still reads must not silently starve as Oliv moves files ([[wm-tvjjgw]]).
+
+## Log
+- 2026-08-05T22:17Z [claude-code] 2026-08-06 S3 CHECK: STILL NOTHING NEW. Full scan of s3://efp-raw/statements/northpond/ for 'purchase' returns 11 objects, newest 2026-07-24: purchase_file/v0/2026/07/purchase_file_v0_20260723_test.csv (1033 B), purchase_file/v1/.../purchase_file_v1_20260723_test.csv (731 B), purchase_file_legacy/2026/07/purchase_file_legacy_20260723.csv (107134 B). Everything else is historical: 6 x 2025 'Pool N Loan Purchase File' xlsx under purchase_tape/ (uploaded 2026-03-09) + 2 x purchase_tape_efhyf_*.csv (2025-02/03). Prod unchanged: bronze.statement_rows northpond/purchase_tape still only the 6 x 2025 as_of_dates (72/111/73/60/59/75); silver.northpond_stmt_purchase_tapes still 372 rows / 372 loans / 6 as_of_dates (2025-02-05..2025-06-17). So the expected Monday 2026-08-03 first real EDGEX purchase-file landing did NOT happen — nothing to validate yet.
