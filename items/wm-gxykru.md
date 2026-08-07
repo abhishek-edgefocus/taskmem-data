@@ -12,7 +12,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [DEV-503=https://linear.app/edge-focus/issue/DEV-503/int-rate-at-purchase-0-for-northpond-loans-in-positions, PR5704=https://github.com/edgefocus/efp/pull/5704]
 created: 2026-07-14
-updated: 2026-07-31T16:58:22Z
+updated: 2026-08-07T12:31:48Z
 source: dpx-tasks #9
 label: NorthPond int_rate root-cause
 ---
@@ -79,3 +79,16 @@ FOLLOW-UP WORTH FILING (not filed): DEV-1457 is High priority, unstarted since 2
 - 2026-07-31T12:56Z [claude-code] STATE CORRECTION 2026-07-31: this item says 'get PR #5704 reviewed + merged', but #5704 is still a **DRAFT** on GitHub (REVIEW_REQUIRED, untouched since 2026-07-01). A draft cannot be reviewed — so the actual next step is to finish and un-draft it, not to chase a reviewer.
 MOVEMENT TODAY: Abhishek DM'd Chandra Shekhar at 18:20 IST — 'we recently deprecated the NorthPond data stores. I came across this NorthPond Datastores ticket, which had been deprioritized, and wanted to check with you about the blockers to move to SnowFlake.' So DEV-503 is being reopened from the blockers angle with Chandra, who is the person named on the DEV-503 thread. Awaiting his reply.
 - 2026-07-31T16:58Z [claude-code] -> waiting on Chandra 2026-07-31. He replied 'let me check this' at 21:36 IST to Abhishek's 18:20 question about the blockers to moving DEV-503 off the deprecated NorthPond datastores to Snowflake. Ball is with him; nudge Monday. PR #5704 remains a draft either way — un-drafting it is still ours and is not blocked by Chandra.
+- 2026-08-07T12:31Z [claude-code] SNOWFLAKE-SIDE VALUE CHECKED 2026-08-07 (Abhishek: 'but are we correcting the value in snowflake?'). Answer: YES, but by substitution, not at source — and it is 706/715, not 715/715.
+
+HOW: positions.py:309 COLUMN_MAPPING['INT_RATE_AT_PURCHASE'] = COALESCE(NULLIF(pur.INT_RATE, 0), i.INTEREST_RATE / 100.0) — purchase-tape rate first, issuance rate as fallback, with NULLIF killing the 0. Comment at :307 says so explicitly ('Guard against legacy rows where ORIGINALINTERESTRATE was 0 using NULLIF'). Separately positions.py:280 INT_RATE = p.CURRENTINTERESTRATE / 100.0, and :62-77 carry a THIRD guard for a different defect — CURRENTINTERESTRATE=0 during the 3-5 day onboarding window on newly-originated loans, handled inside _REMAINING_TERM_EXPR. So there are three independent zero-rate guards in this one file.
+
+MEASURED IN PROD 2026-08-06 (PROD.SILVER.POSITIONS, platform=northpond): 715 rows, 0 NULL, 9 ZERO, min 0.0, avg 0.2677, max 0.3494. Stable across 08-04/05/06.
+
+THE 9 RESIDUAL ZEROS — all the same shape: EFP_IDs northpond_OLV12562740, 12562742, 12562784, 12562786, 12562791, 12562794, 12562800, 12562905, 12563268. ALL fund=experimental (never purchased into efhyf), ALL terminal (7 fully_paid, 2 charged_off), origination dates 2025-02-26..2025-11-20. Their INT_RATE is 0 too, not just INT_RATE_AT_PURCHASE. Both fallback legs fail: no purchase-tape row at all (correct — they were never efhyf purchases, so the purchase tape has nothing), and their issuance rows genuinely carry INTEREST_RATE=0. Confirmed the issuance side independently: PROD.SILVER.NORTHPOND_STMT_ISSUANCE has 4,293 of 336,790 rows with INTEREST_RATE=0 (and 1 NULL). So the COALESCE has nothing non-zero to reach for. This is upstream-missing data, not a transform bug.
+
+TIES OUT THE COMPARISON NUMBER: the datastore-vs-silver board shows INT_RATE_AT_PURCHASE mismatch at a flat 98.74%% = 706/715, i.e. exactly 9 matching. Those 9 matches ARE these 9 loans — silver and the legacy datastore agree at 0 for them. The 98.74%% was never 'silver is 98.74%% broken', it is 'silver corrects 706 and the datastore corrects none'.
+
+CAVEAT ON METHOD: my first join attempt to the issuance table used the OLV-prefixed id against an integer LOAN_ID and silently matched nothing; redone with ltrim(...,'OLV'). Also the issuance table is one row per loan per daily file, so any join to it fans out — the per-loan rate values were read off the fanned rows, which is fine for a 0/non-0 question but do not count rows off that join.
+
+STILL NOT FIXED AT SOURCE: Nate confirmed back on 2026-01-12 that OriginalInterestRate=0 is an ACTIVE defect on the platform side. DEV-503 offered two routes — (a) reference CurrentInterestRate in our code, (b) push the platform to fix it. Silver does (a) twice over; (b) has never been raised with Oliv since. Worth deciding whether to ask, especially with the Oliv file re-cut in flight.
