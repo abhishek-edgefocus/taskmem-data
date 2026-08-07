@@ -2,10 +2,9 @@
 id: wm-jewha5
 type: task
 title: Re-check Oliv test purchase files route to ignore once 2026-07-28 stubs land in S3
-status: waiting
+status: next
 priority: p2
 size: xs
-waiting_on: Nate
 nudge: 2026-08-03
 people: [Nate]
 tags: [northpond]
