@@ -11,7 +11,7 @@ people: [Nate]
 tags: [northpond]
 links: [relates:wm-n7usn7]
 created: 2026-07-28T17:28:34Z
-updated: 2026-07-31T14:19:49Z
+updated: 2026-08-07T21:14:31Z
 source: claude-code
 ---
 
@@ -54,3 +54,8 @@ Leaving status=waiting rather than flipping to next, because the trigger conditi
 - 2026-07-31T12:56Z [claude-code] STILL WAITING, AND NOW WITH A REASON (2026-07-31). The trigger for this check was Nate's 07-28 test purchase files. Two days on, no purchase activity of ANY kind has appeared — a parallel session verified this on 07-30 ([[wm-n7usn7]]), and the business reason is now known: Trishit 2026-07-30 23:08 IST said Oliv is 'sort of already building a backbook but nothing so far on direct edgex bookings', with Dustin reporting a delay in account creation; Abhishek added that per Frank some platforms are deliberately waiting until Monday for next month's warehouse triggers.
 So this is not Nate being slow — the files genuinely are not coming yet. The ignore-rule guard remains unexercised against real traffic. Practical read: fold this check into the first real purchase-file landing (expected Monday 2026-08-03) rather than nudging Nate again. Nudge moved accordingly.
 - 2026-07-31T14:19Z [claude-code] Abhishek asked 2026-07-31 for a Monday reminder to validate the new EDGEX purchase tapes for Oliv — captured as [[wm-9dfnnt]] (due 2026-08-03). That item covers the real-traffic validation; this item's _test-ignore re-check should be done in the same pass when files land.
+- 2026-08-07T21:14Z [claude-code] 2026-08-08 NATE ASKED FOR THE VERDICT — and it is available. Nate posted in C0BJ1M304BU at 2026-08-08 02:39 IST (ts 1786136943.015079): 'can you confirm that our test purchase files are good?' — the follow-up to his 07-28 21:19 heads-up ('validate they're not accidentally flowing through the system in any way').
+
+RE-VERIFIED TODAY, PROD CLEAN: (1) S3 scan of s3://efp-raw/statements/northpond/ for 'purchase' returns 11 objects, newest still 2026-07-24 — ONLY the two stubs purchase_file/v0/2026/07/purchase_file_v0_20260723_test.csv (1033 B) and purchase_file/v1/2026/07/purchase_file_v1_20260723_test.csv (731 B). NOTHING from his 07-28 test run ever reached our mirror, and nothing has landed since. (2) PROD.BRONZE.STATEMENT_FILES: both stubs STATUS='ignore', statement_type/as_of_date/rule_name all NULL, loaded_at 2026-07-24 13:43:29 PT — the northpond-wide ignore rule s3://.*/statements/northpond/.*_test\\.csv is holding. purchase_file_legacy_20260723.csv (107134 B) still STATUS='unknown' (PR #6011 not merged). (3) PROD.BRONZE.STATEMENT_ROWS northpond/purchase_tape: still only the 6 x 2025 Pool events (72/111/73/60/59/75), zero 2026. (4) PROD.SILVER.NORTHPOND_STMT_PURCHASE_TAPES: still 372 rows / 372 loans / 6 as_of_dates (2025-02-05..2025-06-17). Zero contamination.
+
+BALL IS BACK WITH US — flipping waiting -> next. Reply drafted for Abhishek to send (agent does not post).
