@@ -11,7 +11,7 @@ tags: [openroad, datastores]
 links: [parent:wm-su6q4d, relates:wm-bvqkhh, relates:wm-tvjjgw]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-07-29T15:33:30Z
-updated: 2026-08-03T17:13:17Z
+updated: 2026-08-10T14:46:14Z
 source: claude-code
 label: OpenRoad datastore deprecation
 ---
@@ -110,3 +110,8 @@ Verified in prod 2026-08-03: PRIOR_PURCHASE_DATE / PRIOR_PRINCIPAL_AT_PURCHASE /
 Commit message and PR body both rewritten (the old ones cited HISTORY_DERIVED_PLATFORMS and the 3 renames, all stale).
 
 STILL TRUE AND STILL NOT ON GITHUB: the backfill + parity prerequisites. mergeStateStatus is BLOCKED (branch protection/checks), not conflict.
+- 2026-08-10T14:46Z [claude-code] *** PR #6133 MERGED 2026-08-03 17:23Z *** — the merge this item repeatedly warned against went ahead, and nothing has been logged here since.
+Recap of why that was flagged: the 'Do not merge yet' section and the 4 ordered prerequisites were deliberately stripped from the PR body (07-31 22:05Z entry), leaving draft status as the only signal; the PR was then marked ready, and it merged the next working day. The registry entry sets deprecate_after=2026-08-03, so openroad DatastorePositions/DatastoreTransactions now route to Snowflake in prod.
+WHAT WAS NEVER CONFIRMED DONE — steps 2-6 of the ordered plan: the bronze/silver backfill, the silver rebuild, and row-level parity. The only validation on record is SHAPE validation over the 8 as-of dates silver held (280 rows / 35 loans, 7 transaction rows), explicitly 'not row-level parity'.
+THE EXPOSURE, if the backfill never ran: source='snowflake' serves ~8 of ~1,100 days of OpenRoad positions through the legacy interface — dashboards and any EDGEX/ABS consumer reading that path see a near-empty history with no error. Compounding it, [[wm-4s2sad]] records that GOLD.POSITIONS_COMPARISON_DAILY — the job that would catch exactly this — has written nothing since 2026-07-20, so the usual detector is blind.
+FIRST ACTION FOR WHOEVER PICKS THIS UP: do not re-plan, just measure. Count rows/as-of-dates behind DatastorePositions(platforms=['openroad'], source='snowflake') against the ~1,100 legacy files. If it is still 8 dates, this is a live prod data gap, not a backlog item. Env note for the check is in the 07-31 22:03Z entry (conda env abhishek_env_dev, PYTHONPATH=<worktree>:<worktree>/lib, attribute is .DATA).
