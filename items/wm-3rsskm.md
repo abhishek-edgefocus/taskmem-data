@@ -9,7 +9,7 @@ people: [Trishit]
 tags: [northpond]
 links: [relates:wm-g22j5e]
 created: 2026-07-31T17:36:11Z
-updated: 2026-08-10T14:45:52Z
+updated: 2026-08-10T20:05:57Z
 source: claude-code
 ---
 
@@ -33,3 +33,4 @@ STILL UNVERIFIED, and this is what someone needs to check:
 - Step 3: has the hourly cron (run.py --prediction-type at_orig) actually generated the exp slice into s3://efp-raw/predictions and ingested it as source='s3'? Five days have passed since the merge.
 - Step 4: the 4,860 stale source='api' exp rows across 32 as_of_dates — still there, or cleared by a northpond_api_predictions --date all re-run?
 If step 3 silently never ran, exp loans have had no at_orig row since the merge. Not confirmed either way; needs a Snowflake read, which this session could not do.
+- 2026-08-10T20:05Z [claude-code] STEP 3 ANSWERED (2026-08-11, ERROR-1626 investigation -> [[wm-te4cr2]]): the hourly cron never had a chance, and neither did the Dagster asset. northpond_exp_predictions has failed on EVERY run since it was deployed to prod on 2026-08-05 21:57Z -- 13 consecutive failures through 2026-08-10, all with the identical 'AssertionError: .efp_toplevel not found'. It dies in _resolve_model_spec (GitHub tag walk -> Files() -> lib/efp/files.py:94) BEFORE it reads any Snowflake data or loads the model artifact. So the exp at_orig slice has never been written to s3://efp-raw/predictions, and exp loans have had no at_orig row since PR #6082 merged. Step 4 (northpond_api_predictions --date all) MUST NOT be run until the Dockerfile fix ships and the asset actually materializes -- the body's warning about ordering is now live and real.
