@@ -10,7 +10,7 @@ people: [Abhijeet]
 tags: [northpond, edgex]
 links: [relates:wm-5z3pjt, parent:wm-j523sq]
 created: 2026-07-31T17:01:37Z
-updated: 2026-08-10T15:52:55Z
+updated: 2026-08-10T19:00:18Z
 source: claude-code
 ---
 
@@ -57,3 +57,10 @@ REMAINING GAP unchanged and still required before the fund can actually be non-e
 - 2026-08-10T15:35Z [claude-code] PR RAISED 2026-08-10: https://github.com/edgefocus/efp/pull/6208 carries this fix as commit 7aa88bd78, bundled with the DEV-1509 rename ([[wm-qtjmcv]]) per Abhishek. Awaiting review — needs to land before the first live EDGEX purchase file on 2026-08-11.
 - 2026-08-10T15:52Z [claude-code] SPLIT OUT INTO ITS OWN PR 2026-08-10 (Abhishek: the combined PR carried too many changes). Now https://github.com/edgefocus/efp/pull/6209 — 'Fix northpond purchase-tape fund by reading it from the tape row instead of hardcoding efhyf', open, base master, head abhishek/northpond-purchase-tape-fund-from-tape-row, 4 files +28/-18. NO Linear ticket on this one; titled without a DEV- prefix. Verified isolated: 6209 contains the MAX_BY expression and does NOT contain northpond_balancesheet. 171 northpond tests pass.
 This is the one that must land before the first live EDGEX purchase file on 2026-08-11.
+- 2026-08-10T19:00Z [claude-code] CODE-REVIEW FINDING CONFIRMED + FIXED 2026-08-11. A review agent flagged that the FUND_WITH_PURCHASE_TAPE_EXPR change left stale documentation behind. VERIFIED REAL: NorthpondStmtPositions.generate_sql and NorthpondStmtTransactions.generate_sql both carried the identical docstring paragraph 'FUND is set via a correlated IN subquery ... : efhyf if the loan appears in silver.northpond_stmt_purchase_tapes on or before AS_OF_DATE' — wrong on both counts after the change (it is a correlated SCALAR subquery, and it returns the fund from the tape row, not efhyf).
+
+Two precisions on the report: they are generate_sql METHOD docstrings (stmt_positions.py:171-175, stmt_transactions.py:58-62), not module docstrings; and the module docstrings never mentioned the fund logic at all. Impact assessment in the report was right — documentation only, zero runtime effect.
+
+FIXED in commit e0b4a20ce on abhishek/northpond-purchase-tape-fund-from-tape-row (PR #6209), pushed. Both docstrings now read 'correlated scalar subquery ... the fund recorded on the loan latest silver.northpond_stmt_purchase_tapes row on or before AS_OF_DATE'. Verified: git grep 'correlated IN subquery' returns nothing on the branch; ruff format + check clean; 171 northpond tests pass.
+
+LESSON WORTH KEEPING: the constants.py comment was updated in the original commit but the two CONSUMER docstrings that paraphrase the same expression were not. When changing a shared SQL expression in northpond/constants.py, grep the importers for prose describing it, not just the symbol.
