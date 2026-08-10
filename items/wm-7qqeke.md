@@ -10,7 +10,7 @@ people: [Abhijeet]
 tags: [northpond, edgex]
 links: [relates:wm-5z3pjt, parent:wm-j523sq]
 created: 2026-07-31T17:01:37Z
-updated: 2026-08-10T14:38:01Z
+updated: 2026-08-10T15:09:11Z
 source: claude-code
 ---
 
@@ -45,3 +45,12 @@ Also still open and required for any of this to fire: confirm HOW INV103/INV105 
 - 2026-08-10T14:38Z [claude-code] NATE SET A LIVE DATE (C0BJ1M304BU, 2026-08-08 17:01 IST, ts 1786188718.575029): 'the plan/target is to produce the first live purchase file on Tuesday. We will finish setting up proper values for some fields that currently have stubs/placeholders (accrued interest, etc)'. Tuesday from that Saturday = 2026-08-11, i.e. TOMORROW relative to today 2026-08-10. This is the first real purchase file since Pool 6 (June 2025) and it lands at purchase_file/v0/2026/08/purchase_file_v0_YYYYMMDD.csv, ingested by rule northpond_purchase_tape_v0_csv.
 Context: Abhishek sent the v0 sign-off 2026-08-08 03:15 IST ('the v0 file looks good - schema matches exactly what we ingest. We're on v0 for now and will move to the v1 schema later'); Nate reacted :thankyou:. Nate's stub-fix note covers accrued_interest and by implication outstanding_principal_balance_as_of_funding_date, but he did NOT mention the empty dti_ratio or the filename/content date skew (file named _20260723_ while purchase_date inside was 2026-07-24) — both still worth watching on the first live file.
 DEADLINE FOR THIS ITEM IS NOW CONCRETE: the body says the FUND_WITH_PURCHASE_TAPE_EXPR hardcoded 'efhyf' bug 'fires the moment Oliv delivers real EDGEX purchase files'. That moment is 2026-08-11. If unfixed, the first live EDGEX purchase produces silver.northpond_stmt_positions.FUND=efhyf and silver.positions.ACCOUNT_ID=northpond_efhyf while stmt_purchase_tapes.FUND and transfers.TO_FUND say edgex20261NN — positions and transfers disagree on the same loan and the *_AT_PURCHASE join breaks. Fix before Tuesday.
+- 2026-08-10T15:09Z [claude-code] DONE (code) 2026-08-10. Branch abhishek/dev-1509-rename-experimental-northpond-fund in an ISOLATED workspace ~/claude-ws/dev-1509/efp on dpx (fresh clone off origin/master d1e9c461c; no ~/repos* checkout touched). Commit 7aa88bd78, 2 files, +26/-16.
+
+CHANGE: northpond/constants.py FUND_WITH_PURCHASE_TAPE_EXPR — replaced IFF(loan IN (SELECT LOAN_ID FROM silver.northpond_stmt_purchase_tapes WHERE PURCHASE_DATE <= src.AS_OF_DATE), 'efhyf', FUND_MAPPING_EXPR) with COALESCE((SELECT MAX_BY(FUND, TRY_TO_DATE(PURCHASE_DATE)) FROM silver.northpond_stmt_purchase_tapes WHERE LOAN_ID = src.RAW_RECORD:"LoanNumber"::VARCHAR AND TRY_TO_DATE(PURCHASE_DATE) <= src.AS_OF_DATE), (FUND_MAPPING_EXPR)). Comment rewritten to state behaviour only (no provenance, per the review convention). northpond_constants_test.py updated: the 3 tests that asserted the 'IN (' shape now assert the MAX_BY(FUND,...) shape, plus a new test_does_not_hardcode_a_fund guard.
+
+VERIFIED: ruff format + ruff check clean, mypy clean, 171/171 northpond tests pass. SNOWFLAKE PROOF — replayed OLD vs NEW over the latest prod northpond positions tape: 715 loans, 0 mismatches, 0 NULL funds (efhyf->efhyf 372, experimental->experimental 343). No-op on current data; only changes behaviour once a non-efhyf purchase row exists.
+
+STILL NOT PUSHED / NO PR — the branch also carries the DEV-1509 rename per Abhishek's instruction to do both in one PR, and DEV-1509 is blocked on a decision (see [[wm-qtjmcv]]).
+
+REMAINING GAP unchanged and still required before the fund can actually be non-efhyf: NOTHING SETS ACCOUNT_NAME to INV103/INV105. The v0 parsing rule hardcodes account_name='northpond_efhyf', so even with this fix an EDGEX purchase still maps to efhyf. That is a separate change in the bronze parsing rule and it is the real Tuesday risk.
