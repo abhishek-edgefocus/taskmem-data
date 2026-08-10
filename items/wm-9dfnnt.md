@@ -10,7 +10,7 @@ people: [Nate, Trishit]
 tags: [northpond, edgex]
 links: [relates:wm-jewha5, relates:wm-n7usn7, relates:wm-tvjjgw]
 created: 2026-07-31T14:19:39Z
-updated: 2026-08-10T14:38:01Z
+updated: 2026-08-10T18:53:23Z
 source: claude-code
 ---
 
@@ -44,3 +44,4 @@ What to validate when the tapes arrive:
 - 2026-08-07T21:14Z [claude-code] 2026-08-08 S3 + PROD RE-CHECK: STILL NOTHING REAL. Newest purchase object under s3://efp-raw/statements/northpond/ is still 2026-07-24 (the two _test stubs + purchase_file_legacy_20260723.csv). Bronze rows unchanged (6 x 2025 Pool events), silver unchanged (372 rows / 372 loans / 6 as_of_dates). The expected 2026-08-03 first real EDGEX purchase-file landing has now slipped 5 days with zero arrivals. Prompted by Nate asking in C0BJ1M304BU 2026-08-08 02:39 IST whether the test purchase files are good — see [[wm-jewha5]] for the full verification + the drafted reply.
 - 2026-08-10T14:38Z [claude-code] NATE SET A LIVE DATE (C0BJ1M304BU, 2026-08-08 17:01 IST, ts 1786188718.575029): 'the plan/target is to produce the first live purchase file on Tuesday. We will finish setting up proper values for some fields that currently have stubs/placeholders (accrued interest, etc)'. Tuesday from that Saturday = 2026-08-11, i.e. TOMORROW relative to today 2026-08-10. This is the first real purchase file since Pool 6 (June 2025) and it lands at purchase_file/v0/2026/08/purchase_file_v0_YYYYMMDD.csv, ingested by rule northpond_purchase_tape_v0_csv.
 Context: Abhishek sent the v0 sign-off 2026-08-08 03:15 IST ('the v0 file looks good - schema matches exactly what we ingest. We're on v0 for now and will move to the v1 schema later'); Nate reacted :thankyou:. Nate's stub-fix note covers accrued_interest and by implication outstanding_principal_balance_as_of_funding_date, but he did NOT mention the empty dti_ratio or the filename/content date skew (file named _20260723_ while purchase_date inside was 2026-07-24) — both still worth watching on the first live file.
+- 2026-08-10T18:53Z [claude-code] DECISION 2026-08-11 (Abhishek): do NOT add a MonitoringSchedule to northpond_purchase_tape_v0_csv yet — the real cadence is not settled (Nate said 'daily' but it is unknown whether that means 7-day or business-day, and no real file has ever landed to observe). Leaving the rule unmonitored deliberately, same as today. TRADE-OFF ACCEPTED: until a schedule exists, a purchase file that silently stops arriving raises no alert; detection is manual. REVISIT once a week or so of real landings shows the actual pattern, then set frequency=DAILY or WEEKDAY with start_date = the first real file's date (grace_days defaults to 3). Do not set start_date earlier than the first real file or it back-alerts for every prior day.
