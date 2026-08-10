@@ -5,7 +5,7 @@ title: Validate the new EDGEX purchase tapes for Oliv (first real landing)
 status: next
 priority: p1
 size: s
-due: 2026-08-03
+due: 2026-08-11
 people: [Nate, Trishit]
 tags: [northpond, edgex]
 links: [relates:wm-jewha5, relates:wm-n7usn7, relates:wm-tvjjgw]
