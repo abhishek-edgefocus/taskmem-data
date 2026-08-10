@@ -9,7 +9,7 @@ people: [Abhijeet]
 tags: [northpond, edgex]
 links: [relates:wm-5z3pjt, parent:wm-j523sq]
 created: 2026-07-31T17:01:37Z
-updated: 2026-07-31T17:01:41Z
+updated: 2026-08-10T14:38:01Z
 source: claude-code
 ---
 
@@ -39,3 +39,8 @@ FUND_WITH_PURCHASE_TAPE_EXPR = COALESCE(
 Already validated against prod during the #6085 work: replaying old vs new over all 715 northpond loans on the 2026-07-29 tape gave 0 mismatches (372 efhyf, 343 experimental, 0 NULL) — a no-op on existing data, only changes behaviour once a non-efhyf purchase row exists.
 
 Also still open and required for any of this to fire: confirm HOW INV103/INV105 reach ACCOUNT_NAME. Nothing sets it today.
+
+## Log
+- 2026-08-10T14:38Z [claude-code] NATE SET A LIVE DATE (C0BJ1M304BU, 2026-08-08 17:01 IST, ts 1786188718.575029): 'the plan/target is to produce the first live purchase file on Tuesday. We will finish setting up proper values for some fields that currently have stubs/placeholders (accrued interest, etc)'. Tuesday from that Saturday = 2026-08-11, i.e. TOMORROW relative to today 2026-08-10. This is the first real purchase file since Pool 6 (June 2025) and it lands at purchase_file/v0/2026/08/purchase_file_v0_YYYYMMDD.csv, ingested by rule northpond_purchase_tape_v0_csv.
+Context: Abhishek sent the v0 sign-off 2026-08-08 03:15 IST ('the v0 file looks good - schema matches exactly what we ingest. We're on v0 for now and will move to the v1 schema later'); Nate reacted :thankyou:. Nate's stub-fix note covers accrued_interest and by implication outstanding_principal_balance_as_of_funding_date, but he did NOT mention the empty dti_ratio or the filename/content date skew (file named _20260723_ while purchase_date inside was 2026-07-24) — both still worth watching on the first live file.
+DEADLINE FOR THIS ITEM IS NOW CONCRETE: the body says the FUND_WITH_PURCHASE_TAPE_EXPR hardcoded 'efhyf' bug 'fires the moment Oliv delivers real EDGEX purchase files'. That moment is 2026-08-11. If unfixed, the first live EDGEX purchase produces silver.northpond_stmt_positions.FUND=efhyf and silver.positions.ACCOUNT_ID=northpond_efhyf while stmt_purchase_tapes.FUND and transfers.TO_FUND say edgex20261NN — positions and transfers disagree on the same loan and the *_AT_PURCHASE join breaks. Fix before Tuesday.
