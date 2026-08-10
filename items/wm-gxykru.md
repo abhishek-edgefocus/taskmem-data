@@ -2,7 +2,7 @@
 id: wm-gxykru
 type: task
 title: DEV-503 int_rate_at_purchase=0: get PR #5704 reviewed + merged
-status: next
+status: dropped
 priority: p2
 size: s
 people: [Chandra]
