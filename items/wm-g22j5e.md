@@ -2,7 +2,7 @@
 id: wm-g22j5e
 type: followup
 title: Give Trishit inputs on PR #6082 (oliv_exp_statement_model) + the Dagster wiring discussion
-status: next
+status: done
 priority: p1
 size: xs
 due: 2026-07-31
@@ -11,7 +11,7 @@ tags: [northpond, needs-reply]
 links: [relates:wm-9s2mwd, relates:wm-j2prpv]
 refs: [PR6082=https://github.com/edgefocus/efp/pull/6082, sean-thread=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1785264036485469]
 created: 2026-07-29T13:42:21Z
-updated: 2026-08-04T21:16:25Z
+updated: 2026-08-10T14:45:52Z
 source: claude-code
 label: PR 6082 oliv statement model
 ---
