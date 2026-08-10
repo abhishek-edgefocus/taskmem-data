@@ -5,6 +5,7 @@ title: Fix northpond FUND_WITH_PURCHASE_TAPE_EXPR hardcoded efhyf before Oliv ED
 status: next
 priority: p1
 size: s
+due: 2026-08-11
 people: [Abhijeet]
 tags: [northpond, edgex]
 links: [relates:wm-5z3pjt, parent:wm-j523sq]
