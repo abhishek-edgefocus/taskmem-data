@@ -10,7 +10,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [DEV-503=https://linear.app/edge-focus/issue/DEV-503/int-rate-at-purchase-0-for-northpond-loans-in-positions, PR5704=https://github.com/edgefocus/efp/pull/5704]
 created: 2026-07-14
-updated: 2026-08-10T14:46:14Z
+updated: 2026-08-10T19:13:46Z
 source: dpx-tasks #9
 label: NorthPond int_rate root-cause
 ---
@@ -94,3 +94,6 @@ STILL NOT FIXED AT SOURCE: Nate confirmed back on 2026-01-12 that OriginalIntere
 So he has effectively cleared DEV-503 on one condition: confirm Snowflake corrects it. **This item's own investigation already answers that** — the log above establishes that silver applies the CurrentInterestRate correction twice over ('silver corrects 706 and the datastore corrects none', the 98.74%% figure being silver-corrects-vs-datastore-doesn't, not a silver defect). So the reply to Chandra is yes, and DEV-503 can be closed.
 That also makes draft PR #5704 largely moot for its original purpose — worth confirming before spending more on it (it is still a draft, mergeStateStatus BLOCKED, untouched since 2026-07-01).
 LEFT OPEN DELIBERATELY: the source-side defect. Nate confirmed on 2026-01-12 that OriginalInterestRate=0 is an active platform-side bug; DEV-503's option (b) — push Oliv to fix it — has never been raised with them, and the Oliv file re-cut in flight is a natural moment to ask.
+- 2026-08-10T19:13Z [claude-code] CLOSED OUT 2026-08-11 — resolved by CANCELLATION, not a merge. Verified: PR #5704 'DEV-503: Fix int_rate_at_purchase for Northpond experimental loans' is state=CLOSED, mergedAt=null, closed 2026-08-07T12:48:20Z. Linear DEV-503 is status=Canceled, canceledAt 2026-08-07T12:48:19Z — the two were closed within a second of each other, so this was a deliberate joint cancellation, not an abandoned PR.
+So the 'waiting on Chandra / NUDGE DUE' state this item carried was stale by four days. No nudge needed; nothing to review or merge.
+WHAT THIS MEANS SUBSTANTIVELY: we are NOT fixing int_rate_at_purchase on our side. DEV-503 always described it as a platform-side data problem ('all are populated as 0... My guess is that its a data issue from the platform's end'), and NorthPond confirmed OriginalInterestRate=0 was an active issue on their end. Cancelling accepts that. Note the defect lived in the LEGACY StatementLoanPositions datastore path (OriginalInterestRate), not the new silver purchase-tape path — and the v0 purchase file carries interest_rate populated correctly (22.06 / 26.77 in the stubs), so the incoming EDGEX feed is not affected. Status -> dropped.
