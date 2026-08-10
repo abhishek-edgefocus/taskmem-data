@@ -2,13 +2,13 @@
 id: wm-qtjmcv
 type: task
 title: DEV-1509: rename the northpond 'experimental' fund to northpond_balancesheet
-status: open
+status: active
 priority: p3
 size: s
 people: [Sean]
 tags: [northpond]
 links: [relates:wm-7qqeke]
-refs: [DEV-1509=https://linear.app/edge-focus/issue/DEV-1509/rename-experimental-northpond-fund]
+refs: [DEV-1509=https://linear.app/edge-focus/issue/DEV-1509/rename-experimental-northpond-fund, PR-6208=https://github.com/edgefocus/efp/pull/6208]
 created: 2026-08-10T14:53:27Z
 updated: 2026-08-10T15:35:58Z
 source: claude-code
