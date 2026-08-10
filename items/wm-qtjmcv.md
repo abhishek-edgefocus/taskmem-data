@@ -7,6 +7,7 @@ priority: p3
 size: s
 people: [Sean]
 tags: [northpond]
+links: [relates:wm-7qqeke]
 refs: [DEV-1509=https://linear.app/edge-focus/issue/DEV-1509/rename-experimental-northpond-fund]
 created: 2026-08-10T14:53:27Z
 updated: 2026-08-10T14:53:28Z
