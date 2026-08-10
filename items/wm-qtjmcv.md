@@ -10,7 +10,7 @@ tags: [northpond]
 links: [relates:wm-7qqeke]
 refs: [DEV-1509=https://linear.app/edge-focus/issue/DEV-1509/rename-experimental-northpond-fund, PR-6208=https://github.com/edgefocus/efp/pull/6208]
 created: 2026-08-10T14:53:27Z
-updated: 2026-08-10T15:35:58Z
+updated: 2026-08-10T15:52:55Z
 source: claude-code
 ---
 
@@ -35,3 +35,7 @@ VERIFIED: ruff format + ruff check + mypy clean; 3551 edgefocus tests, 105 orche
 DEPLOYMENT STILL OWED — the rename does NOT migrate existing rows by itself. Abhishek's read (verified correct): silver is written by snowflake.delete_and_insert per as_of_date, NOT a conditional MERGE, so a full as_of_date backfill of northpond_stmt_positions, northpond_stmt_transactions and positions rewrites every row onto the new fund name. Until that backfill runs, prod holds both values: 155,812 / 38,878 / 155,823 rows respectively still say 'experimental'.
 
 WORKSPACE: ~/claude-ws/dev-1509/efp on dpx (own clone off origin/master d1e9c461c, own uv venv). No ~/repos* checkout was modified.
+- 2026-08-10T15:52Z [claude-code] PR SPLIT 2026-08-10. #6208 now carries ONLY the DEV-1509 rename (20 files, +42/-37); the efhyf fix moved to #6209 ([[wm-7qqeke]]). Branch force-pushed with --force-with-lease pinned to the inspected tip 9e6087b512da01ccc4fb5c65a9749cc8cf8628fc (verified beforehand that the remote held only my two commits). Verified isolated: 6208 has northpond_balancesheet and does NOT have MAX_BY.
+TERRAFORM COMMENT SPLIT: silver_northpond_stmt_positions.tf and silver_northpond_stmt_transactions.tf each have one column comment describing BOTH the fund name and the purchase-tape behaviour. Each PR now changes only its own half — 6208 renames the fund in the comment and keeps master's 'efhyf when loan appears on purchase tape' wording; 6209 changes the behaviour wording and keeps 'experimental'. EXPECT A TRIVIAL CONFLICT on those two lines when the second PR merges; resolve to 'Fund: taken from the purchase tape when the loan appears on it as of AS_OF_DATE, else northpond_balancesheet'.
+MERGE ORDER: 6209 first (deadline-driven), then rebase 6208.
+PR bodies have no screenshots — the Snowflake proof is inline as markdown tables. Per the PR style guide the real screenshots (SQL + result in frame) still need pasting before review.
