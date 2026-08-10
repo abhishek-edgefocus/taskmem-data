@@ -10,7 +10,7 @@ people: [Abhijeet]
 tags: [northpond, edgex]
 links: [relates:wm-5z3pjt, parent:wm-j523sq]
 created: 2026-07-31T17:01:37Z
-updated: 2026-08-10T15:35:58Z
+updated: 2026-08-10T15:52:55Z
 source: claude-code
 ---
 
@@ -55,3 +55,5 @@ STILL NOT PUSHED / NO PR — the branch also carries the DEV-1509 rename per Abh
 
 REMAINING GAP unchanged and still required before the fund can actually be non-efhyf: NOTHING SETS ACCOUNT_NAME to INV103/INV105. The v0 parsing rule hardcodes account_name='northpond_efhyf', so even with this fix an EDGEX purchase still maps to efhyf. That is a separate change in the bronze parsing rule and it is the real Tuesday risk.
 - 2026-08-10T15:35Z [claude-code] PR RAISED 2026-08-10: https://github.com/edgefocus/efp/pull/6208 carries this fix as commit 7aa88bd78, bundled with the DEV-1509 rename ([[wm-qtjmcv]]) per Abhishek. Awaiting review — needs to land before the first live EDGEX purchase file on 2026-08-11.
+- 2026-08-10T15:52Z [claude-code] SPLIT OUT INTO ITS OWN PR 2026-08-10 (Abhishek: the combined PR carried too many changes). Now https://github.com/edgefocus/efp/pull/6209 — 'Fix northpond purchase-tape fund by reading it from the tape row instead of hardcoding efhyf', open, base master, head abhishek/northpond-purchase-tape-fund-from-tape-row, 4 files +28/-18. NO Linear ticket on this one; titled without a DEV- prefix. Verified isolated: 6209 contains the MAX_BY expression and does NOT contain northpond_balancesheet. 171 northpond tests pass.
+This is the one that must land before the first live EDGEX purchase file on 2026-08-11.
