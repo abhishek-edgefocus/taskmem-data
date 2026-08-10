@@ -10,7 +10,7 @@ people: [Abhijeet]
 tags: [northpond, edgex]
 links: [relates:wm-5z3pjt, parent:wm-j523sq]
 created: 2026-07-31T17:01:37Z
-updated: 2026-08-10T19:00:18Z
+updated: 2026-08-10T19:41:23Z
 source: claude-code
 ---
 
@@ -64,3 +64,14 @@ Two precisions on the report: they are generate_sql METHOD docstrings (stmt_posi
 FIXED in commit e0b4a20ce on abhishek/northpond-purchase-tape-fund-from-tape-row (PR #6209), pushed. Both docstrings now read 'correlated scalar subquery ... the fund recorded on the loan latest silver.northpond_stmt_purchase_tapes row on or before AS_OF_DATE'. Verified: git grep 'correlated IN subquery' returns nothing on the branch; ruff format + check clean; 171 northpond tests pass.
 
 LESSON WORTH KEEPING: the constants.py comment was updated in the original commit but the two CONSUMER docstrings that paraphrase the same expression were not. When changing a shared SQL expression in northpond/constants.py, grep the importers for prose describing it, not just the symbol.
+- 2026-08-10T19:41Z [claude-code] EDGEX FUND PRECEDENT ACROSS PLATFORMS (Snowflake, read-only, 2026-08-11) — this explains WHY the northpond ACCOUNT_NAME gap exists and what the fix should look like.
+
+EVERY OTHER PLATFORM SEPARATES EDGEX AT THE ACCOUNT/FEED LEVEL, NOT VIA THE PURCHASE TAPE. Statements arrive under a dedicated per-deal account name and FUND is a straight ACCOUNT_NAME -> fund mapping. Upgrade is the clearest: bronze ACCOUNT_NAMEs are EdgeFocusEDGEX20251NN_9268450, EdgeFocusEDGEX20252NN_9326818, EdgeFocusEDGEX2026PT1_9357538, EdgeFocusEDGEX2026PT2_9372898, EdgeFocusEDGEXPurchaserI_9266405, EdgeFocusEDGEXPurchaserII_9356514 — each carrying its own positions/transactions/purchase_tape/final_purchase/final_sale streams. silver ACCOUNT_ID is the numeric suffix. marlette uses small numeric account ids (547, 530, 193, 183, 184, 181), prosper numeric (14923933, 15307393, 15983181), happymoney numeric (62, 64).
+
+NORTHPOND IS THE ODD ONE OUT: all Oliv statements arrive under the single account ef_northpond, and the fund is INFERRED from the purchase tape (FUND_WITH_PURCHASE_TAPE_EXPR). That is why NORTHPOND_ACCOUNT_FUND_MAP's INV103/INV105 entries have nothing to populate them — no feed ever carries those account names. Confirmed in data: ZERO silver.positions rows have ACCOUNT_ID containing INV103 or INV105, and FUND='edgex_purchaser' has NEVER been written anywhere (0 rows in positions.fund and transfers.to_fund).
+
+edgex20261NN IS ALREADY LIVE — but on PROSPER, not northpond: account_id 15983181, 19 loans, 2026-08-06 -> 2026-08-09. So the 2026-1NN deal is flowing for other platforms already; northpond has 0.
+
+NOTE ON EDGEX PURCHASER I: on upgrade it is a STAGING account — EdgeFocusEDGEXPurchaserI_9266405 carries purchase_tape/pending_purchase/final_purchase/final_sale, and its positions rows map to fund edgex20251NN (2178 loans, ended 2025-07-02). So Purchaser I is a waypoint, not a terminal fund. That is consistent with Nate saying INV105 is 'the exception' and everything sits in INV103 ([[wm-5z3pjt]]).
+
+IMPLICATION FOR THE FIX: the precedent says EDGEX separation should come from the FEED. Nate already said (2026-07-28) the Nelnet loan file will carry the investor tag — that is the account-level mechanism other platforms use. Until either that lands or the v0 purchase tape carries an investor id that the parsing rule turns into account_name, PR #6209 alone cannot produce a non-efhyf fund for northpond.
