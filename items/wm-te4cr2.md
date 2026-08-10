@@ -2,9 +2,12 @@
 id: wm-te4cr2
 type: task
 title: ERROR-1626: northpond_exp_predictions fails every run — .efp_toplevel missing from the Dagster image
-status: open
+status: next
+priority: p1
+size: s
+tags: [northpond, dagster, errors]
 created: 2026-08-10T20:05:48Z
-updated: 2026-08-10T20:05:48Z
+updated: 2026-08-10T20:05:57Z
 source: claude-code
 ---
 
