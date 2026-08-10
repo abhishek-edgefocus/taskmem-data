@@ -10,7 +10,7 @@ tags: [northpond]
 links: [relates:wm-7qqeke]
 refs: [DEV-1509=https://linear.app/edge-focus/issue/DEV-1509/rename-experimental-northpond-fund, PR-6208=https://github.com/edgefocus/efp/pull/6208]
 created: 2026-08-10T14:53:27Z
-updated: 2026-08-10T15:52:55Z
+updated: 2026-08-10T19:29:22Z
 source: claude-code
 ---
 
@@ -39,3 +39,14 @@ WORKSPACE: ~/claude-ws/dev-1509/efp on dpx (own clone off origin/master d1e9c461
 TERRAFORM COMMENT SPLIT: silver_northpond_stmt_positions.tf and silver_northpond_stmt_transactions.tf each have one column comment describing BOTH the fund name and the purchase-tape behaviour. Each PR now changes only its own half — 6208 renames the fund in the comment and keeps master's 'efhyf when loan appears on purchase tape' wording; 6209 changes the behaviour wording and keeps 'experimental'. EXPECT A TRIVIAL CONFLICT on those two lines when the second PR merges; resolve to 'Fund: taken from the purchase tape when the loan appears on it as of AS_OF_DATE, else northpond_balancesheet'.
 MERGE ORDER: 6209 first (deadline-driven), then rebase 6208.
 PR bodies have no screenshots — the Snowflake proof is inline as markdown tables. Per the PR style guide the real screenshots (SQL + result in frame) still need pasting before review.
+- 2026-08-10T19:29Z [claude-code] SNOWFLAKE RECON 2026-08-11 (read-only) on fund naming across platforms, prompted by Abhishek asking what other platforms populate.
+
+NO 'AJAX' ANYWHERE: searched silver.positions (PLATFORM, FUND, ACCOUNT_ID, CHANNEL), silver.transfers (TO_FUND, FROM_FUND) and bronze.statement_rows (PLATFORM, ACCOUNT_NAME) across ALL history — zero rows. Either it is not in prod yet or the term means something else; asked Abhishek.
+
+'experimental' IS NORTHPOND-ONLY, CONFIRMED IN DATA: 155,823 rows in silver.positions, 2024-07-10 -> 2026-08-10, PLATFORM='northpond' exclusively. No other platform has ever written it. This corroborates the earlier code-level finding (FUNDS.EXPERIMENTAL had only 3 references, all northpond) and means the DEV-1509 rename cannot affect another platform.
+
+10 PLATFORMS in silver.positions: anchored, happymoney, lc, marlette, northpond, openroad, prosper, sofi, upgrade, upstart.
+
+FUND NAMING SPLITS INTO TWO CAMPS. Cross-platform vehicles: efhyf (8 platforms), edgex2026PT1/PT2 (4), paradigm1 (4), edgex20251NN/20252NN (3), efalpha (3), macq_wh (3), macq_wh2 (3), edgex20261NN (1, prosper only so far). Platform-specific: fortress_happymoney, fortress_marlette_hyp, fortress_marlette_hyp_2, fortress_prosper, fortress_sofi, castlelake_auto, lcbs, nb, sp, spc2, experimental.
+
+*** NAMING PRECEDENT WORTH RAISING ON PR #6208 ***: the direct analogue to northpond's balance-sheet fund already exists — 'lcbs' (LendingClub balance sheet), lc-only, 1,506 loans on the latest tape. House style for a platform's own balance-sheet fund is the short <platform>bs form, so the precedent name would be 'npbs', not 'northpond_balancesheet'. Sean's ticket proposed 'northpond_balancesheet ... or something', so this is open. Existing platform-specific funds are otherwise <owner>_<platform> (fortress_*) or short codes; <platform>_<purpose> would be a new shape. Flagged to Abhishek — decide before #6208 merges, since changing it afterwards means a second rename plus a second backfill.
