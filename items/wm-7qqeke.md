@@ -10,7 +10,7 @@ people: [Abhijeet]
 tags: [northpond, edgex]
 links: [relates:wm-5z3pjt, parent:wm-j523sq]
 created: 2026-07-31T17:01:37Z
-updated: 2026-08-10T15:09:11Z
+updated: 2026-08-10T15:35:58Z
 source: claude-code
 ---
 
@@ -54,3 +54,4 @@ VERIFIED: ruff format + ruff check clean, mypy clean, 171/171 northpond tests pa
 STILL NOT PUSHED / NO PR — the branch also carries the DEV-1509 rename per Abhishek's instruction to do both in one PR, and DEV-1509 is blocked on a decision (see [[wm-qtjmcv]]).
 
 REMAINING GAP unchanged and still required before the fund can actually be non-efhyf: NOTHING SETS ACCOUNT_NAME to INV103/INV105. The v0 parsing rule hardcodes account_name='northpond_efhyf', so even with this fix an EDGEX purchase still maps to efhyf. That is a separate change in the bronze parsing rule and it is the real Tuesday risk.
+- 2026-08-10T15:35Z [claude-code] PR RAISED 2026-08-10: https://github.com/edgefocus/efp/pull/6208 carries this fix as commit 7aa88bd78, bundled with the DEV-1509 rename ([[wm-qtjmcv]]) per Abhishek. Awaiting review — needs to land before the first live EDGEX purchase file on 2026-08-11.
