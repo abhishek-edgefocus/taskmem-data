@@ -10,7 +10,7 @@ people: [Nate, Trishit]
 tags: [northpond, edgex]
 links: [relates:wm-jewha5, relates:wm-n7usn7, relates:wm-tvjjgw]
 created: 2026-07-31T14:19:39Z
-updated: 2026-08-10T18:53:23Z
+updated: 2026-08-11T08:48:50Z
 source: claude-code
 ---
 
@@ -45,3 +45,6 @@ What to validate when the tapes arrive:
 - 2026-08-10T14:38Z [claude-code] NATE SET A LIVE DATE (C0BJ1M304BU, 2026-08-08 17:01 IST, ts 1786188718.575029): 'the plan/target is to produce the first live purchase file on Tuesday. We will finish setting up proper values for some fields that currently have stubs/placeholders (accrued interest, etc)'. Tuesday from that Saturday = 2026-08-11, i.e. TOMORROW relative to today 2026-08-10. This is the first real purchase file since Pool 6 (June 2025) and it lands at purchase_file/v0/2026/08/purchase_file_v0_YYYYMMDD.csv, ingested by rule northpond_purchase_tape_v0_csv.
 Context: Abhishek sent the v0 sign-off 2026-08-08 03:15 IST ('the v0 file looks good - schema matches exactly what we ingest. We're on v0 for now and will move to the v1 schema later'); Nate reacted :thankyou:. Nate's stub-fix note covers accrued_interest and by implication outstanding_principal_balance_as_of_funding_date, but he did NOT mention the empty dti_ratio or the filename/content date skew (file named _20260723_ while purchase_date inside was 2026-07-24) — both still worth watching on the first live file.
 - 2026-08-10T18:53Z [claude-code] DECISION 2026-08-11 (Abhishek): do NOT add a MonitoringSchedule to northpond_purchase_tape_v0_csv yet — the real cadence is not settled (Nate said 'daily' but it is unknown whether that means 7-day or business-day, and no real file has ever landed to observe). Leaving the rule unmonitored deliberately, same as today. TRADE-OFF ACCEPTED: until a schedule exists, a purchase file that silently stops arriving raises no alert; detection is manual. REVISIT once a week or so of real landings shows the actual pattern, then set frequency=DAILY or WEEKDAY with start_date = the first real file's date (grace_days defaults to 3). Do not set start_date earlier than the first real file or it back-alerts for every prior day.
+- 2026-08-11T08:48Z [claude-code] VERIFIED NOT LANDED — 2026-08-11 14:17 IST. Checked S3 directly (not inferred from Slack silence): aws s3 ls s3://efp-raw/statements/northpond/purchase_file/ --recursive returns ONLY the two 2026-07-23 test stubs — purchase_file/v0/2026/07/purchase_file_v0_20260723_test.csv and the v1 twin. No 2026/08 prefix, no live file.
+So Nate's target ('the plan/target is to produce the first live purchase file on Tuesday', 2026-08-08) has not been met as of mid-afternoon IST. Tuesday is US-hours, so it may still arrive tonight IST — this is not yet a slip, just not-yet.
+Re-run the same one-liner before assuming anything landed. When it does, do this item and [[wm-jewha5]] in one pass, and note that [[wm-7qqeke]]'s fund fix (PR #6209) is still unmerged, so a file arriving right now would be attributed to efhyf.
