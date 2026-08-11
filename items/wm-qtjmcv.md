@@ -10,7 +10,7 @@ tags: [northpond]
 links: [relates:wm-7qqeke]
 refs: [DEV-1509=https://linear.app/edge-focus/issue/DEV-1509/rename-experimental-northpond-fund, PR-6208=https://github.com/edgefocus/efp/pull/6208]
 created: 2026-08-10T14:53:27Z
-updated: 2026-08-10T19:29:22Z
+updated: 2026-08-11T19:02:30Z
 source: claude-code
 ---
 
@@ -50,3 +50,15 @@ NO 'AJAX' ANYWHERE: searched silver.positions (PLATFORM, FUND, ACCOUNT_ID, CHANN
 FUND NAMING SPLITS INTO TWO CAMPS. Cross-platform vehicles: efhyf (8 platforms), edgex2026PT1/PT2 (4), paradigm1 (4), edgex20251NN/20252NN (3), efalpha (3), macq_wh (3), macq_wh2 (3), edgex20261NN (1, prosper only so far). Platform-specific: fortress_happymoney, fortress_marlette_hyp, fortress_marlette_hyp_2, fortress_prosper, fortress_sofi, castlelake_auto, lcbs, nb, sp, spc2, experimental.
 
 *** NAMING PRECEDENT WORTH RAISING ON PR #6208 ***: the direct analogue to northpond's balance-sheet fund already exists — 'lcbs' (LendingClub balance sheet), lc-only, 1,506 loans on the latest tape. House style for a platform's own balance-sheet fund is the short <platform>bs form, so the precedent name would be 'npbs', not 'northpond_balancesheet'. Sean's ticket proposed 'northpond_balancesheet ... or something', so this is open. Existing platform-specific funds are otherwise <owner>_<platform> (fortress_*) or short codes; <platform>_<purpose> would be a new shape. Flagged to Abhishek — decide before #6208 merges, since changing it afterwards means a second rename plus a second backfill.
+- 2026-08-11T19:02Z [claude-code] CI FAILURE ON #6208 — REAL, MY MISS, NOW FIXED (2026-08-11). northpond_transfers.md::test_snowflake failed: expected FROM_FUND='experimental', got 'northpond_balancesheet'.
+
+ROOT CAUSE OF THE MISS: my original sweep piped grep through 'head -30' and silently truncated. FIVE files were never updated. A full 'git grep' (tracked files, no truncation) found them: integration_tests/md_tests/northpond_transfers.md (13 occurrences — expected FROM_FUND/TO_FUND cells, the composite POOL_IDs, and the prose), northpond/transfers.py (8, module docstring + inline comments), northpond/transfers_test.py (3, incl. test_to_fund_is_experimental), silver/comparison/northpond_verified.py (1), docs/northpond/snowflake-datastore-comparison.md (2). 27 occurrences total, fixed in commit 6fbae966a, pushed.
+LESSON: never truncate a completeness sweep with head/tail. Also note \\bexperimental\\b would NOT have worked — '_' is a word character, so it skips northpond_experimental in the POOL_IDs.
+
+*** NEW FINDING — POOL_ID EMBEDS THE FUND NAME ***: silver.transfers.POOL_ID is a composite {date}_{platform}_{fund} (and {date}_{platform}_{from}_{to}), e.g. 20250617_northpond_experimental_efhyf. After the rename it becomes 20250601_northpond_northpond_balancesheet — the platform name repeats. Raised the option of 'npbs' instead (matching the existing lcbs = LendingClub balance sheet precedent, which would give 20250601_northpond_npbs); ABHISHEK DECIDED 2026-08-11 to keep northpond_balancesheet. Decision made with the POOL_ID consequence known — do not re-litigate.
+
+BACKFILL SCOPE IS WIDER THAN THE PR BODY STATES: silver.transfers northpond rows also change — 777 rows with POOL_ID ilike '%experimental%', 715 with TO_FUND='experimental', 372 with FROM_FUND='experimental' (out of 1,087 total northpond transfers). These are ON TOP OF the 155,812 / 38,878 / 155,823 position+transaction rows. The PR's Deployment section still only lists the latter three — needs updating before merge.
+
+OPENROAD FIXTURE LEFT ALONE DELIBERATELY: integration_tests/md_tests/openroad_positions.md uses 'experimental' as arbitrary fixture data for another platform (lines 21, 78, 79, 92). Its assertions are self-consistent and its test passes, and touching another platform's fixtures is outside this ticket. Worth a follow-up sometime since it now references a fund value that no longer exists in FUNDS.
+
+ALSO: an AI review agent flagged #6208 for 'omitting' the FUND_WITH_PURCHASE_TAPE_EXPR change. NOT VALID — that change is deliberately in #6209 per the agreed split, and the location it cited (constants.py L9-L19) is NORTHPOND_ACCOUNT_FUND_MAP, not the expression (L39-53). No action taken.
