@@ -10,7 +10,7 @@ people: [Abhijeet]
 tags: [northpond, edgex]
 links: [relates:wm-5z3pjt, parent:wm-j523sq]
 created: 2026-07-31T17:01:37Z
-updated: 2026-08-10T19:41:23Z
+updated: 2026-08-11T20:58:59Z
 source: claude-code
 ---
 
@@ -75,3 +75,18 @@ edgex20261NN IS ALREADY LIVE — but on PROSPER, not northpond: account_id 15983
 NOTE ON EDGEX PURCHASER I: on upgrade it is a STAGING account — EdgeFocusEDGEXPurchaserI_9266405 carries purchase_tape/pending_purchase/final_purchase/final_sale, and its positions rows map to fund edgex20251NN (2178 loans, ended 2025-07-02). So Purchaser I is a waypoint, not a terminal fund. That is consistent with Nate saying INV105 is 'the exception' and everything sits in INV103 ([[wm-5z3pjt]]).
 
 IMPLICATION FOR THE FIX: the precedent says EDGEX separation should come from the FEED. Nate already said (2026-07-28) the Nelnet loan file will carry the investor tag — that is the account-level mechanism other platforms use. Until either that lands or the v0 purchase tape carries an investor id that the parsing rule turns into account_name, PR #6209 alone cannot produce a non-efhyf fund for northpond.
+- 2026-08-11T20:58Z [claude-code] DATE-BASED FUND SPLIT IMPLEMENTED 2026-08-12, per Abhishek's decision after discussing with Nate. This SUPERSEDES the MAX_BY approach in PR #6209.
+
+WHY THE APPROACH CHANGED: #6209 derives fund from the purchase-tape row's FUND, which comes from ACCOUNT_NAME. Nothing populates ACCOUNT_NAME with INV103 (the v0 parsing rule hardcodes northpond_efhyf), so #6209 alone can never yield edgex20261NN. The date rule needs no ACCOUNT_NAME and works today.
+
+RULE: purchase tape, purchase_date >= 2026-08-01 -> edgex20261NN; purchase_date < 2026-08-01 -> efhyf; absent from the purchase tape -> account->fund map (experimental, becoming northpond_balancesheet via [[wm-qtjmcv]]). Third leg is unchanged behaviour.
+
+COMMIT 4bdabd8be on abhishek/northpond-edgex-fund-date, isolated worktree ~/claude-ws/oliv-fund-date/efp off origin/master c11d1fa84. 2 files, +36/-12. NOT PUSHED, NO PR YET - pending Abhishek's call on whether to retarget PR #6209 (open, base master, CONFLICTING, no human review, only a sentry bot comment) or raise a new one.
+
+New constant NORTHPOND_EDGEX_PURCHASE_START = 2026-08-01. FUND_WITH_PURCHASE_TAPE_EXPR is now a CASE with two correlated IN subqueries, both still scoped TRY_TO_DATE(PURCHASE_DATE) <= src.AS_OF_DATE; EDGEX arm first so a resold loan follows its later purchase. 175/175 northpond tests pass (170 existing + 5 new); every pre-existing assertion still holds, so the SQL shape stayed compatible.
+
+VALIDATED AGAINST THE INVESTOR TAG - the strong evidence for the 2026-08-01 boundary. The Nelnet loan file carries an investor code at pipe-field 39 (INV103 / blank); it is the only place INV103 appears in any data we receive. Checked the 160 loans across the 11 purchase files now in S3: the date rule reproduces the Nelnet tag 160/160, zero disagreements (35 blank -> efhyf, 125 INV103 -> edgex20261NN). Last pre-cutover purchase_date 2026-07-31, first post-cutover 2026-08-03, so the boundary sits in a clean 3-day gap. NOTE: the 2026-07-28 date on the unmerged dev-1474 branch scores only 129/160 - it would put 31 blank-investor July loans into EDGEX.
+
+NO-OP ON CURRENT DATA: old vs new expression replayed side by side over the latest prod loan tape gives identical funds (372 efhyf, 343 experimental, 0 rows differing). All 372 tape purchases are 2025-02-05..2025-06-17, so the EDGEX arm stays dormant until live purchase files land.
+
+LIMITATION, stated in the code comment: purchase date cannot separate INV105 (EDGEX Purchaser I) from INV103 (EDGEX Grantor Trust); every post-cutover purchase reports edgex20261NN. Parsing the Nelnet investor tag remains the real fix. ACCOUNT_ID needs no code change - NORTHPOND_FUND_ACCOUNT_MAP already inverts edgex20261NN to INV103, so positions.ACCOUNT_ID follows the fund.
