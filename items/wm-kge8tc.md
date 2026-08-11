@@ -11,7 +11,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [dm=https://edgefocuspartners.slack.com/archives/D0B5ASBDPK7/p1786365993136599]
 created: 2026-08-10T14:46:31Z
-updated: 2026-08-10T14:46:31Z
+updated: 2026-08-11T08:48:50Z
 source: claude-code
 label: Kushagra errors backlog sweep
 ---
@@ -34,3 +34,12 @@ Already-tracked pieces that should be folded into the same pass rather than done
 
 Relevant context: Abhishek was added to the **dev-on-call** user group by Frank on
 2026-08-04, so the Errors queue is now formally part of his rota rather than an ad-hoc ask.
+
+## Log
+- 2026-08-11T08:48Z [claude-code] IN PROGRESS 2026-08-11 — the sweep promised to Kushagra is underway. Evidence from parallel sessions and Slack:
+- ERROR-1660/1661/1663 (statements_lc) verified CLOSEABLE from Dagster prod, correcting an 08-05 guess.
+- ERROR-1675 (tare_loan_fl TU hard pull) investigated and found NOT a defect.
+- ERROR-1626 (statements_northpond / northpond_transfers) investigated and split out as [[wm-te4cr2]] — it is a real, every-run failure.
+- Abhishek to Abhijeet 00:54 IST: 'errors madhe tickets pan tulach assign karto' (I'll assign the error tickets to you as well), re the failed EDGEX jobs; Abhijeet: 'yes mala kar' (yes, assign them to me) and noted he has already self-assigned the corresponding Sentry issues. So the EDGEX-job errors are moving to Abhijeet — that is the 'reassign' half of the commitment, and it is agreed but not confirmed done in Linear.
+- Abhishek 00:56: 'errors board var atleast orphan issues clear kartoy' (at minimum I'm clearing orphan issues on the errors board).
+Remaining today: finish the reassignments to Abhijeet and the orphan-issue clear-out.
