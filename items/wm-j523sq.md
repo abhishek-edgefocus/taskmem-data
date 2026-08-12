@@ -6,7 +6,7 @@ status: active
 tags: [northpond]
 refs: [Grafana=https://grafana.edgefocuspartners.com/d/qQl7m9cHk/northpond-monitoring]
 created: 2026-07-15T14:44Z
-updated: 2026-08-12T13:20:07Z
+updated: 2026-08-12T13:21:19Z
 source: dpx-tasks import
 label: NorthPond ingestion project
 ---
@@ -25,3 +25,4 @@ Migrate NorthPond off datastores onto Snowflake (dashboards + silver tables)
 - 2026-07-22T13:22Z [claude-code] Recon (Mission A) for Oliv issuance_v2 bronze ingestion done: naming trap confirmed — issuance_YYYYMMDD_v2.csv is captured by existing northpond_issuance rule (dedup-suffix .* in regex) and would supersede the v1 file; issuance_v2_YYYYMMDD.csv matches nothing (status=unknown, retro-fixable via statement_files refresh mode). Full report returned to parent agent.
 - 2026-07-29T16:39Z [claude-code] 2026-07-29: NorthPond positions validation is documented and shipped. PR #6058 merged — northpond_verified.py (21 verified positions differences vs the legacy datastore) + docs/northpond/snowflake-datastore-comparison.md. NorthPond was the last of our platforms without a *_verified.py. Closes the evidence ask Frank left on PR #5504 back in June. Detail on wm-6zdqhy (done). Follow-ups split out: wm-4s2sad (comparison job dead since 2026-07-20, all platforms), wm-rzfews (untraced markup/model_version + purchase_year decision), wm-wcawuj (board 'only unverified' filter), wm-5rpqzg (upgrade_verified.py dead entries).
 - 2026-08-12T13:20Z [claude-code] Wrote docs/northpond/file-feeds.md (untracked in ~/repos-3/efp on master, mirror at ~/northpond-file-feeds.md on the Mac): the full NorthPond/Oliv file inventory — every delivered feed, its live field list read from the 2026-08-11/12 files, which silver stmt_* table it lands in, and which standardized table / gold metric consumes which fields. Includes a mermaid pipeline diagram (file -> silver.northpond_stmt_* -> positions/transactions/transfers/predictions -> gold.positions_daily, realized_cashflows_calendar_month_daily, warehouse_cl). Documents the fund-attribution order (account map -> purchase-tape override -> account_id derived back from fund) and six open gaps: nelnet unparsed, FUND_WITH_PURCHASE_TAPE_EXPR hardcode, the three NULL fee-recovery columns (wm-4pts5y), transaction_boards + payment_configuration having no consumer, issuance_v2 ANL at ~1/3 coverage, and both purchase-file paths going live 2026-08-11.
+- 2026-08-12T13:21Z [claude-code] Correction to the previous entry: the doc lives ONLY at ~/northpond-file-feeds.md on the Mac. The copy in ~/repos-3/efp/docs/northpond/ has been removed — it was never committed and should not be recreated there.
