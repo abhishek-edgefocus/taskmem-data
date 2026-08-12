@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [parent:wm-su6q4d, relates:wm-prm54n]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-12T13:03:32Z
+updated: 2026-08-12T13:09:18Z
 source: claude-code
 effort: half-day
 ---
@@ -43,3 +43,20 @@ means that routing serves an ever-staler 8-date window with no error.
 FIRST STEP: find out whether the job is scheduled and when it last ran in prod
 Dagster, before assuming a data problem — a dropped schedule and a failing asset need
 different fixes.
+
+## Log
+- 2026-08-12T13:09Z [claude-code] ROOT CAUSE NARROWED 2026-08-12 — the openroad silver job has NOT RUN SINCE 2026-07-07. Every openroad silver table carries the same last-write timestamp cluster on 2026-07-07 ~13:00 PT and nothing after:
+  openroad_stmt_positions   2026-07-07 12:59:45 (280 rows)
+  openroad_stmt_payments    2026-07-07 12:59:45 (7)
+  openroad_stmt_purchase_tapes 2026-07-07 13:00:12 (35)
+  silver.transactions openroad 2026-07-07 13:00:21 (7)
+  silver.transfers openroad    2026-07-07 13:00:52 (35)
+  silver.positions openroad    2026-07-07 13:01:57 (280)
+  (and silver.predicted_cashflows openroad loaded_at 2026-07-07 14:02)
+Peers write daily: northpond silver.positions last_write 2026-08-11 11:59, sofi 2026-08-12 04:28. So this is openroad-specific, not a platform-wide outage.
+
+NOT A CODE GAP: the sensor IS registered on origin/master exactly like every other platform — definitions.py:406-408 create_platform_statement_sensor('openroad', statements_openroad, max_runtime=2h), job at jobs/statements_openroad.py with 15 documented assets. So the fix is operational, not a PR: either the sensor is toggled OFF in the prod Dagster instance, or the job is erroring on an asset. Check prod Dagster run history for statements_openroad since 2026-07-07 before touching anything.
+
+BRONZE IS HEALTHY — this is important for sequencing: bronze.statement_rows openroad positions has all 44 dates 2026-06-29..2026-08-11 at exactly 35 rows/date (1,540 total). The bronze ingest job is running fine. Only the silver step is dead.
+
+=> ORDERING CONSEQUENCE for [[wm-prm54n]]: running the file-registry backfill FIRST would park ~2,150 files in bronze and produce nothing in silver, because the consumer is dead. Revive/diagnose this job before or alongside the backfill.
