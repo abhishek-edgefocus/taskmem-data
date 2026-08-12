@@ -10,7 +10,7 @@ tags: [northpond]
 links: [relates:wm-7qqeke]
 refs: [DEV-1509=https://linear.app/edge-focus/issue/DEV-1509/rename-experimental-northpond-fund, PR-6208=https://github.com/edgefocus/efp/pull/6208]
 created: 2026-08-10T14:53:27Z
-updated: 2026-08-11T19:02:30Z
+updated: 2026-08-12T13:28:27Z
 source: claude-code
 ---
 
@@ -62,3 +62,4 @@ BACKFILL SCOPE IS WIDER THAN THE PR BODY STATES: silver.transfers northpond rows
 OPENROAD FIXTURE LEFT ALONE DELIBERATELY: integration_tests/md_tests/openroad_positions.md uses 'experimental' as arbitrary fixture data for another platform (lines 21, 78, 79, 92). Its assertions are self-consistent and its test passes, and touching another platform's fixtures is outside this ticket. Worth a follow-up sometime since it now references a fund value that no longer exists in FUNDS.
 
 ALSO: an AI review agent flagged #6208 for 'omitting' the FUND_WITH_PURCHASE_TAPE_EXPR change. NOT VALID — that change is deliberately in #6209 per the agreed split, and the location it cited (constants.py L9-L19) is NORTHPOND_ACCOUNT_FUND_MAP, not the expression (L39-53). No action taken.
+- 2026-08-12T13:28Z [claude-code] MERGED + DEPLOYED, and the backfill gap is now REAL IN PROD (verified 2026-08-12 18:5x IST). PR #6208 merged 2026-08-11T19:50Z as 42db18e68. Prod is running the new code: silver.northpond_stmt_positions AS_OF_DATE=2026-08-12 writes FUND='northpond_balancesheet' (343 rows), while 2026-08-11 and every earlier date still say 'experimental'. Counted in PROD: experimental 156,155 rows (latest as_of 2026-08-11), northpond_balancesheet 343 rows (latest as_of 2026-08-12). This is exactly the split-fund state this item warned about — one fund now exists under two names and every downstream group-by splits. The as_of_date backfill of northpond_stmt_positions, northpond_stmt_transactions, silver.positions AND silver.transfers (777 POOL_ID / 715 TO_FUND / 372 FROM_FUND rows) has NOT run. Code work is complete, so closing this; the backfill is tracked separately.
