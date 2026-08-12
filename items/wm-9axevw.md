@@ -8,7 +8,7 @@ size: s
 tags: [northpond, datastores, oncall]
 links: [relates:wm-tvjjgw, relates:wm-hjbt5a, parent:wm-3y3ckv]
 created: 2026-08-12T14:10:51Z
-updated: 2026-08-12T14:10:55Z
+updated: 2026-08-12T20:47:19Z
 source: claude-code
 effort: <1h
 ---
@@ -90,3 +90,34 @@ which the legacy xlsx-pinned reader cannot see. Track that there, not here.
 - failing batch array job 06c8d2f5-0587-4416-950e-627ba66913fe:0
 - CloudWatch /aws/batch/job stream job-definition/default/cdc7d9144ab5475cba1c711cc9bf0d08
 - repro script kept at ~/claude-ws/np-datastore-stale/ on dpx
+
+## Log
+- 2026-08-12T20:47Z [claude-code] ABHISHEK'S TWO QUESTIONS ANSWERED 2026-08-12.
+
+Q1 'if Oliv drops the Aug 4 file today, will that work?' — YES. The file must land at
+s3://efp-raw/statements/northpond/issuance/2026/08/issuance_20260804.csv before the nightly
+dumbledore run (~21:00 PT). generate_datastores re-assesses missing dates each run, so it will
+build statement_loan_issuance 2026-08-04, then standardized_positions 2026-08-04, then the ~20
+skipped dependents all catch up on their own. No code change, no manual re-run needed.
+USEFUL DE-RISK: it does NOT have to be a true point-in-time Aug 4 snapshot. The gate is
+set(positions.loan_id).issubset(set(issuance.loan_id)) — a SUPERSET passes. So even if Oliv
+regenerates 'as of today' and just names it _20260804, it works, because issuance is cumulative
+and the build only pulls 5 static per-loan attributes off it (application_uuid,
+first_payment_due_date, state, annual_gross_income, origination_fee); as_of_date comes from the
+build date, not the file. So the ask to Nate/Oliv can be loose.
+
+Q2 'someone (Kushagra?) shared a Google Sheet where we drop file names to be ignored' — the
+sheet is REAL and he remembered it correctly, but IT DOES NOT FIX THIS. Details in [[wm-j9jxpc]]:
+Google Sheet 1gkWKElqMkgr7goxKS-s_L6xPNlAjGnr_3LhfgRMc7gY, tab 'Acknowledgements', hardcoded as
+ACKNOWLEDGEMENT_SHEET_ID in edgefocus/monitoring/statement_file_acknowledgements.py; columns
+PLATFORM, STATEMENT_TYPE, ACK_START_DATE, ACK_END_DATE, ACKNOWLEDGED_BY, UPDATE_DATE, REASON.
+VERIFIED ITS SCOPE: the only non-test consumer is
+orchestration/assets/statement_file_monitoring_assets.py:79 (evaluate_acknowledgements(results)
+over a list[MissingFile]) — i.e. it suppresses the 'Missing Platform Data' alert / ERROR ticket
+only. grep for 'acknowledg' across lib/efp/stats/ returns ZERO hits, so the dumbledore datastore
+build has no knowledge of the sheet whatsoever. Acking 2026-08-04 would silence the alarm and
+leave the datastore chain just as frozen. Worth remembering as a general rule: the ack sheet is
+a monitoring construct, never a pipeline control.
+
+Either real fix (Oliv re-drops, or copy issuance_20260803.csv to the _20260804 name) makes the
+file exist, so no ack row is needed in either path.
