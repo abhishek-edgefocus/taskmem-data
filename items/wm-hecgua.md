@@ -3,7 +3,7 @@ id: wm-hecgua
 type: task
 title: Commit or salvage the untracked OpenRoad silver-vs-datastore docs + create openroad_verified.py
 status: open
-links: [parent:wm-su6q4d]
+links: [parent:wm-su6q4d, relates:wm-6zdqhy]
 created: 2026-08-12T12:18:40Z
 updated: 2026-08-12T12:18:50Z
 source: claude-code
