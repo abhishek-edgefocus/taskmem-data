@@ -11,7 +11,7 @@ tags: [northpond, edgex, needs-reply]
 links: [relates:wm-gj5tkx, relates:wm-5z3pjt]
 refs: [thread=https://edgefocuspartners.slack.com/archives/C0BJ1M304BU/p1785241457230439]
 created: 2026-07-29T13:42:01Z
-updated: 2026-07-29T13:43:30Z
+updated: 2026-08-12T13:09:40Z
 source: claude-code
 label: Nate Nelnet samples reply
 ---
@@ -47,3 +47,6 @@ What the reply needs to say (all evidenced on [[wm-gj5tkx]]):
 
 Caveat Nate already flagged: the samples are 1:1 forwards of raw Nelnet files, so asks 3-5
 require Oliv to build a transform step, not just relay. He is queuing the task regardless.
+
+## Log
+- 2026-08-12T13:09Z [claude-code] Nelnet files are already landing in prod S3 and are unparsed. s3://efp-raw/statements/northpond/nelnet/ has two feeds, both daily: daily_loan/YYYY/MM/VELOCITY_SERVICING_DF2_YYYYMMDD_YYYYMMDD_HHMMSS. (pipe-delimited, headerless, H|MM/DD/YYYY|servicing.pgp control row, key ends in a bare '.') and daily_transaction/YYYY/MM/V_Transaction_Detail_Export_Daily_OlivFinancial_*.xlsx (single sheet NSTTRANDETDLY, 18 cols: Lender Name, Investor Number, Borrower Number, Loan Number, Last Name, Loan Program, Transaction Type, NonCash, Eff Date, Rpt Date, Tran Amt, Principal, Int Amt, Int Paid, LF Amt, LF Paid, OF Amt, OF Paid). 26 files sit at status='unknown' in bronze.statement_files — no ParsingRule matches the nelnet/ prefix. Two things to flag to Nate: (1) both feeds carry Investor Number INV103 (EDGEX grantor trust), i.e. this is the fund-attribution source we do not have on the FFC tapes; (2) daily_transaction carries borrower Last Name — PII on a feed we have not scoped.
