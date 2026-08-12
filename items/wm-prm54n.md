@@ -11,7 +11,7 @@ tags: [openroad, datastores]
 links: [parent:wm-su6q4d, relates:wm-bvqkhh, relates:wm-tvjjgw]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-07-29T15:33:30Z
-updated: 2026-08-10T14:46:14Z
+updated: 2026-08-12T13:03:01Z
 source: claude-code
 label: OpenRoad datastore deprecation
 ---
@@ -115,3 +115,22 @@ Recap of why that was flagged: the 'Do not merge yet' section and the 4 ordered 
 WHAT WAS NEVER CONFIRMED DONE — steps 2-6 of the ordered plan: the bronze/silver backfill, the silver rebuild, and row-level parity. The only validation on record is SHAPE validation over the 8 as-of dates silver held (280 rows / 35 loans, 7 transaction rows), explicitly 'not row-level parity'.
 THE EXPOSURE, if the backfill never ran: source='snowflake' serves ~8 of ~1,100 days of OpenRoad positions through the legacy interface — dashboards and any EDGEX/ABS consumer reading that path see a near-empty history with no error. Compounding it, [[wm-4s2sad]] records that GOLD.POSITIONS_COMPARISON_DAILY — the job that would catch exactly this — has written nothing since 2026-07-20, so the usual detector is blind.
 FIRST ACTION FOR WHOEVER PICKS THIS UP: do not re-plan, just measure. Count rows/as-of-dates behind DatastorePositions(platforms=['openroad'], source='snowflake') against the ~1,100 legacy files. If it is still 8 dates, this is a live prod data gap, not a backlog item. Env note for the check is in the 07-31 22:03Z entry (conda env abhishek_env_dev, PYTHONPATH=<worktree>:<worktree>/lib, attribute is .DATA).
+- 2026-08-12T13:03Z [claude-code] PROD MEASURED 2026-08-12 (the 'first action: do not re-plan, just measure' from the 2026-08-10 entry is now DONE). THE EXPOSURE IS REAL AND LIVE.
+
+DEV-1486 is marked Done (2026-08-03T17:31Z), PR #6133 merged 2026-08-03T17:23Z, and openroad IS in the registry on origin/master (datastore_deprecations.py:142 DatastorePositions, :149 DatastoreTransactions; positions_snowflake_map.py:139 comment-only entry). So source='snowflake' routing is LIVE in prod. The backfill it depended on never ran.
+
+MEASUREMENTS (PROD, 2026-08-12 06:00 UTC, via ~/bin/sqlrun.py on dpx):
+- S3 s3://efp-raw/statements/openroad/ = 2,276 files (LoanTape 1,115 / Payments 1,094 / Transactions 29 / DealsFunded 33).
+- bronze.statement_files openroad = 121 rows only: positions 44 (2026-06-29..08-11), payments 44 (2026-06-29..08-11), purchase_tape 33 (2023-07-13..2024-12-14). ZERO 'transactions' files ever registered. => the registry backfill (ordered-plan step 2) was NEVER run; bronze only picked up files forward from go-live.
+- bronze.statement_rows openroad: positions 1,540 rows/44 dates, payments 35 rows/22 dates, purchase_tape 38 rows/33 dates.
+- silver.positions openroad = 280 rows / 35 loans / 8 dates, 2026-06-29..**2026-07-06**. STALE BY 37 DAYS while bronze has positions through 2026-08-11 => the silver chain is not just un-backfilled, it has stopped advancing. Every other platform is current: anchored 08-11 (1,119 dates), prosper 08-11 (1,990), sofi 08-11 (589), northpond 08-11 (763), marlette 08-10 (1,405), happymoney 08-10 (475), upgrade 08-07 (1,888), lc 08-02 (3,349), upstart 07-26 (1,325). openroad's 8 dates is the worst by two orders of magnitude.
+- silver.transactions openroad = 7 rows / 6 loans / 4 dates (2026-07-01..07-06). silver.openroad_stmt_transactions = 0 ROWS.
+- silver.transfers openroad = 35 rows, EFP_ID NULL 35/35, FROM_FUND NULL 35/35 (unchanged since the 07-29 audit).
+
+THE DETECTOR IS ALIVE AND HAS BEEN SCREAMING — correcting [[wm-4s2sad]] for openroad: GOLD.POSITIONS_COMPARISON_DAILY is NOT dead, it ran 2026-08-11 06:03:57 with as_of_date through 2026-08-09 (142 rows for openroad). Its verdict: EXTRA_IN_SNOWFLAKE=0, EXTRA_IN_DATASTORE=35, COMMON_COUNT=0 on **141 of 142 dates** (2026-03-21..2026-08-09). Exactly ONE date matches — 2026-07-06 (0/0/35). So the board has recorded total openroad divergence continuously for five months, including every day since the deprecation merged.
+ANOMALY WORTH CHASING: silver.positions HAS 35 rows on each of 2026-06-29..07-05, yet the comparison counts those same dates as 35 datastore-only / 0 common. Only 07-06 joins. Either the comparison's join key or its snapshot selection is off for openroad, or those 7 dates fail the join on a column the tool keys on. Unexplained — do not quote '1 of 142' as pure data absence without resolving this.
+
+NULL PROFILE, silver.positions openroad (n=280): CREDIT_SCORE 280/280 NULL, CREDIT_SCORE_AT_PURCHASE 280/280, FIRST_PAYMENT_DUE_DATE 280/280, ANL 280/280, IRR 280/280. PURCHASE_DATE and ZIP_CODE 0 NULL. Single fund, single account_id — unchanged.
+PREDICTIONS still broken as of 07-29: silver.predictions openroad 2,507 rows / 35 ids, max as_of_date 2024-12-12, still APP_ID-keyed (openroad_4675720, _4713755, _4775948...) vs positions' openroad_5865766, _4994794... => 0 of 35 ids join. silver.predicted_cashflows openroad 2,507 rows, FEES 2,507/2,507 NULL, NET_CASH_FLOW 2,507/2,507 NULL, RECOVERY 2,367/2,507 NULL, last loaded_at 2026-07-07 14:02. DEV-1331 was closed Done 2026-08-03 but prod was never re-materialized — the NaN-config corruption PR #5974 fixed is still sitting in prod data.
+
+LINEAR BOOKKEEPING GAP: the 'Deprecate datastores' milestone (b4cc3095, target 2026-08-03) STILL reads 0% and still contains ZERO issues — DEV-1486 was created and closed but never attached to the project or the milestone. list_issues on 'OpenRoad Data Ingestion' returns only DEV-1331, 1350, 1154, 1150, 1118, 1070. So Abhijeet's project view shows the deprecation as not started, while prod has already been switched over. Both readings are wrong in opposite directions.
