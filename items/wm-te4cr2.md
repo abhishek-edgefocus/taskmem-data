@@ -8,7 +8,7 @@ size: s
 tags: [northpond, dagster, errors]
 links: [relates:wm-3rsskm]
 created: 2026-08-10T20:05:48Z
-updated: 2026-08-10T20:05:57Z
+updated: 2026-08-12T13:48:22Z
 source: claude-code
 ---
 
@@ -73,3 +73,6 @@ Consider splitting or retitling.
 
 SIDE OBSERVATION (not this ticket): configs/default_passwords.json has a real
 40-char ghp_ classic GitHub PAT committed to git.
+
+## Log
+- 2026-08-12T13:48Z [claude-code] ESCALATION 2026-08-12 from prod Dagster (read-only): this is not a single-asset failure. northpond_exp_predictions raising 'AssertionError: .efp_toplevel not found' is failing the ENTIRE statements_northpond job on every sensor tick — 20 consecutive FAILUREs, last SUCCESS 2026-08-05 18:44 UTC. The same runs also fail northpond_transfers with 'ValueError: Validation failed with 1116 error(s)', so there are two independent breakages in the same job. Full audit in [[wm-hjbt5a]].
