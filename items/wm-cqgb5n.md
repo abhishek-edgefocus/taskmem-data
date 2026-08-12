@@ -7,8 +7,9 @@ priority: p1
 size: m
 people: [Abhijeet]
 tags: [northpond, edgex, backfill]
+links: [follows:wm-qtjmcv]
 created: 2026-08-12T13:29:24Z
-updated: 2026-08-12T13:29:24Z
+updated: 2026-08-12T13:29:29Z
 source: claude-code
 label: northpond fund backfill
 ---
