@@ -2,10 +2,14 @@
 id: wm-85nuv4
 type: task
 title: OpenRoad silver chain stopped at 2026-07-06 while bronze runs to 2026-08-11
-status: open
+status: next
+priority: high
+size: m
+tags: [openroad, datastores]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-12T13:03:24Z
+updated: 2026-08-12T13:03:29Z
 source: claude-code
+effort: half-day
 ---
 
 Found 2026-08-12 while measuring OpenRoad prod DQ for [[wm-prm54n]]. This is a
