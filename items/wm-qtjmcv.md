@@ -10,7 +10,7 @@ tags: [northpond]
 links: [relates:wm-7qqeke]
 refs: [DEV-1509=https://linear.app/edge-focus/issue/DEV-1509/rename-experimental-northpond-fund, PR-6208=https://github.com/edgefocus/efp/pull/6208]
 created: 2026-08-10T14:53:27Z
-updated: 2026-08-12T13:28:27Z
+updated: 2026-08-12T16:10:56Z
 source: claude-code
 ---
 
@@ -63,3 +63,14 @@ OPENROAD FIXTURE LEFT ALONE DELIBERATELY: integration_tests/md_tests/openroad_po
 
 ALSO: an AI review agent flagged #6208 for 'omitting' the FUND_WITH_PURCHASE_TAPE_EXPR change. NOT VALID — that change is deliberately in #6209 per the agreed split, and the location it cited (constants.py L9-L19) is NORTHPOND_ACCOUNT_FUND_MAP, not the expression (L39-53). No action taken.
 - 2026-08-12T13:28Z [claude-code] MERGED + DEPLOYED, and the backfill gap is now REAL IN PROD (verified 2026-08-12 18:5x IST). PR #6208 merged 2026-08-11T19:50Z as 42db18e68. Prod is running the new code: silver.northpond_stmt_positions AS_OF_DATE=2026-08-12 writes FUND='northpond_balancesheet' (343 rows), while 2026-08-11 and every earlier date still say 'experimental'. Counted in PROD: experimental 156,155 rows (latest as_of 2026-08-11), northpond_balancesheet 343 rows (latest as_of 2026-08-12). This is exactly the split-fund state this item warned about — one fund now exists under two names and every downstream group-by splits. The as_of_date backfill of northpond_stmt_positions, northpond_stmt_transactions, silver.positions AND silver.transfers (777 POOL_ID / 715 TO_FUND / 372 FROM_FUND rows) has NOT run. Code work is complete, so closing this; the backfill is tracked separately.
+- 2026-08-12T16:10Z [claude-code] AJAX QUESTION ANSWERED 2026-08-12 (closes the open ask from the 2026-08-11 recon entry). Abhishek asked what the fund name/format is for the "AJAX 2026-1NN" deal.
+
+RE-VERIFIED: there is still NO "AJAX" anywhere. prod.silver.positions (FUND/ACCOUNT_ID/CHANNEL/PLATFORM), prod.silver.transfers (TO_FUND/FROM_FUND/POOL_ID) and prod.bronze.statement_rows (ACCOUNT_NAME/PLATFORM) all return 0 rows over full history; git grep on origin/master finds nothing but an unrelated x-sec-clge-req-type header in lib/efp/stats/old_scripts/activity_scraper.py; Slack search across public+private+DMs returns 0 messages. Reading: "AJAX" is dictation for EDGEX — EDGEX 2026-1NN is the only 2026-1NN deal (closed 2026-07-29, press release in #team-all 2026-07-30).
+
+ANSWER: fund value is edgex20261NN (FUNDS.EDGEX_2026_1, statement_rows/constants.py:29). FORMAT = deal name lowercased, hyphen dropped, NN kept: edgex + YYYY + seq + NN. Siblings edgex20251NN / edgex20252NN. Pre-funding vehicles keep PT case (edgex2026PT1/PT2); intermediates are snake_case (edgex_purchaser, edgex_purchaser2) and do NOT follow the deal pattern.
+
+EVERY PLATFORM STORES THE SAME STRING; only the discriminator differs — upgrade investor_id 9417954, prosper account 15983181, marlette SUBPOOL 241, happymoney PORTFOLIOID 70 (previously an unmapped gap, now mapped), northpond ACCOUNT_NAME INV103 (INV105 -> edgex_purchaser) with the purchase-date guard NORTHPOND_EDGEX_PURCHASE_START now 2026-08-01, not the 2026-07-28 recorded earlier.
+
+PROD REALITY 2026-08-11: edgex20261NN exists on PROSPER ONLY — 37 rows, ACCOUNT_ID 15983181, as_of 2026-08-06..2026-08-11. Upgrade/marlette/happymoney/northpond have the mappings but zero rows.
+
+Fund inventory otherwise unchanged since 08-11: 21 distinct funds, efhyf the widest at 9 platforms.
