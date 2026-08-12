@@ -10,7 +10,7 @@ people: [Nate]
 tags: [northpond]
 links: [relates:wm-n7usn7]
 created: 2026-07-28T17:28:34Z
-updated: 2026-08-07T21:34:54Z
+updated: 2026-08-12T13:33:30Z
 source: claude-code
 ---
 
@@ -78,3 +78,7 @@ V1 CONTRADICTS NATE'S OWN COMMITMENT: he said the standard file would still carr
 STILL UNANSWERED FROM 07-23 18:32 (Abhishek asked, never answered): (1) 'by AGI you mean borrower_income_annual — and that is the one you'd keep providing?' — v0 answers it implicitly, v1 does not. (2) Trishit was asked whether employment_tenure is needed on the purchase tape for modelling — no reply in channel; v0 ships it anyway. (3) 'Is principal_on_purchase_date the same number as today's outstanding_principal_balance_as_of_funding_date? It feeds our transfer amounts.' — STILL OPEN and the stubs CANNOT answer it (v0 flat 2, v1 flat 1). This is the single most important open item because it drives TAPE_PRINCIPAL/transfers. ALSO UNANSWERED BY US: Nate 07-23 23:56 'we'll produce a daily purchase file (both legacy and new) and upload to sftp each day. Does this match your understanding?' — never confirmed, and master deliberately has NO MonitoringSchedule on northpond_purchase_tape_v0_csv pending exactly that confirmation.
 
 DO NOT re-ask items 1 and 3 as if new — reference them as outstanding since 23 July.
+- 2026-08-12T13:33Z [claude-code] CLOSED BY DIRECT PROD CHECK 2026-08-12. Ran check 2 from the body against PROD.BRONZE.STATEMENT_FILES for every key under statements/northpond/purchase_file/. Every single _test stub routes to STATUS='ignore' with STATEMENT_TYPE, AS_OF_DATE and RULE_NAME all NULL — 11 under v0 (20260723, 0728, 0729, 0730, 0731, 0803, 0804, 0805, 0807, 0810, 0811) and the matching 11 under v1. The guard held for every one of Nate's test runs, including the 2026-08-11 pair he posted right before the live flip.
+The trigger condition this item was waiting on is not just met but overtaken: real non-test files have now landed and routed correctly. purchase_file_v0_20260811.csv is STATUS='rows_added', STATEMENT_TYPE='purchase_tape', AS_OF_DATE=2026-08-11; purchase_file_v1_20260811.csv is 'ignore', which is correct since v1 is not supported yet.
+Checks 3 and 4 in the body are deliberately superseded rather than passed — silver.northpond_stmt_purchase_tapes has moved from 372 rows to 401 because 29 real rows were added, which is the intended end state, not a leak. Nothing to do here.
+ONE NEW THING FOUND WHILE LOOKING, not part of this item: s3://efp-raw/statements/northpond/purchase_file_legacy/2026/07/purchase_file_legacy_20260723.csv sits at STATUS='unknown' — one file, no matching ParsingRule. Noted on [[wm-tvjjgw]], which owns the legacy path.
