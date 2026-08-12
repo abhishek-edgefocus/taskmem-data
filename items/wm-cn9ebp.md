@@ -9,7 +9,7 @@ tags: [ai-billing, needs-reply]
 links: [parent:wm-gcdq6k]
 refs: [PR-6223=https://github.com/edgefocus/efp/pull/6223]
 created: 2026-08-12T13:30:57Z
-updated: 2026-08-12T13:31:09Z
+updated: 2026-08-12T13:32:07Z
 source: claude-code
 label: Ramp vendor exception
 ---
@@ -31,3 +31,8 @@ Either way Brittney is owed an answer, since she acted on his "I can do that".
 - PR #6223 — https://github.com/edgefocus/efp/pull/6223
 - Group DM thread — https://edgefocuspartners.slack.com/archives/C0B6ZBZG61M/p1786540199026419
 - DEV-970 — https://linear.app/edge-focus/issue/DEV-970/add-tracking-of-ai-billing-to-slack
+
+## Log
+- 2026-08-12T13:32Z [claude-code] ANSWERED WITHIN THE HOUR, AND THE ANSWER IS 'KEEP THE VENDOR LIST'. This item was written speculating that the #efp-ai memo tag might make the vendor exception unnecessary; a parallel session ran the probe against the live Ramp API at 13:19Z and settled it — see the full numbers on [[wm-gcdq6k]]. Summary of what changes here: the tag is real and parses (19 transactions carry it, all dated 2026-01-06..2026-02-12), and 'GL 5510 OR tag' keeps 225 rows where 5510 alone keeps 206, so the tag recovers exactly the 18-charge Jan-Feb backlog Brittney could not re-code. But it does NOT cover ongoing spend: 8 Cursor charges since 2026-03 are missed by both rules, including two in August and one that landed today (2026-08-12, $763.18). Brittney tagged the history, not the future.
+SO STEP 2 BELOW IS SUPERSEDED — do not tell Brittney the vendor list is unnecessary. The vendor exception in PR #6223 is still required for ongoing Cursor charges, and the memo tag is an additional branch alongside the GL rule, never a replacement (tag-only would drop 206 charges). What is still genuinely open for Brittney is whether Cursor can be auto-memo'd going forward, which hinges on the unanswered 'Use memo for' dropdown-scope question.
+The OpenAI/Anthropic half of the promise is unaffected and still owed.
