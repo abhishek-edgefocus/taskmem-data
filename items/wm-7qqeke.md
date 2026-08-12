@@ -10,7 +10,7 @@ people: [Abhijeet]
 tags: [northpond, edgex]
 links: [relates:wm-5z3pjt, parent:wm-j523sq]
 created: 2026-07-31T17:01:37Z
-updated: 2026-08-12T13:09:40Z
+updated: 2026-08-12T13:28:41Z
 source: claude-code
 ---
 
@@ -91,3 +91,10 @@ NO-OP ON CURRENT DATA: old vs new expression replayed side by side over the late
 
 LIMITATION, stated in the code comment: purchase date cannot separate INV105 (EDGEX Purchaser I) from INV103 (EDGEX Grantor Trust); every post-cutover purchase reports edgex20261NN. Parsing the Nelnet investor tag remains the real fix. ACCOUNT_ID needs no code change - NORTHPOND_FUND_ACCOUNT_MAP already inverts edgex20261NN to INV103, so positions.ACCOUNT_ID follows the fund.
 - 2026-08-12T13:09Z [claude-code] Now live, not hypothetical: real v0 purchase-file rows landed 2026-08-11 (29 rows) and FUND_WITH_PURCHASE_TAPE_EXPR stamped them efhyf. Today that is still correct (ACCOUNT_NAME=northpond_efhyf), but the expression ignores ACCOUNT_NAME entirely — any loan appearing in silver.northpond_stmt_purchase_tapes with PURCHASE_DATE <= AS_OF_DATE becomes efhyf. The moment Oliv delivers a purchase file under INV103/INV105, positions+transactions will be mislabeled efhyf instead of edgex_2026_1 / edgex_purchaser.
+- 2026-08-12T13:28Z [claude-code] MERGED + DEPLOYED 2026-08-11, but PROD STILL HOLDS THE STALE FUND (verified 2026-08-12). PR #6209 'Fix northpond purchase-tape fund by splitting it on purchase date at the EDGEX cutover' merged 2026-08-11T21:48Z as 804310be3 — i.e. the date-based split from the previous entry was retargeted onto #6209 and shipped, not left unpushed. origin/master carries NORTHPOND_EDGEX_PURCHASE_START='2026-08-01' at northpond/constants.py:21. The correction to the entry above: #6209 is not 'open, CONFLICTING' any more.
+
+WHAT PROD ACTUALLY SHOWS NOW: PROD.SILVER.NORTHPOND_STMT_PURCHASE_TAPES holds 29 rows at AS_OF_DATE=2026-08-11 with PURCHASE_DATE=2026-08-11, ACCOUNT_NAME=northpond_efhyf and FUND='efhyf'. Under the merged rule those purchase dates are >= 2026-08-01 and must resolve to edgex20261NN. The rows are stale because they were written on 08-11 BEFORE the deploy, and the purchase tape has not been rebuilt since (MAX(AS_OF_DATE)=2026-08-11, 401 rows total). So the stored FUND on the tape is wrong today.
+
+WHY THIS STILL BITES even though positions look fine: none of the 29 loan ids (OLV12563552, OLV12563575, OLV12563554, ...) appear in SILVER.NORTHPOND_STMT_POSITIONS at any as_of yet — 0 matched — which is expected, since Nate said 2026-08-12 'there can be a few day delay to get into the NN file but once there it is always there'. When they DO arrive, positions will evaluate the new expression and get edgex20261NN, while transfers.TO_FUND reads the tape's stored FUND and gets efhyf. That is the positions-vs-transfers disagreement this item exists to prevent, arriving a few days late. Rebuilding the purchase tape before the loans land in the loan tape avoids it entirely.
+
+Code work is done and merged, so closing; the rebuild is tracked separately.
