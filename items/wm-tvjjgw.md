@@ -8,7 +8,7 @@ size: m
 tags: [northpond, datastores, oncall]
 links: [related:wm-gxykru]
 created: 2026-07-28T13:40:28Z
-updated: 2026-08-10T14:38:01Z
+updated: 2026-08-12T13:33:37Z
 source: claude-code
 ---
 
@@ -69,3 +69,4 @@ RECOMMENDED REPLY ON DEV-1457 (it asks Eshan 'is there a Snowflake equivalent?' 
 - 2026-08-10T14:38Z [claude-code] NATE SET A LIVE DATE (C0BJ1M304BU, 2026-08-08 17:01 IST, ts 1786188718.575029): 'the plan/target is to produce the first live purchase file on Tuesday. We will finish setting up proper values for some fields that currently have stubs/placeholders (accrued interest, etc)'. Tuesday from that Saturday = 2026-08-11, i.e. TOMORROW relative to today 2026-08-10. This is the first real purchase file since Pool 6 (June 2025) and it lands at purchase_file/v0/2026/08/purchase_file_v0_YYYYMMDD.csv, ingested by rule northpond_purchase_tape_v0_csv.
 Context: Abhishek sent the v0 sign-off 2026-08-08 03:15 IST ('the v0 file looks good - schema matches exactly what we ingest. We're on v0 for now and will move to the v1 schema later'); Nate reacted :thankyou:. Nate's stub-fix note covers accrued_interest and by implication outstanding_principal_balance_as_of_funding_date, but he did NOT mention the empty dti_ratio or the filename/content date skew (file named _20260723_ while purchase_date inside was 2026-07-24) — both still worth watching on the first live file.
 Relevant here because the legacy StatementPurchaseTape datastore is pinned to the Pool N xlsx feed from efp-derived/trades/northpond_ff. Once Oliv's live purchase files start arriving as v0 CSV on 2026-08-11, the legacy purchase tape stops seeing new purchases (freezes silently, no error) and the EDGEX investor ABS datasets drift from prod.
+- 2026-08-12T13:33Z [claude-code] SMALL PROD FINDING 2026-08-12 while verifying the purchase-file routing for [[wm-jewha5]]: exactly one file under the legacy path is unparsed — s3://efp-raw/statements/northpond/purchase_file_legacy/2026/07/purchase_file_legacy_20260723.csv, STATUS='unknown' in PROD.BRONZE.STATEMENT_FILES, so no ParsingRule matches the purchase_file_legacy/ prefix. It is the only key under that prefix and it is a month old. Worth deciding as part of this item's mirror-retirement question rather than separately: if the efp-derived/trades/northpond_ff -> statements/northpond/purchase_tape/ mirror is going away anyway, this file may simply not need a rule.
