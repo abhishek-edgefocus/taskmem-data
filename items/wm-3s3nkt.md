@@ -8,8 +8,9 @@ size: xs
 due: 2026-08-12
 people: [Nate]
 tags: [northpond, edgex, needs-reply]
+links: [relates:wm-gj5tkx]
 created: 2026-08-12T16:36:50Z
-updated: 2026-08-12T16:36:53Z
+updated: 2026-08-12T16:36:54Z
 source: claude-code
 ---
 
