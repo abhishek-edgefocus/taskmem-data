@@ -2,10 +2,14 @@
 id: wm-hjbt5a
 type: task
 title: Prod Dagster: 5 platform statement sensors never enabled + 3 platform jobs failing every tick
-status: open
+status: next
+priority: high
+size: m
+tags: [dagster, datastores]
 created: 2026-08-12T13:48:14Z
-updated: 2026-08-12T13:48:14Z
+updated: 2026-08-12T13:48:22Z
 source: claude-code
+effort: <1h
 ---
 
 Found 2026-08-12 while diagnosing OpenRoad ([[wm-85nuv4]]). Read-only audit of prod
