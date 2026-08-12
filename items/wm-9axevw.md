@@ -6,7 +6,7 @@ status: next
 priority: high
 size: s
 tags: [northpond, datastores, oncall]
-links: [relates:wm-tvjjgw]
+links: [relates:wm-tvjjgw, relates:wm-hjbt5a]
 created: 2026-08-12T14:10:51Z
 updated: 2026-08-12T14:10:55Z
 source: claude-code
