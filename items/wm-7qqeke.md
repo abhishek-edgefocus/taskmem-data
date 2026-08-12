@@ -2,7 +2,7 @@
 id: wm-7qqeke
 type: task
 title: Fix northpond FUND_WITH_PURCHASE_TAPE_EXPR hardcoded efhyf before Oliv EDGEX purchase files land
-status: next
+status: done
 priority: p1
 size: s
 due: 2026-08-11
