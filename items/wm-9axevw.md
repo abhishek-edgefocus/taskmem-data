@@ -8,7 +8,7 @@ size: s
 tags: [northpond, datastores, oncall]
 links: [relates:wm-tvjjgw, relates:wm-hjbt5a, parent:wm-3y3ckv]
 created: 2026-08-12T14:10:51Z
-updated: 2026-08-12T20:47:19Z
+updated: 2026-08-12T21:06:40Z
 source: claude-code
 effort: <1h
 ---
@@ -121,3 +121,8 @@ a monitoring construct, never a pipeline control.
 
 Either real fix (Oliv re-drops, or copy issuance_20260803.csv to the _20260804 name) makes the
 file exist, so no ack row is needed in either path.
+- 2026-08-12T21:06Z [claude-code] PLAN CONFIRMED 2026-08-12 21:05 UTC: Abhishek is asking Oliv now to copy the file they delivered on Aug 3 and re-drop it labelled as Aug 4. This works — verified at the data level: all 715 loans in the Aug 4 loan tape are already in issuance_20260803.csv (0 extra), and extra issuance rows cannot leak because BOTH datastore consumers left-join issuance onto positions keyed on loan_id (datastore_standardized_positions_northpond.py:72, datastore_stand_pos_first_pass_northpond.py:72); the two other consumers (bin/reconcile/northpond/northpond_loan_fl.py, bin/northpond/owned_at_purchase_features.py) read full history and filter via .unique(), so they are date-order-insensitive. Use the 3rd NOT the 5th: the 3rd cannot contain a loan issued after the report date.
+
+DELIVERY PATH (verified in repo): Oliv drops on SFTP (flat remote dir) -> Dagster job sftp_sync_northpond_job syncs SFTP->EFS /efs/data/statements/northpond/ on cron '30 * * * *' (hourly at :30, orchestration/definitions.py:297) -> [EFS->s3://efp-raw/statements/northpond/ leg NOT located in repo; SFTPSync writes EFS only and /efs/data is not mounted on dpx, so this hop is unverified] -> nightly dumbledore generate_datastores ~21:00 PT. Empirically the end-to-end lag is small: issuance files appear in S3 at a consistent 16:36-17:08 UTC daily. With the ask going out ~21:15 UTC there is ~7h of headroom before tonight's 04:00 UTC run, so it should catch tonight, but the unverified hop means it could slip a night. NOT a reason to delay the ask.
+
+Told him the genuine Aug 4 file is the better ask if Oliv still has it (issuance is cumulative and generated daily, so what failed on Aug 4 was most likely the DELIVERY, not the generation).
