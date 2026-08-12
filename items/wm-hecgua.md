@@ -2,11 +2,14 @@
 id: wm-hecgua
 type: task
 title: Commit or salvage the untracked OpenRoad silver-vs-datastore docs + create openroad_verified.py
-status: open
+status: next
+priority: high
+due: 2026-08-12
 links: [parent:wm-su6q4d, relates:wm-6zdqhy]
 created: 2026-08-12T12:18:40Z
-updated: 2026-08-12T12:21:25Z
+updated: 2026-08-12T12:27:08Z
 source: claude-code
+effort: <1h
 ---
 
 Found 2026-08-12 while searching for "OpenRoad verified differences".
