@@ -11,7 +11,7 @@ tags: [openroad, datastores]
 links: [parent:wm-su6q4d, relates:wm-bvqkhh, relates:wm-tvjjgw]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-07-29T15:33:30Z
-updated: 2026-08-12T13:03:01Z
+updated: 2026-08-12T13:09:33Z
 source: claude-code
 label: OpenRoad datastore deprecation
 ---
@@ -134,3 +134,19 @@ NULL PROFILE, silver.positions openroad (n=280): CREDIT_SCORE 280/280 NULL, CRED
 PREDICTIONS still broken as of 07-29: silver.predictions openroad 2,507 rows / 35 ids, max as_of_date 2024-12-12, still APP_ID-keyed (openroad_4675720, _4713755, _4775948...) vs positions' openroad_5865766, _4994794... => 0 of 35 ids join. silver.predicted_cashflows openroad 2,507 rows, FEES 2,507/2,507 NULL, NET_CASH_FLOW 2,507/2,507 NULL, RECOVERY 2,367/2,507 NULL, last loaded_at 2026-07-07 14:02. DEV-1331 was closed Done 2026-08-03 but prod was never re-materialized — the NaN-config corruption PR #5974 fixed is still sitting in prod data.
 
 LINEAR BOOKKEEPING GAP: the 'Deprecate datastores' milestone (b4cc3095, target 2026-08-03) STILL reads 0% and still contains ZERO issues — DEV-1486 was created and closed but never attached to the project or the milestone. list_issues on 'OpenRoad Data Ingestion' returns only DEV-1331, 1350, 1154, 1150, 1118, 1070. So Abhijeet's project view shows the deprecation as not started, while prod has already been switched over. Both readings are wrong in opposite directions.
+- 2026-08-12T13:09Z [claude-code] FILE INVENTORY RESOLVED 2026-08-12 — Abhishek pushed back that 2,276 files vs 35 loans looked wrong. He is right, and the earlier framing was misleading. The 35-loan portfolio is CORRECT AND COMPLETE; the files are DAILY SNAPSHOTS, so the gap is history DEPTH, not missing loans.
+
+PROOF 35 IS THE WHOLE PORTFOLIO: bronze.statement_rows openroad positions = exactly 35 rows on every one of the 44 as-of dates (1,540/44 = 35.0). silver.openroad_stmt_purchase_tapes = 35 rows from 33 funding tapes. Funding tapes stop 2024-12-14 and Transactions files stop 2024-12-18 => OpenRoad closed to new purchases in Dec 2024; the 35 loans have just been serviced and reported daily since.
+
+S3 BREAKDOWN (s3://efp-raw/statements/openroad/, 2,276 objects) vs bronze.statement_files:
+  LoanTape_Edge_Orl_*.csv   1,115 files, 2023-07-24..2026-08-11 (daily) | bronze 44 | MISSING 1,071
+  Payments_Edge_Orl_*.csv   1,094 files, 2023-08-14..2026-08-11 (daily) | bronze 44 | MISSING 1,050
+  Transactions_Edge_Orl_*   29 files, 2023-07-25..2024-12-18 (sporadic) | bronze  0 | MISSING 29
+  *EdgeFocusDealsFunded_*   33 files, 2023..2024-12-14 (purchase tape)  | bronze 33 | COMPLETE
+  LoanTape_Edge_*.csv (no _Orl) 4 files, 2023-07-20..23, 1,335 bytes each — early naming variant; the job docstring says it parses 'LoanTape_Edge[_Orl]_' so these ARE in scope.
+  '*_Edge_Orl*.csv' 1 object, 0 bytes, created 2026-08-11 10:36 — a literal unquoted shell glob someone uploaded by accident. Junk. Delete it, and make sure the backfill's matcher does not choke on it.
+So the only file type fully ingested is the purchase tape. Bronze holds 44 of ~1,119 position days = 3.9%.
+
+EXPECTED AFTER BACKFILL: ~1,119 as-of dates x 35 loans = ~39,000 rows in silver.positions (vs 280 today). Consistent with the earlier dev-side estimate of ~32K rows/~1,080 dates. Volume is trivial — the files are 1.3KB-16.6KB, ~15MB total.
+
+SEQUENCING CORRECTION: backfill is NOT the first move. See [[wm-85nuv4]] — the openroad silver job has not run since 2026-07-07, so backfilled files would land in bronze and stop there. Bronze ingest is healthy and current; the dead consumer is the silver job.
