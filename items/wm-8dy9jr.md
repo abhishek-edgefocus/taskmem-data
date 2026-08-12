@@ -2,9 +2,13 @@
 id: wm-8dy9jr
 type: task
 title: Nelnet loan file is landing raw SSN/DOB/bank details into efp-raw (the NON-PII bucket)
-status: open
+status: next
+priority: p1
+size: s
+people: [Nate, Trishit]
+tags: [northpond, edgex, compliance]
 created: 2026-08-12T15:29:33Z
-updated: 2026-08-12T15:29:33Z
+updated: 2026-08-12T15:29:37Z
 source: claude-code
 ---
 
