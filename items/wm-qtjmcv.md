@@ -2,7 +2,7 @@
 id: wm-qtjmcv
 type: task
 title: DEV-1509: rename the northpond 'experimental' fund to northpond_balancesheet
-status: active
+status: done
 priority: p3
 size: s
 people: [Sean]
