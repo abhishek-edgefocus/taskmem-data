@@ -10,7 +10,7 @@ people: [Abhijeet]
 tags: [northpond, edgex]
 links: [relates:wm-5z3pjt, parent:wm-j523sq]
 created: 2026-07-31T17:01:37Z
-updated: 2026-08-11T20:58:59Z
+updated: 2026-08-12T13:09:40Z
 source: claude-code
 ---
 
@@ -90,3 +90,4 @@ VALIDATED AGAINST THE INVESTOR TAG - the strong evidence for the 2026-08-01 boun
 NO-OP ON CURRENT DATA: old vs new expression replayed side by side over the latest prod loan tape gives identical funds (372 efhyf, 343 experimental, 0 rows differing). All 372 tape purchases are 2025-02-05..2025-06-17, so the EDGEX arm stays dormant until live purchase files land.
 
 LIMITATION, stated in the code comment: purchase date cannot separate INV105 (EDGEX Purchaser I) from INV103 (EDGEX Grantor Trust); every post-cutover purchase reports edgex20261NN. Parsing the Nelnet investor tag remains the real fix. ACCOUNT_ID needs no code change - NORTHPOND_FUND_ACCOUNT_MAP already inverts edgex20261NN to INV103, so positions.ACCOUNT_ID follows the fund.
+- 2026-08-12T13:09Z [claude-code] Now live, not hypothetical: real v0 purchase-file rows landed 2026-08-11 (29 rows) and FUND_WITH_PURCHASE_TAPE_EXPR stamped them efhyf. Today that is still correct (ACCOUNT_NAME=northpond_efhyf), but the expression ignores ACCOUNT_NAME entirely — any loan appearing in silver.northpond_stmt_purchase_tapes with PURCHASE_DATE <= AS_OF_DATE becomes efhyf. The moment Oliv delivers a purchase file under INV103/INV105, positions+transactions will be mislabeled efhyf instead of edgex_2026_1 / edgex_purchaser.
