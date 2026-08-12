@@ -6,9 +6,10 @@ status: next
 size: xs
 people: [Brittney]
 tags: [ai-billing, needs-reply]
+links: [parent:wm-gcdq6k]
 refs: [PR-6223=https://github.com/edgefocus/efp/pull/6223]
 created: 2026-08-12T13:30:57Z
-updated: 2026-08-12T13:30:57Z
+updated: 2026-08-12T13:31:09Z
 source: claude-code
 label: Ramp vendor exception
 ---
