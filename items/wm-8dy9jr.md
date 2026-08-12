@@ -9,7 +9,7 @@ people: [Nate, Trishit]
 tags: [northpond, edgex, compliance]
 links: [relates:wm-gj5tkx, relates:wm-nwvcg9]
 created: 2026-08-12T15:29:33Z
-updated: 2026-08-12T15:29:37Z
+updated: 2026-08-12T16:36:50Z
 source: claude-code
 ---
 
@@ -42,3 +42,8 @@ Same underlying 'what are we allowed to hold' policy question as [[wm-9kvv8c]].
 IMMEDIATE ACTIONS TO CONSIDER (needs Abhishek's call, none taken)
 - Decide whether the 13 already-landed files should be purged or moved to efp-pii.
 - Answer Nate on the PII policy so Oliv can stop sending it.
+
+## Log
+- 2026-08-12T16:36Z [claude-code] NARROWED 2026-08-12 after the Nate call transcript. The go-forward half of this is DECIDED: EF will not ingest PII, and Nate has agreed to deliver a truncated PII-free file (he already produces that shape for other loan buyers). So the code changes I scoped this morning — positional PII stripping and extension dispatch in strip_statement_pii.py — are NOT needed, provided the replacement file arrives as a named-column CSV. If it does, the existing pii_columns mechanism plus S3CsvFile covers everything.
+WHAT REMAINS IS PURELY CLEANUP, and it is still real: the 13 daily VELOCITY_SERVICING_DF2_* files already sitting in s3://efp-raw/statements/northpond/nelnet/daily_loan/ (2026-07-31 through 2026-08-12) still contain plaintext SSN, DOB, address, phone, email and bank routing numbers for up to 353 borrowers, in the NON-PII bucket. Deciding whether those are purged or moved to efp-pii is Abhishek's call and is unaffected by the source-side fix.
+Also note the raw feed will keep landing until Oliv actually cuts over to the truncated file, so the exposure grows by one file a day until then. Worth confirming the cutover date with Nate.
