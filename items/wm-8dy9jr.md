@@ -7,7 +7,7 @@ priority: p1
 size: s
 people: [Nate, Trishit]
 tags: [northpond, edgex, compliance]
-links: [relates:wm-gj5tkx]
+links: [relates:wm-gj5tkx, relates:wm-nwvcg9]
 created: 2026-08-12T15:29:33Z
 updated: 2026-08-12T15:29:37Z
 source: claude-code
