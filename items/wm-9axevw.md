@@ -2,10 +2,14 @@
 id: wm-9axevw
 type: task
 title: northpond datastore chain frozen at 2026-08-03: missing issuance_20260804.csv poisons standardized_positions every night
-status: open
+status: next
+priority: high
+size: s
+tags: [northpond, datastores, oncall]
 created: 2026-08-12T14:10:51Z
-updated: 2026-08-12T14:10:51Z
+updated: 2026-08-12T14:10:55Z
 source: claude-code
+effort: <1h
 ---
 
 Found 2026-08-12 answering "check northpond datastores and why is it stale".
