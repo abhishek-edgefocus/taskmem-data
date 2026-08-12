@@ -5,7 +5,7 @@ title: Commit or salvage the untracked OpenRoad silver-vs-datastore docs + creat
 status: open
 links: [parent:wm-su6q4d, relates:wm-6zdqhy]
 created: 2026-08-12T12:18:40Z
-updated: 2026-08-12T12:18:50Z
+updated: 2026-08-12T12:21:25Z
 source: claude-code
 ---
 
@@ -46,3 +46,6 @@ OPEN DECISIONS RECORDED IN THE DOC:
 
 NEXT: back the folder up / commit it somewhere durable before that stale checkout
 gets cleaned or reset, then land it alongside `openroad_verified.py`.
+
+## Log
+- 2026-08-12T12:21Z [claude-code] Provenance evidence assembled 2026-08-12 (proof the doc predates today). (1) dpx session transcript ~/.claude/projects/-home-abhishek/467f6ab1-466e-4f2f-a7e0-f55d0215ab0c.jsonl records the literal Write tool calls: README.md at 2026-07-07T16:57:43Z, positions-mismatches-2026-07-01.md at 2026-07-07T16:58:26Z, plus 3 Edits on 2026-07-08T16:56-16:57Z; 87 mentions across that session. (2) Source data it was derived from still on disk: /tmp/claude-2053/-home-abhishek/467f6ab1-.../scratchpad/openroad_compare_aligned.txt, 18036 bytes, dated 2026-07-07 16:47 — 10 min before the doc was written. (3) 4 other dpx transcripts reference the folder: b6fbfb79 (2026-07-08), 42b66000 (2026-07-13), ec4fd968 (2026-07-13 to 07-15), a6354544 (2026-07-16). (4) STRONGEST PUBLIC PROOF: PR #5807 'DEV-1393: Fixes in OpenRoad Positions', opened 2026-07-08T17:29:24Z, MERGED 2026-07-09T18:12:46Z — its body restates the doc's findings verbatim including the exact '95/125 to 99/125 perfect column matches' figure, 32 min after the last doc edit. (5) taskmem wm-6zdqhy already cited the sibling openroad doc as untracked. CAVEAT: both files' mtime is 2026-07-24 16:49:22.923070599 — IDENTICAL to the nanosecond across both, which indicates a bulk copy/restore into place on 07-24, not an individual edit; no surviving transcript covers 07-24 (dpx transcripts stop at 2026-07-20) and no second copy exists anywhere on the box. So mtime understates age by ~17 days; the transcript+PR chain is the real dating evidence.
