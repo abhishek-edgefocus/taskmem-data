@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [parent:wm-su6q4d, relates:wm-prm54n]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-12T13:09:18Z
+updated: 2026-08-12T13:47:50Z
 source: claude-code
 effort: half-day
 ---
@@ -60,3 +60,12 @@ NOT A CODE GAP: the sensor IS registered on origin/master exactly like every oth
 BRONZE IS HEALTHY — this is important for sequencing: bronze.statement_rows openroad positions has all 44 dates 2026-06-29..2026-08-11 at exactly 35 rows/date (1,540 total). The bronze ingest job is running fine. Only the silver step is dead.
 
 => ORDERING CONSEQUENCE for [[wm-prm54n]]: running the file-registry backfill FIRST would park ~2,150 files in bronze and produce nothing in silver, because the consumer is dead. Revive/diagnose this job before or alongside the backfill.
+- 2026-08-12T13:47Z [claude-code] ROOT CAUSE CONFIRMED FROM PROD DAGSTER 2026-08-12 (read-only GraphQL, https://dagster-prod.edgefocuspartners.com/graphql, version 1.12.14, no writes):
+
+**openroad_statement_sensor is STOPPED and has NEVER TICKED.** sensorState: status=STOPPED, runningCount=0, ticks=0. Not 'it broke on 07-07' — it was never switched on in prod.
+
+**statements_openroad has exactly ONE run in its entire history**: runId 8907d34a-909f-4879-b3a1-f0c174113135, SUCCESS, 2026-07-07 19:59-20:02 UTC (= 12:59-13:02 PT — matches the silver table write timestamps to the minute). Tags show dagster/from_ui=true and NO dagster/sensor_name => it was launched by hand from the Dagster UI during development. openroad silver has therefore never been produced by an automated run, ever.
+
+This closes the diagnosis: the fix is to enable the sensor in the prod Dagster UI (an operational toggle, no PR). The job code and the sensor registration on origin/master are both correct — definitions.py:406-408, minIntervalSeconds=30, target statements_openroad.
+
+CAUTION BEFORE FLIPPING IT: with the sensor off, no one has ever seen this job run unattended. Turning it on will start it consuming the 44 bronze dates already queued, and then whatever the backfill adds. Watch the first tick — three OTHER platform jobs are currently failing every sensor run (see the new sensor audit item).
