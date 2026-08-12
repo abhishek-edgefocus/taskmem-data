@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [parent:wm-j523sq, relates:wm-5z3pjt, relates:wm-nwvcg9]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-12T15:28:55Z
+updated: 2026-08-12T16:36:31Z
 source: claude-code
 ---
 
@@ -98,3 +98,51 @@ FIELD GAPS RE-CONFIRMED ON THE LARGER SAMPLE (353 loans, 107 of 333 fields popul
 ARCHITECTURE CONCLUSION (the cheap path):
 Because the Nelnet loan set is DISJOINT from the FCC set and silver.northpond_stmt_positions.LOANNUMBER is already the OLV number (e.g. 'OLV12562766') which is exactly Nelnet field 39, the low-cost design is to normalise Nelnet rows INTO the existing silver.northpond_stmt_positions / _stmt_transactions schema and UNION them. Then positions.py, transactions.py and transfers.py need ZERO changes — EFP_ID = 'northpond_' || LOANNUMBER keeps working and the standardized layer is free. The unmappable columns land as NULL, which is a DQ question, not a modelling one.
 The transaction file cannot stand alone: it keys on the Nelnet 12-digit number (field 1), so it must bridge through the loan file to reach the OLV key. That makes the loan feed a hard dependency of the transaction feed.
+- 2026-08-12T16:36Z [claude-code] UPDATE 2026-08-12 after reading the Nate/Abhishek call transcript + consolidated discussion points (both in ~/Downloads, dated 2026-08-12). This resolves most of the blockers logged earlier today and adds two new risks. Read this entry as superseding parts of the 15:28Z entry.
+
+BLOCKERS THAT ARE NOW GONE
+1. Velocity DF2 record layout — NO LONGER NEEDED. Decision taken: EF does not ingest PII, so Oliv will deliver a truncated, PII-free file. Nate already produces exactly this shape for other loan buyers ('we are ingesting the file and then I'm saying here's 20 columns from that file that is what we're going to export into a CSV and give to you every day'). A sample is already in Slack (the skinnier 'oliv financial loan_' file). That kills the 333-unnamed-positional-field problem outright.
+2. The new headerless/pipe-delimited FileConfig — NOT NEEDED if the delivered file is a named-column CSV. Existing S3CsvFile handles it as-is.
+3. The PII code changes I scoped this morning (positional stripping + extension dispatch in strip_statement_pii.py) — NOT NEEDED for the go-forward feed. See [[wm-8dy9jr]], which now narrows to cleaning up the files already sitting in efp-raw.
+4. Historical backfill — NOT A CONSTRAINT. Abhishek's call: Oliv is highly accessible (EdgeFocus acquired Oliv), so we can simply ask them to re-drop historical Nelnet position/transaction files and rebuild rather than reconstruct from the 13 daily files we happen to hold. Also relevant: the EDGEX deal only started ~2026-08-11 (first purchase file), so the window that actually has to be right is short.
+
+CORRECTION TO MY OWN EARLIER READ ON INV103
+This morning I logged 'INV103 does not discriminate fund, do not build fund logic on it'. The finding was right but the reason was wrong. Nate explained INV103/104/105/106 are COLLATERAL / BUYBACK / WITHHOLDING buckets, not investors or funds: 'the only reason we have these INV 103, 104, 105, 106 is for collateral issues or like buybacks or things where we need to withhold loans'. So one tag spanning both efhyf and edgex20261NN is EXPECTED, not a defect. The authority for fund/ownership is the PURCHASE TAPE plus its effective purchase date. Macquarie is INV101 and is a separate program.
+
+NATE'S DATA MODEL, CONFIRMED AGAINST PROD — the union design is safe
+Nate stated the invariant: issuance = FCC population + Nelnet population, disjoint, one active loan per customer and one servicer per active loan. Verified as of 2026-08-11:
+  issuance universe 1079 | FCC positions 715 | Nelnet positions 353 | in BOTH servicers 0 | Nelnet loans missing from issuance 0 | in issuance only 11
+The 11 break down as 9 issued on 2026-08-11 (the boarding lag Nate described — 'there can be a few day delay to get into the NN file but once there it's always there') and 2 genuine orphans first seen 2024-11-26 and 2025-06-14, which are worth a question to Nate but are not blocking.
+715 + 353 + 11 = 1079 exactly. This gives us a permanent DQ assertion: issuance == FCC UNION Nelnet, with the two servicing sets disjoint.
+Existing FCC loans are NOT being migrated to Nelnet; they wind down naturally, or a future refinance program closes the FCC loan and opens a new Nelnet one.
+
+NEW RISK 1 — ACCRUED INTEREST IS STALE, AND I QUANTIFIED IT
+Nate flagged that Nelnet refreshes accrued interest just-in-time (on a payment, or at month end), never daily, and that the file carries an 'interest accrued through date'. That field is POSITION 22 in the DF2 layout. Measured on the 2026-08-12 file (353 loans):
+  within 1 day: 25 loans (7%) | 2-7 days stale: 217 | 8-30 days stale: 111 | median staleness 5 days, max 23 days
+Across the 12 August files the max staleness climbs monotonically (12 days on 08-01 to 23 days on 08-12) because the last month-end refresh recedes.
+IMPACT: silver.positions.ACCRUED_INTEREST maps off p.CURRENTINTEREST and silver.transfers.INTEREST likewise. If Nelnet is mapped the same way as FCC, ~93% of the Nelnet book carries stale accrued interest with no indication. At minimum the 'through date' must be carried into the silver layer so downstream can tell. Oliv has a live accrued-interest API job (daily ~5am their time, running only a couple of weeks) and can supply an augmented file — that is the real fix, agreed as second priority.
+
+NEW RISK 2 — THE OWNERSHIP BOUNDARY IS NOT IMPLEMENTED FOR NELNET-SHAPED TRANSACTIONS
+Nate: the purchase file's effective date is the boundary. 'That is when all the accrued interest, the position and all transactions going forward become EDGEX's. Any transactions before that or accrued interest are Oliv's.' Nelnet loans are originated and then purchased days or weeks later, so the transaction file legitimately contains PRE-PURCHASE activity. Census across the 12 August transaction files (781 rows): INTERESTACCRUAL 368, PAYMENT 215, DISBURSEMENT 192, PAYMENTREVERSAL 4, ADJ-INTERESTACCRUAL 2.
+northpond/transactions.py today hardcodes TRANSACTION_TYPE='payment' for every surviving row and applies NO purchase-date filter — it only drops BalanceImpactCode 'LA' and a list of write-off/suspense descs, which are FCC-specific concepts that do not exist in the Nelnet file. Mapped naively, the 192 DISBURSEMENT rows (pre-purchase origination events) and 370 accrual rows (not cash movements at all) would be emitted as EF payments.
+Required mapping: PAYMENT -> payment; PAYMENTREVERSAL -> negate; DISBURSEMENT -> drop or model as origination, never a payment; INTERESTACCRUAL / ADJ-INTERESTACCRUAL -> drop, non-cash. Plus a purchase-date floor per loan.
+
+NEW RISK 3 — PURCHASE FILES ARE ABOUT TO BE BACKDATED
+Nate: 'we are actually about to backdate some files which I should make sure you're comfortable with.' Since the purchase effective date drives both fund assignment and the ownership boundary above, backdating will retroactively move loans between funds and change which transactions are ours. Anything we build must be safe to re-derive, and we need to know which files and what dates before relying on them.
+
+STILL OPEN, UNCHANGED
+- No FICO anywhere in the Nelnet feed. Since Oliv is specifying the truncated file NOW, this is the moment to ask whether Nelnet holds a score at all — if it is not in the raw file it is not recoverable from the truncated one either, and issuance carries Clarity/Prism but not FICO.
+- No TransactionId, so no idempotency key; 5 transaction keys repeat across the 12 August files. Backfill lets us rebuild but does not fix daily dedup.
+- NonCash='Non-Cash' on 210 of 215 PAYMENT rows (only 5 are 'Cash') — still unexplained and still worth asking.
+- Rpt Date is consistently file date minus 1, so a -1 as_of offset is needed.
+
+AGREED PRIORITY ORDER FROM THE CALL
+P1 ingest Nelnet positions + transactions (Abhishek committed to 'by tomorrow, highest priority').
+P2 support two new issuance V2 columns Nate is deploying: loan_servicer, and current-or-intended-investor. Nate asked Abhishek to confirm the exact string for the EDGEX fund by end of day — Abhishek wants an underscore between 2026 and 1N, and Nate prefers lowercase snake case. THAT CONFIRMATION IS STILL OWED.
+P3 resolve the accrued-interest architecture (stale warehouse value vs live API join).
+P4 clean up V0/V1/V2 duplication and the date-based cutover hack.
+P5 the broader Oliv-EF integration architecture, deferred.
+Sweep file: explicitly deferred, EF does not need it now.
+Purchase tape: servicer-agnostic, one tape, no Nelnet-specific variant. V1 is the forward version; V0 to be deprecated; transition can wait.
+
+REVISED EFFORT: with a named-column PII-free CSV, bronze parsing rules are ~half a day, the two nelnet stmt_ tables ~1 day, the union into standardized positions/transactions/transfers ~2 days, DQ + backfill ~1-2 days. Roughly a week. Bronze landing 'by tomorrow' is realistic; a correct standardized layer with the ownership boundary and accrued-interest handling is not.
