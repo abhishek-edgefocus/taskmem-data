@@ -10,7 +10,7 @@ people: [Nate, Trishit]
 tags: [northpond, edgex]
 links: [relates:wm-jewha5, relates:wm-n7usn7, relates:wm-tvjjgw]
 created: 2026-07-31T14:19:39Z
-updated: 2026-08-11T08:48:50Z
+updated: 2026-08-12T13:09:39Z
 source: claude-code
 ---
 
@@ -48,3 +48,4 @@ Context: Abhishek sent the v0 sign-off 2026-08-08 03:15 IST ('the v0 file looks 
 - 2026-08-11T08:48Z [claude-code] VERIFIED NOT LANDED — 2026-08-11 14:17 IST. Checked S3 directly (not inferred from Slack silence): aws s3 ls s3://efp-raw/statements/northpond/purchase_file/ --recursive returns ONLY the two 2026-07-23 test stubs — purchase_file/v0/2026/07/purchase_file_v0_20260723_test.csv and the v1 twin. No 2026/08 prefix, no live file.
 So Nate's target ('the plan/target is to produce the first live purchase file on Tuesday', 2026-08-08) has not been met as of mid-afternoon IST. Tuesday is US-hours, so it may still arrive tonight IST — this is not yet a slip, just not-yet.
 Re-run the same one-liner before assuming anything landed. When it does, do this item and [[wm-jewha5]] in one pass, and note that [[wm-7qqeke]]'s fund fix (PR #6209) is still unmerged, so a file arriving right now would be attributed to efhyf.
+- 2026-08-12T13:09Z [claude-code] Verified in S3 + prod 2026-08-12: the first REAL (non-_test) purchase files landed 2026-08-11 22:38 UTC on BOTH paths — purchase_file/v0/2026/08/purchase_file_v0_20260811.csv AND purchase_file/v1/2026/08/purchase_file_v1_20260811.csv. v0 ingested cleanly: bronze.statement_files status=rows_added statement_type=purchase_tape, and silver.northpond_stmt_purchase_tapes has 29 rows at AS_OF_DATE=2026-08-11, ACCOUNT_NAME=northpond_efhyf -> FUND=efhyf. v1 is correctly still status=ignore. v0 header matches the 21-col legacy schema exactly. v1 header confirmed different: oliv_loan_number (not loan_id), accrued_interest_on_purchase_date, principal_on_purchase_date, annual_interest, homeowner, vantage_score_v4, post_dti, days_past_due; and it DROPS borrower_income_annual, prism_cash_score, employment_tenure, application_uuid, remaining_term, interest_rate.
