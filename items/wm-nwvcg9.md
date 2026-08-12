@@ -9,7 +9,7 @@ due: 2026-07-30
 people: [Nate, Trishit]
 tags: [northpond, edgex, needs-reply]
 links: [relates:wm-gj5tkx, relates:wm-5z3pjt]
-refs: [thread=https://edgefocuspartners.slack.com/archives/C0BJ1M304BU/p1785241457230439]
+refs: [thread=https://edgefocuspartners.slack.com/archives/C0BJ1M304BU/p1785241457230439, dm=https://edgefocuspartners.slack.com/archives/D0BAD46CT27/p1786485178274189]
 created: 2026-07-29T13:42:01Z
 updated: 2026-08-12T13:30:00Z
 source: claude-code
