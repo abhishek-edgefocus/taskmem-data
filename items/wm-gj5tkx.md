@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [parent:wm-j523sq, relates:wm-5z3pjt, relates:wm-nwvcg9]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-13T10:24:04Z
+updated: 2026-08-13T12:04:33Z
 source: claude-code
 ---
 
@@ -164,3 +164,28 @@ ALSO AGREED THIS ROUND
 - Purchase-file backdating: parked until Nate says which files and what dates. Transforms are already re-derivable.
 - No TransactionId is solvable BECAUSE Oliv can re-drop history: do not append incrementally, re-derive a trailing window (~30 days) nightly so restatements self-correct and dedup stops being a correctness problem.
 - NonCash: do not gate any cash logic on it. 210 of 215 PAYMENT rows are 'Non-Cash' and only 5 are 'Cash', which reads like a warehouse accounting flag rather than a cash indicator. Question for Nate, not a blocker.
+- 2026-08-13T12:04Z [claude-code] IMPLEMENTATION STARTED 2026-08-13 (DEV-1481). Branch abhishek/dev-1481-ingest-olivs-nelnet-servicer-files-loan-transaction, cut from origin/master f3301c2cb6, in ~/claude-ws/dev-1481/efp (my own workspace, not ~/repos). NOT COMMITTED YET — changes sit in the working tree pending Abhishek's go-ahead.
+
+WHAT LANDED — the Nelnet TRANSACTION feed, end to end through the stmt layer:
+1. bronze/platform_configs/northpond.py — first pii_columns entry for northpond: {"v_transaction_detail_export_daily_olivfinancial_*.xlsx": ["Last Name"]}. Routes the transaction export to efp-pii and publishes a _CLEANED sibling to efp-raw. The DF2 loan tape is deliberately NOT listed (headerless/positional/no extension — the stripper cannot act on it; Oliv is fixing it at source).
+2. bronze/parsing_rules/northpond.py — three rules: (a) northpond_nelnet_transactions matching only the _CLEANED.xlsx, statement_type='nelnet_transactions', S3XlsxFile on sheet NSTTRANDETDLY, as_of_date_offset=-1, monitoring_schedule=None; (b) ignore rule for the RAW xlsx, anchored on trailing _\d{8}_\d{6}\.xlsx so it cannot also swallow the _CLEANED sibling (this is the happymoney NoSuchKey-lockout guard); (c) ignore rule for the whole nelnet/daily_loan/ prefix so the DF2 files stop accumulating at status='unknown'.
+3. NEW silver/statement_rows/northpond/stmt_nelnet_transactions.py — NorthpondStmtNelnetTransactions -> silver.northpond_stmt_nelnet_transactions. 17 ColumnDefs. Follows the marlette_stmt_fortress_purchase_tapes precedent (sibling source table, not a replacement). Two deliberate omissions vs the FCC feed, both documented in the module docstring: no FUND column (FUND_WITH_PURCHASE_TAPE_EXPR keys on the Oliv loan number, which this file does not carry) and no transaction id (Nelnet ships none).
+4. orchestration/assets/northpond_assets.py + orchestration/jobs/statements_northpond.py — asset registered and wired into the statements_northpond job.
+5. bronze/platform_configs/base_test.py — updated the two guard tests that assert which platforms have PII config; northpond moves from the no-PII set to the PII set.
+
+VERIFIED, not assumed:
+- Rule routing: raw xlsx -> ignored; _CLEANED xlsx -> northpond_nelnet_transactions; DF2 loan file -> ignored; FCC loan tape -> still matches northpond_loan_positions unchanged.
+- The -1 offset resolves a file dated 2026-08-12 to as_of_date 2026-08-11, which matches that file's actual Rpt Date. platform_as_of_date correctly retains 2026-08-12.
+- PII path: ran the real strip_statement_pii._strip_pii_from_file over the real 2026-08-12 xlsx with the real config. Last Name is dropped, the other 17 columns survive, 33 rows intact.
+- Column mapping: every one of the 17 ColumnDef source keys is present in the cleaned record, and zero columns are left unmapped. The 'Eff Date ' source key carries a TRAILING SPACE in the servicer header — that is real and is now covered by a comment.
+- Generated SQL inspected and well-formed.
+- ruff format + ruff check clean; mypy clean; 613 bronze tests pass; 285 northpond-silver + orchestration tests pass.
+
+NOT DONE, deliberately:
+- The Nelnet POSITIONS feed. Blocked on Oliv's PII-free replacement for the DF2 tape (Nate, ~1 day). Writing a column mapping against a schema that is about to be replaced would be throwaway. The ignore rule keeps those files quiet meanwhile.
+- The standardized leg (silver.northpond_stmt_nelnet_transactions -> silver.transactions). It needs the Nelnet-number -> OLV-number bridge, which only the loan tape supplies, so it follows positions.
+- Monitoring for the transaction rule is intentionally off (monitoring_schedule=None): enabling it before the PII cutover would fire missing-file alerts across the whole pre-cutover back-range.
+
+CARRIED FORWARD FOR [[wm-8dy9jr]] — a precise finding: setting pii_columns fixes FUTURE files only. strip_pii_to_raw iterates keys in efp-pii and deletes an efp-raw copy only when the same key also exists in efp-pii. The 13 DF2 files already sitting in efp-raw were routed there when pii_columns was empty, so nothing in efp-pii corresponds to them and the cleanup pass will never touch them. They need a manual move to efp-pii (after which the stripper deletes the raw copies) or an outright purge. That is still Abhishek's call.
+
+DEV-1481 DESCRIPTION IS STALE on two points and should be corrected: (1) it lists transaction-on-board as a third servicer feed to move, but Nelnet delivers only two files (daily_loan, daily_transaction) — there is no NN transaction-on-board equivalent; (2) it says 'run both feeds side by side, reconcile them, then retire the FCC feeds', but Nate confirmed FCC loans are NOT migrating — they stay on FCC and wind down naturally, so the two feeds run permanently side by side over disjoint loan sets.
