@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [parent:wm-j523sq, relates:wm-5z3pjt, relates:wm-nwvcg9]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-13T18:02:41Z
+updated: 2026-08-13T18:31:21Z
 source: claude-code
 ---
 
@@ -236,3 +236,17 @@ ACCOUNT_ID deliberately mirrors the FCC leg (t.ACCOUNT_NAME, the raw statement a
 898 tests pass across bronze, northpond silver and orchestration; ruff and mypy clean.
 
 STILL NOT BUILT: the Nelnet loan/positions feed. The sample landed 2026-08-13 (olivfinancial_loan_20260813.csv, 56 named columns, saved on dpx) and ColumnDefs were generated from the real header, but that work belongs in its own PR. Two things already learned for it: the loan file needs NO as_of offset (its file_date equals its filename date, unlike the transaction file's -1), and identifier columns must be typed VARCHAR not INT so loan_number joins cleanly.
+- 2026-08-13T18:31Z [claude-code] POSITIONS PR OPENED: https://github.com/edgefocus/efp/pull/6277 'DEV-1481: Ingest the Nelnet daily loan tape into silver', STACKED on the transactions PR #6262 (base = abhishek/dev-1481-ingest-olivs-nelnet-servicer-files-loan-transaction, branch abhishek/dev-1481-nelnet-positions). Review #6262 first.
+
+Contents: parsing rule for olivfinancial_loan_YYYYMMDD.csv (statement_type nelnet_positions), an ignore rule for the superseded raw Velocity DF2 export, and NorthpondStmtNelnetPositions -> silver.northpond_stmt_nelnet_positions with all 56 source columns plus a derived FUND. Asset + job wired.
+
+VERIFIED: 56/56 columns mapped with 0 unmapped and 0 references to non-existent columns, checked against the real file Oliv delivered. Routing confirmed: new loan CSV -> northpond_nelnet_positions as_of 2026-08-13, legacy DF2 -> ignored, transaction CSV still -> northpond_nelnet_transactions as_of 2026-08-12. 898 targeted tests pass. The parent PR's FULL edgefocus/transformations/ sweep also came back green: 2524 passed, 1 skipped, 480s — that clears the fund_with_purchase_tape_expr refactor across every platform, not just northpond.
+
+THREE TRAPS HANDLED, each of which would have failed silently:
+1. NO as_of offset on the loan file (file_date == filename date) versus -1 on the transaction file. Copying the offset across would shift every position by a day.
+2. LOAN_NUMBER and BORROWER_ACCOUNT_NUMBER forced to VARCHAR, not INT, so LOAN_NUMBER joins the transaction feed's LOANNUMBER without a cast.
+3. Thirteen columns arrive as the literal four-character string 'NULL'; _null_coerced() maps them to real NULLs or we would store the word. Also mirrored two source-side column-name typos verbatim ('communcation', doubled 'suppression') since they are the RAW_RECORD keys.
+
+FUND IS derived on this table (unlike the transaction feed) because the loan tape carries the Oliv number directly as loan_external_reference_id — reuses fund_with_purchase_tape_expr() so it agrees with the FCC leg loan for loan.
+
+STILL TO COME (documented as follow-ups on the PR): the standardized silver.positions union, which needs DECISIONS not plumbing — credit score (Nelnet has none; VantageScore recoverable from our own gateway events for ~84%), charge-off derivation from the loan_status run, and whether REMAINING_TERM stays actuarial or takes the servicer's value. Also silver.transfers and northpond_transactions_service_fees both read silver.northpond_stmt_positions directly and will each need the Nelnet leg added explicitly.
