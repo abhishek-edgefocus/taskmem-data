@@ -2,7 +2,7 @@
 id: wm-3s3nkt
 type: followup
 title: Confirm to Nate the exact issuance-V2 string values: fund name (underscore in EF 2026_1N) + loan_servicer values
-status: next
+status: done
 priority: p1
 size: xs
 due: 2026-08-12
@@ -10,7 +10,7 @@ people: [Nate]
 tags: [northpond, edgex, needs-reply]
 links: [relates:wm-gj5tkx]
 created: 2026-08-12T16:36:50Z
-updated: 2026-08-12T16:36:54Z
+updated: 2026-08-13T16:53:36Z
 source: claude-code
 ---
 
