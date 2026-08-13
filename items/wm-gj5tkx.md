@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [parent:wm-j523sq, relates:wm-5z3pjt, relates:wm-nwvcg9]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-13T17:40:55Z
+updated: 2026-08-13T18:02:41Z
 source: claude-code
 ---
 
@@ -222,3 +222,17 @@ TWO DATA ISSUES TO RAISE WITH NATE:
 2. Ten columns carry the literal string 'NULL' rather than being empty (communcation_suppression, communcation_suppression_suppression_effective_date, is_cease_and_desist_active, cease_and_desist_effective_date, scra_flag_*, death_flag_active, disability_flag_*). VARCHAR mappings would store the four-character string "NULL" unless we coerce. Note also the source column name typos we must mirror verbatim: 'communcation' (missing the i) and the doubled 'suppression' in column 34.
 
 Sample saved at ~/nelnet_look/olivfinancial_loan_20260813.csv on dpx for the positions work.
+- 2026-08-13T18:02Z [claude-code] STANDARDIZED TRANSACTIONS LEG ADDED 2026-08-13. PR #6262 now runs bronze -> silver.transactions end to end for the Nelnet transaction feed. 7 files, +376/-15.
+
+KEY DESIGN CHANGE driven by Abhishek's update mid-build: Nate agreed to put BOTH loan numbers in issuance_v2, so the bridge comes from silver.northpond_stmt_issuance_v2 (SERVICER_LOAN_NUMBER = Nelnet's, OLIV_LOAN_NUMBER = ours) and the standardized leg does NOT depend on the Nelnet loan tape at all. That decouples transactions from positions entirely — the thing we had been trying to achieve since the original ask #4 on 2026-07-28. Added SERVICER_LOAN_NUMBER and ISSUANCE_DATE ColumnDefs to stmt_issuance_v2.py.
+The join is INNER by design: a transaction whose loan is not yet in issuance_v2 is held back rather than emitted against a wrong or NULL EFP_ID. CONSEQUENCE TO WATCH: until Oliv actually ships servicer_loan_number the transform emits ZERO rows. That is intentional, but if someone sees an empty table this is why.
+
+VALIDATED, not assumed — the amount identity TRANAMT = -PRINCIPAL + INTPAID holds on ALL 17 PAYMENT rows and the 1 PAYMENTREVERSAL row across both delivered samples, and fails only on INTERESTACCRUAL (where the amount sits in INTAMT and principal/intpaid are 0). PRINCIPAL_AMOUNT and INTEREST_AMOUNT are built on that identity. Only PAYMENT and PAYMENTREVERSAL are emitted; INTERESTACCRUAL, ADJ-INTERESTACCRUAL and DISBURSEMENT are dropped as non-cash, mirroring the FCC leg dropping BalanceImpactCode 'LA'.
+
+REFACTOR WORTH KNOWING ABOUT: northpond/constants.py gained fund_with_purchase_tape_expr(loan_id_expr, as_of_expr, account_column). The Oliv loan number arrives under a different name on every feed (raw 'LoanNumber' on FCC, OLIV_LOAN_NUMBER on issuance_v2), so the FUND expression had to be parameterised. FUND_WITH_PURCHASE_TAPE_EXPR now derives from the function and was ASSERTED BYTE-IDENTICAL to master's string before committing, so the FCC positions/transactions transforms are provably unchanged.
+
+ACCOUNT_ID deliberately mirrors the FCC leg (t.ACCOUNT_NAME, the raw statement account) rather than deriving from FUND, so the two sources stay reconcilable in silver.transactions. Both legs should move together when DEV-1522 / [[wm-7mtzka]] switches northpond to fund-derived account_id — do not fix one without the other.
+
+898 tests pass across bronze, northpond silver and orchestration; ruff and mypy clean.
+
+STILL NOT BUILT: the Nelnet loan/positions feed. The sample landed 2026-08-13 (olivfinancial_loan_20260813.csv, 56 named columns, saved on dpx) and ColumnDefs were generated from the real header, but that work belongs in its own PR. Two things already learned for it: the loan file needs NO as_of offset (its file_date equals its filename date, unlike the transaction file's -1), and identifier columns must be typed VARCHAR not INT so loan_number joins cleanly.
