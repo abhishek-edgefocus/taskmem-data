@@ -25,3 +25,6 @@ Nate: 'if you let me know by the end of today... my goal would be to get it depl
 Pick the strings against the existing internal fund mapping so we do not need a translation layer — our current fund values include efhyf and edgex20261NN. Note Abhishek told Nate we can map whatever string he sends to an internal value, so this is a convenience decision, not a blocking one — but it is a same-day commitment.
 
 Investor values (INV103 etc) were explicitly DROPPED from this ask: they are collateral/buyback buckets, not investors, and we can get them off the loan tape. See [[wm-gj5tkx]].
+
+## Log
+- 2026-08-13T16:53Z [claude-code] Abhishek confirmed 2026-08-13 he has already sent Nate the fund string values, so this is closed. Nate can deploy the issuance_v2 columns.
