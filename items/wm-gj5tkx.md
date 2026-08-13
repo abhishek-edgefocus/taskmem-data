@@ -2,7 +2,7 @@
 id: wm-gj5tkx
 type: task
 title: Ingest Oliv's Nelnet loan + transaction files (new servicer, replaces FCC feed; carries investor tag)
-status: open
+status: active
 priority: p2
 size: l
 people: [Nate, Trishit]
@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [parent:wm-j523sq, relates:wm-5z3pjt, relates:wm-nwvcg9]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-13T12:04:33Z
+updated: 2026-08-13T12:04:34Z
 source: claude-code
 ---
 
