@@ -2,9 +2,13 @@
 id: wm-8a5pwn
 type: followup
 title: Ask Nate for two columns on the Nelnet transaction export: the Oliv OLV loan number, and dropping Last Name
-status: open
+status: next
+priority: p1
+size: xs
+people: [Nate]
+tags: [northpond, edgex, needs-reply]
 created: 2026-08-13T12:56:47Z
-updated: 2026-08-13T12:56:47Z
+updated: 2026-08-13T12:56:50Z
 source: claude-code
 ---
 
