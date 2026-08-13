@@ -7,6 +7,7 @@ priority: p1
 size: xs
 people: [Nate]
 tags: [northpond, edgex, needs-reply]
+links: [relates:wm-gj5tkx]
 created: 2026-08-13T12:56:47Z
 updated: 2026-08-13T12:56:50Z
 source: claude-code
