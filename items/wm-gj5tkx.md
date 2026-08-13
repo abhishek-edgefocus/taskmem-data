@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [parent:wm-j523sq, relates:wm-5z3pjt, relates:wm-nwvcg9]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-13T18:31:21Z
+updated: 2026-08-13T19:09:24Z
 source: claude-code
 ---
 
@@ -250,3 +250,20 @@ THREE TRAPS HANDLED, each of which would have failed silently:
 FUND IS derived on this table (unlike the transaction feed) because the loan tape carries the Oliv number directly as loan_external_reference_id — reuses fund_with_purchase_tape_expr() so it agrees with the FCC leg loan for loan.
 
 STILL TO COME (documented as follow-ups on the PR): the standardized silver.positions union, which needs DECISIONS not plumbing — credit score (Nelnet has none; VantageScore recoverable from our own gateway events for ~84%), charge-off derivation from the loan_status run, and whether REMAINING_TERM stays actuarial or takes the servicer's value. Also silver.transfers and northpond_transactions_service_fees both read silver.northpond_stmt_positions directly and will each need the Nelnet leg added explicitly.
+- 2026-08-13T19:09Z [claude-code] CONSOLIDATED INTO ONE PR 2026-08-14 on Abhishek's instruction. https://github.com/edgefocus/efp/pull/6277 retargeted to master, 13 files +915/-27, now carries BOTH feeds bronze-through-standardized. #6262 closed as superseded.
+
+WHY ONE PR, recorded so it is not re-split later: splitting by FEED (transactions vs positions) cut straight through the asymmetry. gold.positions_daily FULL OUTER JOINs the positions and transactions aggregates by (as_of_date, platform, fund) — deliberately, so post-charge-off recoveries still produce a row. So had transactions merged without positions, Nelnet cashflow would have landed in the SAME fund buckets (efhyf/experimental/edgex20261NN) as FCC-only exposure, with no error and no null — just a silently inflated numerator on any yield or ROI ratio. Splitting by LAYER, or not at all, is the seam that holds.
+
+ARCHITECTURE: NORTHPOND_POSITIONS_UNION in northpond/constants.py projects the Nelnet feed into the FCC column vocabulary and unions the two. positions.py, transfers.py and transactions_service_fees.py all read it instead of the bare FCC table, so a future consumer picks up both feeds by construction. This is the marlette_stmt_fortress_purchase_tapes pattern applied one level up — and it is what resolves the four-consumer problem logged earlier.
+
+TWO REAL BUGS FOUND WHILE WIRING, both silent-failure class:
+1. northpond_transactions_itd and northpond_positions_daily aggregate silver.transactions per PLATFORM, not per source, but waited only on the FCC leg. Both now depend on northpond_nelnet_transactions. Left alone they could materialize first and understate ITD sums, which northpond_positions then consumes.
+2. transactions_service_fees filtered WHERE LOANSTATUS = 'Current' — FCC vocabulary. Nelnet says 'repayment'. NO NELNET LOAN WOULD EVER HAVE ACCRUED A SERVICE FEE. Now accepts both; FCC behaviour deliberately unchanged (the other FCC statuses mapping to 'current' stay excluded as before).
+
+DERIVED, not passed through: charge-off date + charged-off principal from the LOAN_STATUS = 'charge off' run (LAG marks the transition, LAST_VALUE carries it forward; principal taken from the row BEFORE the flip since servicers write the balance down at charge-off). IN_BANKRUPTCY from CURRENT_LOAN_PERIOD_REPORTING_STATUS = 'Bankruptcy Deferment', with the filing DATE left NULL rather than fabricated. FICO left NULL — Nelnet ships no score.
+
+Nelnet status values added to NORTHPOND_STATUS_MAP (repayment/paid in full/charge off/deferred). They are lowercase and FCC's are PascalCase, so the two vocabularies are disjoint and one map serves both feeds. Without this every Nelnet row would map to 'unknown' and fail validation.
+
+THREE EXISTING TESTS UPDATED, deliberately not re-pointed blindly: transfers_test x2 and transactions_test x1 asserted the bare FCC table name / the 'Current'-only filter. Replaced with stronger assertions that BOTH feeds are present and that the fee filter spans both vocabularies.
+
+VERIFIED: 13/13 transaction columns and 56/56 positions columns mapped, 0 unmapped, 0 dangling refs; every column the three union consumers reference is emitted by the union (checked programmatically); TRANAMT = -PRINCIPAL + INTPAID holds on all 17 PAYMENT rows + the reversal; fund_with_purchase_tape_expr refactor asserted byte-identical to master. ruff + mypy clean over 20 files, 898 targeted tests pass. Full edgefocus/transformations/ sweep was green (2524 passed) before the standardized layer went in and is re-running now.
