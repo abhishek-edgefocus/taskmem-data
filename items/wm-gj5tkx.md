@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [parent:wm-j523sq, relates:wm-5z3pjt, relates:wm-nwvcg9]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-13T12:56:47Z
+updated: 2026-08-13T17:40:55Z
 source: claude-code
 ---
 
@@ -200,3 +200,25 @@ CLARIFIED A MISREADING WORTH KEEPING: the pii_columns entry is scoped to the TRA
 
 NEW FINDING, PROVEN AGAINST PROD — the standardized silver.transactions leg genuinely cannot be built yet, and this is now evidenced rather than asserted. Checked every candidate table's columns via PROD INFORMATION_SCHEMA: northpond_stmt_issuance.LOAN_ID is the Oliv number, northpond_stmt_purchase_tapes.LOAN_ID is the Oliv number, northpond_stmt_issuance_v2.OLIV_LOAN_NUMBER is the Oliv number. NOTHING we hold carries Nelnet's 12-digit servicer loan number. EFP_ID/POSITION_ID are 'northpond_' || <OLV>, so the bridge is mandatory and it exists ONLY on the Nelnet loan tape (field 1 <-> field 39).
 => Therefore the standardized leg follows EITHER the loan tape OR an added OLV column on the transaction export. The second option is far cheaper and would decouple transactions from positions entirely. It was ask #4 in the original 2026-07-28 list to Nate and has never been answered — and Nate is actively rebuilding these exports right now, so this is the moment to re-raise it.
+- 2026-08-13T17:40Z [claude-code] SCHEMA CHANGED 2026-08-13 ~22:00 IST — Oliv replaced BOTH Nelnet feeds with PII-free named-column CSVs, delivered as samples in the DM. PR #6262 reworked against them and force-pushed (now 4 files, +169/-0, purely additive; was 6 files +203/-2).
+
+NEW TRANSACTION FORMAT: olivfinancial_transaction_YYYYMMDD.csv, 13 cols, lowercase, ISO dates:
+transactionid, lendername, investornumber, borrowernumber, loannumber, transactiontype, noncash, effdate, rptdate, tranamt, principal, intamt, intpaid.
+GAINED transactionid — the idempotency key I previously recorded as absent. CORRECTION TO MY OWN EARLIER FINDING: the '5 repeated transaction keys across daily files' logged on 2026-08-12 was an ARTIFACT of the missing id, not restatement. Loan 577145898542 appears as PAYMENT (id 2966) on 08-12 and PAYMENTREVERSAL (id 3010) on 08-13 — two distinct transactions. The trailing-window rebuild I recommended is NOT needed.
+LOST vs the xlsx: Last Name (so NO PII — the whole efp-pii routing, the pii_columns entry and the base_test.py guard change all came back out of the PR), Loan Program, and the LF/OF fee columns. The fee loss costs nothing today (we zero those anyway) but was an upgrade over FCC and is worth asking back since it exists at source.
+rptdate is still filename date minus 1, so as_of_date_offset=-1 still verified correct.
+
+NEW LOAN/POSITIONS FORMAT: olivfinancial_loan_YYYYMMDD.csv, 56 named columns, 374 rows, NO PII (no name, SSN, DOB, address, phone, email, bank details), ISO dates, snake_case. This retires the 333-field positional Velocity DF2 problem entirely.
+ALL 15 must-have fields are present, including three I had recorded as missing or uncertain:
+  - current_apr — APR IS in the file after all
+  - interest_accrued_to_date — the staleness field, confirmed present
+  - days_past_due, original_term, remaining_term — all explicit
+  - loan_external_reference_id = the OLV number (the bridge), loan_number = Nelnet's
+Still absent and handled as agreed: charge-off (derive from loan_status='charge off'), bankruptcy (current_loan_period_reporting_status='Bankruptcy Deferment'), FICO (use our own VantageScore).
+IMPORTANT OFFSET DIFFERENCE: the loan file carries file_date = its OWN filename date (2026-08-13), so it needs NO as_of offset — unlike the transaction file's -1. Do not copy the -1 across.
+
+TWO DATA ISSUES TO RAISE WITH NATE:
+1. current_investor_number = 'INV101' on ALL 374 loan rows, while the SAME-DAY transaction file reports INV103/none. The old DF2 file reported INV103 on 179/353. Nate said on the call that Macquarie is INV101, so all-INV101 looks wrong. Three sources disagreeing reinforces that investor number must NOT drive fund attribution.
+2. Ten columns carry the literal string 'NULL' rather than being empty (communcation_suppression, communcation_suppression_suppression_effective_date, is_cease_and_desist_active, cease_and_desist_effective_date, scra_flag_*, death_flag_active, disability_flag_*). VARCHAR mappings would store the four-character string "NULL" unless we coerce. Note also the source column name typos we must mirror verbatim: 'communcation' (missing the i) and the doubled 'suppression' in column 34.
+
+Sample saved at ~/nelnet_look/olivfinancial_loan_20260813.csv on dpx for the positions work.
