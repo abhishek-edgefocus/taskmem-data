@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [parent:wm-j523sq, relates:wm-5z3pjt, relates:wm-nwvcg9]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-12T16:36:31Z
+updated: 2026-08-13T10:24:04Z
 source: claude-code
 ---
 
@@ -146,3 +146,21 @@ Sweep file: explicitly deferred, EF does not need it now.
 Purchase tape: servicer-agnostic, one tape, no Nelnet-specific variant. V1 is the forward version; V0 to be deprecated; transition can wait.
 
 REVISED EFFORT: with a named-column PII-free CSV, bronze parsing rules are ~half a day, the two nelnet stmt_ tables ~1 day, the union into standardized positions/transactions/transfers ~2 days, DQ + backfill ~1-2 days. Roughly a week. Bronze landing 'by tomorrow' is realistic; a correct standardized layer with the ownership boundary and accrued-interest handling is not.
+- 2026-08-13T10:24Z [claude-code] WITHDRAWN + ARCHITECTURE DECISION 2026-08-12 (Abhishek challenged the finding and was right).
+
+WITHDRAWN — 'the ownership boundary is not implemented'. It IS implemented and has been working on FCC all along. FUND_WITH_PURCHASE_TAPE_EXPR in northpond/constants.py is literally IFF(loan IN (SELECT LOAN_ID FROM silver.northpond_stmt_purchase_tapes WHERE TRY_TO_DATE(PURCHASE_DATE) <= src.AS_OF_DATE), 'efhyf', <fund mapping fallback>). That is the purchase-date boundary, evaluated per row per as_of_date. Prod confirms it: silver.transactions for northpond holds 18,021 rows tagged experimental (pre-purchase) vs 62,382 tagged efhyf (post-purchase), plus 12 northpond_balancesheet rows. The FCC tape also covers the full issuance universe including never-purchased loans, so this was never Nelnet-specific and was solved before Nelnet existed. Do not re-raise it.
+
+WHAT SURVIVES, narrower and unrelated to ownership: transaction TYPE mapping. northpond/transactions.py hardcodes TRANSACTION_TYPE='payment' and filters on BALANCEIMPACTCODE='LA' plus a write-off/suspense TRANSACTIONCODEDESC list. Nelnet has NEITHER column, so DISBURSEMENT (192 rows) and INTERESTACCRUAL/ADJ-INTERESTACCRUAL (370) would flow through as EF payments. NOTE this hazard only exists under the stmt-layer-union design I proposed in the 15:28Z entry; under the design actually chosen (below) the Nelnet type mapping is written natively and it never arises.
+
+ARCHITECTURE DECIDED (Abhishek's, supersedes my stmt-layer-union proposal): per-servicer position/transaction queries, each joined to the COMMON purchase tape + issuance files (which both servicers share and we already ingest), unioned into the standardized layer. Keeps each servicer's schema honest instead of forcing Nelnet into FCC column names and lying with NULLs.
+
+CONSTRAINT FOUND WHILE VALIDATING THAT DESIGN — silver.positions has NO SOURCE column. Verified against PROD INFORMATION_SCHEMA: the only candidate discriminators are PLATFORM, ACCOUNT_ID, FUND. And northpond/positions.py sets target_table_where_clause = "platform = 'northpond'" with target_stream_group_by = ["platform","fund"], so a SECOND transform writing northpond rows would clobber the first. FUND cannot discriminate servicer either, because Nelnet loans span both funds (79 purchased -> efhyf, 274 unpurchased -> experimental).
+  => For POSITIONS the union must happen INSIDE ONE transform: a single writer whose SOURCE_QUERY is the FCC leg UNION ALL the Nelnet leg, each mapping its own native columns before the union.
+  => For TRANSACTIONS two separate transforms are fine, because silver.transactions HAS a SOURCE column and already carries three northpond writers (northpond_stmt_transactions, northpond_stmt_positions, northpond_balancesheet).
+  => RECOMMENDED: add an explicit servicer column to silver.positions. Nate is adding loan_servicer to issuance V2 anyway (see [[wm-3s3nkt]]), so it becomes a real source column rather than an inference from file membership, and it supplies the discriminator we currently lack.
+
+ALSO AGREED THIS ROUND
+- Accrued-interest staleness is NOT an implementation risk: the fix (Oliv's live-API augmented file) is already agreed in the transcript and sits at P3 behind ingestion. Only ask now is to carry the interest-accrued-through date (DF2 field 22) into silver from day one so it is a column, not a later backfill.
+- Purchase-file backdating: parked until Nate says which files and what dates. Transforms are already re-derivable.
+- No TransactionId is solvable BECAUSE Oliv can re-drop history: do not append incrementally, re-derive a trailing window (~30 days) nightly so restatements self-correct and dedup stops being a correctness problem.
+- NonCash: do not gate any cash logic on it. 210 of 215 PAYMENT rows are 'Non-Cash' and only 5 are 'Cash', which reads like a warehouse accounting flag rather than a cash indicator. Question for Nate, not a blocker.
