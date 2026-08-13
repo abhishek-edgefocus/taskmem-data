@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [parent:wm-j523sq, relates:wm-5z3pjt, relates:wm-nwvcg9]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-13T12:04:34Z
+updated: 2026-08-13T12:34:58Z
 source: claude-code
 ---
 
@@ -189,3 +189,8 @@ NOT DONE, deliberately:
 CARRIED FORWARD FOR [[wm-8dy9jr]] — a precise finding: setting pii_columns fixes FUTURE files only. strip_pii_to_raw iterates keys in efp-pii and deletes an efp-raw copy only when the same key also exists in efp-pii. The 13 DF2 files already sitting in efp-raw were routed there when pii_columns was empty, so nothing in efp-pii corresponds to them and the cleanup pass will never touch them. They need a manual move to efp-pii (after which the stripper deletes the raw copies) or an outright purge. That is still Abhishek's call.
 
 DEV-1481 DESCRIPTION IS STALE on two points and should be corrected: (1) it lists transaction-on-board as a third servicer feed to move, but Nelnet delivers only two files (daily_loan, daily_transaction) — there is no NN transaction-on-board equivalent; (2) it says 'run both feeds side by side, reconcile them, then retire the FCC feeds', but Nate confirmed FCC loans are NOT migrating — they stay on FCC and wind down naturally, so the two feeds run permanently side by side over disjoint loan sets.
+- 2026-08-13T12:34Z [claude-code] PR OPENED 2026-08-13: https://github.com/edgefocus/efp/pull/6262 — 'DEV-1481: Ingest the Nelnet daily transaction export with efp-pii routing'. Branch abhishek/dev-1481-ingest-olivs-nelnet-servicer-files-loan-transaction, 6 files, +222/-2, base master. Covers the TRANSACTION feed only; positions still waits on Oliv's PII-free replacement for the Velocity DF2 tape.
+
+PR body states explicitly that there is NO Snowflake proof in this PR and why: no _CLEANED file exists in S3 until this pii_columns entry ships and the strip pass runs, so the table cannot be populated pre-merge. Row-level validation + the DAG screenshot are promised in the positions PR. Flagged per the pr-style rule about never merging with 'validations pending' unless you say exactly what is unvalidated and where it is tracked.
+
+NOTE FOR ANY AGENT COMMITTING ON dpx: /tmp is NOT writable by this user (writes fail with Permission denied) AND it contains stale files left by other sessions. 'cat > /tmp/cmsg.txt' silently failed and 'git commit -F /tmp/cmsg.txt' then picked up ANOTHER session's leftover message file, producing a commit titled 'Regenerate models_by_channel_history_git.py'. Caught before the PR existed; fixed by amending with a message file under ~/claude-ws/ and force-pushing with --force-with-lease pinned to the inspected remote tip (3d023dd41c, which was my own commit from two minutes earlier, no other agent's work on the branch). Write commit-message files under ~/claude-ws/, never /tmp.
