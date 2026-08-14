@@ -6,10 +6,10 @@ status: open
 priority: p2
 size: l
 tags: [northpond]
-links: [parent:wm-j523sq]
+links: [parent:wm-j523sq, parent:wm-3sxcre]
 refs: [DEV-1279=https://linear.app/edge-focus/issue/DEV-1279/at-origination-predicted-cashflows-not-generated-for-loans-originated]
 created: 2026-07-14
-updated: 2026-07-16T11:49:19Z
+updated: 2026-08-14T19:57:11Z
 source: dpx-tasks #4
 label: cfframe capture gap
 ---
