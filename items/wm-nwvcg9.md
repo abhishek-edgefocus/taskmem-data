@@ -11,7 +11,7 @@ tags: [northpond, edgex, needs-reply]
 links: [relates:wm-gj5tkx, relates:wm-5z3pjt]
 refs: [thread=https://edgefocuspartners.slack.com/archives/C0BJ1M304BU/p1785241457230439, dm=https://edgefocuspartners.slack.com/archives/D0BAD46CT27/p1786485178274189]
 created: 2026-07-29T13:42:01Z
-updated: 2026-08-12T13:30:00Z
+updated: 2026-08-14T13:54:22Z
 source: claude-code
 label: Nate Nelnet samples reply
 ---
@@ -61,3 +61,35 @@ ABHISHEK'S OWN PROMISE, the thing actually owed: 'I think we can not ingest pii 
 NEW CONTEXT WORTH KEEPING: 'Macquarie' is 'a bank forward flow partner we're working to close imminently', and 'For Macquarie we are going to produce a very significantly skinny-ed down file' — a third file variant is coming. Nate also confirmed 'No all of our loans are in either the NN or FCC files (once onboarded)' and 'There can be a few day delay to get into the NN file but once there it's always there'.
 CALL PENDING: Nate 03:29 'Happy to review more tmrw with you'; Abhishek 03:31 'Cool, lets discuss in detail in tomorrow's call'. Whether that call is 2026-08-12 or 2026-08-13 is not stated in the thread and is not resolvable from the record.
 The PII question also touches the open inbox item [[wm-9kvv8c]] on whether Sentry EFP-ERRORS-AW events carry live applicant PII — same underlying 'what are we allowed to hold' policy, worth answering once.
+- 2026-08-14T13:54Z [claude-code] CLOSING 2026-08-14 — the reply was made and every blocking ask on it has been resolved, mostly
+between 2026-08-12 and 2026-08-14. Walking the nine asks in the body:
+
+RESOLVED AT SOURCE, by Oliv agreeing to send PII-free named-column CSVs instead of raw Velocity
+forwards (Nate, 2026-08-12 call; files delivered as samples 2026-08-13 22:35 IST):
+  1. Velocity DF2 record layout — moot. The cleaned export has named columns, so the 333
+     unnamed positional fields never have to be decoded.
+  3. PII — Abhishek gave the policy answer he owed ("we can not ingest pii in our system"); Nate
+     agreed to truncate at source. Go-forward is closed; the already-landed raw files are the
+     remaining half and live on [[wm-8dy9jr]].
+  5. CSV rather than XLSX — yes, both feeds become CSV.
+  9. Path nesting — the files already land under s3://efp-raw/statements/northpond/nelnet/…,
+     which is inside the prefix every northpond parsing rule is anchored on.
+
+ANSWERED BY NATE in the 2026-08-13 21:32 IST huddle and the DM around it:
+  2. Investor attribution — the loan file carries it; issuance_v2 additionally gained
+     `servicer_loan_number` and `issuance_date`, deployed 2026-08-14 00:33 IST.
+  4. Oliv loan number on the transaction file — declined as a new column, satisfied instead via
+     loan.loan_external_reference ("OLV123…") and the issuance_v2 bridge. Detail on [[wm-8a5pwn]].
+  6. Cadence, path and filename pattern — locked 2026-08-14:
+     nelnet/daily_loan/YYYY/MM/olivfinancial_loan_YYYYMMDD.csv and
+     nelnet/daily_transaction/YYYY/MM/olivfinancial_transaction_YYYYMMDD.csv, daily, single date
+     token = as-of date. Detail on [[wm-gj5tkx]].
+
+NEVER ANSWERED, and I am closing this item without them rather than pretending otherwise:
+  7. Why NonCash='Non-Cash' appears on PAYMENT rows.
+  8. The fidelity downgrade versus the FCC feed — no TransactionId (so no dedup key), no
+     ReversalIndicator/Reason, no RemittedDate, three coarse transaction types instead of the
+     FCC SourceCode/TransactionCode taxonomy, no FICO.
+Neither blocks the cutover, but 8 is a real reconciliation risk once both feeds run side by side.
+They are worth raising with Nate in the "work through some of the one-off events over the next
+week" window he offered on 2026-08-13. Not carried into a new item — raise if wanted.
