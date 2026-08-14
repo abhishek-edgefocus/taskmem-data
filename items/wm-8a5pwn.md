@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond, edgex, needs-reply]
 links: [relates:wm-gj5tkx]
 created: 2026-08-13T12:56:47Z
-updated: 2026-08-14T13:51:17Z
+updated: 2026-08-14T13:51:44Z
 source: claude-code
 ---
 
@@ -59,3 +59,10 @@ Ask 2 (drop Last Name) is overtaken rather than refused: the go-forward files ar
 gone with the rest of the PII, but that is INFERRED from his description — it is not separately
 confirmed and no PII-free transaction file has landed in S3 yet. Verifying it is part of the
 Monday cutover check on [[wm-gj5tkx]], not a live ask on Nate.
+- 2026-08-14T13:51Z [claude-code] CORRECTION to the entry immediately above (same session, 2026-08-14): the permalink I gave for
+Abhishek's 2026-08-13 19:15:40 IST ask was constructed, not read off the message — do not follow
+it. The message itself is real and quoted accurately; it is simply the first message of that
+evening's exchange in the Nate DM, channel D0BAD46CT27. A verified permalink from the same
+exchange, two hours later during the huddle, is
+https://edgefocuspartners.slack.com/archives/D0BAD46CT27/p1786637376410839 — scroll up from
+there to reach the ask.
