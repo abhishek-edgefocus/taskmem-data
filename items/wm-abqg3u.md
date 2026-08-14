@@ -8,7 +8,7 @@ people: [Abhijeet, Dustin, Trishit]
 tags: [northpond, edgex, transfers]
 links: [relates:wm-gj5tkx, relates:wm-4sxy5d, parent:wm-4sxy5d]
 created: 2026-08-14T13:53:27Z
-updated: 2026-08-14T19:57:14Z
+updated: 2026-08-14T20:18:44Z
 source: claude-code
 effort: ~15m
 label: EDGEX purchase categories
@@ -49,3 +49,4 @@ efhyf position history, not just fresh first-look originations.
 - 2026-08-14T13:53Z [claude-code] Created 2026-08-14 during the intake sweep, from the Abhijeet DM of 2026-08-13 plus Nate's 2026-08-12 warning that the investor logic is not static. Nobody has been asked yet.
 
 Fix to one link in the body above: the URL given for Abhijeet's steer (…/p1786483011826879) is his 2026-08-12 02:46 IST message in that DM, not the 01:39 IST line quoted — I did not have a permalink for that one. Right channel (D0B2A3WSJ5N), wrong message; scroll down from it to 2026-08-13 01:39.
+- 2026-08-14T20:18Z [claude-code] First hard number on the population question, from the corrected Nelnet loan tape (2026-08-15): 218 of 392 loans carry current_investor_number=INV103, but only 113 distinct loans have ever appeared on a live purchase file (2026-08-11..08-14). All 113 purchased loans are tagged INV103 - the sources agree on the purchased set - leaving 105 tagged with no purchase event, disbursed 2026-08-01..08-13. So loans are reaching EDGEX status without a purchase file, or the tape tags intent rather than ownership. [[wm-uxwcxn]] asks Nate which. Whichever it is, the #transfer-data question stands.
