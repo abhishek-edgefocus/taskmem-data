@@ -2,10 +2,14 @@
 id: wm-3sxcre
 type: task
 title: NorthPond data quality, mappings and reporting
-status: open
+status: active
+size: xl
+people: [Abhijeet]
+tags: [northpond, data-quality, reporting]
 created: 2026-08-14T19:56:57Z
-updated: 2026-08-14T19:56:57Z
+updated: 2026-08-14T19:57:10Z
 source: claude-code
+label: NorthPond DQ + reporting
 ---
 
 Third and last of the Oliv/NorthPond threads, created 2026-08-15 when Abhishek asked for the work
