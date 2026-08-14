@@ -4,7 +4,7 @@ type: task
 title: Set DESCRIPTION='recovery' on the Nelnet transaction leg before the first EDGEX charge-off
 status: open
 created: 2026-08-14T20:09:37Z
-updated: 2026-08-14T20:09:37Z
+updated: 2026-08-14T20:18:44Z
 source: claude-code
 ---
 
@@ -17,3 +17,6 @@ Not yet biting: no Nelnet loan has charged off. Oldest was originated 2026-05-13
 Complication: Nelnet ships no recovery transaction type - only PAYMENT, PAYMENTREVERSAL, INTERESTACCRUAL, ADJ-INTERESTACCRUAL, DISBURSEMENT. So unlike prosper (IS_CHARGEOFF_RECOVERY) or openroad/anchored (PAYMENT_TYPE='RECOVERY'), the rule has to be positional: description='recovery' when the loan's status is charged_off as of EFFDATE.
 
 Found 2026-08-15 while writing the column-mapping notes (~/notes/northpond/02-standardized-mapping.md, finding #2 in 04-findings.md).
+
+## Log
+- 2026-08-14T20:18Z [claude-code] Note: 04-findings.md was renumbered when a new finding was added on 2026-08-15 - this one is now finding 3, titled 'No recovery rule on the Nelnet transaction leg'. Reference it by title, not number.
