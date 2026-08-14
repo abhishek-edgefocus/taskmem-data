@@ -10,7 +10,7 @@ tags: [northpond, ownership]
 links: [relates:wm-9dx47e, parent:wm-d3qnqe]
 refs: [dm-thread=https://edgefocuspartners.slack.com/archives/D0B8A1T4S0N/p1785262559117759]
 created: 2026-07-29T13:42:33Z
-updated: 2026-08-14T19:57:12Z
+updated: 2026-08-14T19:57:13Z
 source: claude-code
 label: Experian Activate model handover
 ---
