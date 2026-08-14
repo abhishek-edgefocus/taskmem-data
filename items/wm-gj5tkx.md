@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [parent:wm-j523sq, relates:wm-5z3pjt, relates:wm-nwvcg9]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-14T13:53:10Z
+updated: 2026-08-14T13:56:18Z
 source: claude-code
 ---
 
@@ -309,3 +309,16 @@ HIGH finding Sentry's bot raised on the PR (LAG() nested inside LAST_VALUE() in
 _NELNET_POSITIONS_PROJECTION — illegal in Snowflake, would have blown up the first time a Nelnet
 loan charged off). The bot has marked it resolved. Landing this before the cutover is [[wm-xtyzed]].
 - 2026-08-14T13:53Z [claude-code] CORRECTION to the entry immediately above (same session, 2026-08-14): I wrote two item ids before the items existed, so [[wm-4mhcgw]] and [[wm-xtyzed]] are not real and resolve to nothing. The backfill/cutover follow-up is [[wm-3vkbn9]] and the PR-landing task is [[wm-g8p2m2]]; both are now children of this item.
+- 2026-08-14T13:56Z [claude-code] Fund derivation reworked and pushed (PR #6277, commit 64597180ff). FUND now prefers Oliv's issuance_v2.current_investor over the purchase-tape + hardcoded-date inference.
+
+Verified against prod on the re-pushed 2026-08-13 issuance_v2: current_investor agrees with the purchase-tape hack on all 468 purchased loans, 0 disagreements, and additionally resolves the 648 loans absent from the tape (which all collapsed to northpond_balancesheet before).
+
+Investor -> fund: efhyf, edgex20261NN, northpond -> northpond_balancesheet, oliv -> northpond_balancesheet (Abhishek's call; 'oliv' is 305 post-acquisition Nelnet loans with no fund of their own, and folding them in is a no-op on gold).
+
+NORTHPOND_EDGEX_PURCHASE_START was NOT deleted - see follow-up. INTENDED_INVESTOR is projected but deliberately unused (differs from current on 131 loans; it front-runs unsold sales).
+
+Two real defects found and fixed while doing this:
+1. The 5 issuance_v2 ColumnDefs added earlier in the branch had no matching terraform columns - the transform would have failed on an invalid identifier.
+2. Nelnet table column types were FLOAT/NUMBER(38,0) vs the house DOUBLE/INTEGER.
+
+CORRECTION to the earlier CI diagnosis: the terraform apply timeout ('context deadline exceeded' on 5 pre-existing views) is NOT caused by the new .tf files. Reproduced the exact CI path (pr_database._apply_terraform against an ephemeral DB): 293 resources, 44s, clean, twice. The CI failure was environmental Snowflake API slowness in that window.
