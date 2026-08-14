@@ -6,6 +6,7 @@ status: active
 size: xl
 people: [Abhijeet]
 tags: [northpond, data-quality, reporting]
+links: [parent:wm-j523sq]
 created: 2026-08-14T19:56:57Z
 updated: 2026-08-14T19:57:10Z
 source: claude-code
