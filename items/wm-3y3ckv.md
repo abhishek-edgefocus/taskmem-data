@@ -5,7 +5,7 @@ title: On-call / Errors backlog
 status: active
 tags: [oncall]
 created: 2026-07-15T14:44Z
-updated: 2026-08-12T13:31:09Z
+updated: 2026-08-14T13:53:48Z
 source: dpx-tasks import
 label: On-call errors backlog
 ---
@@ -34,3 +34,22 @@ Immediate consequence: Kushagra asked him on 2026-08-10 18:16 to look at the err
 ERROR-1178 (Experian Cashflow API read timeout, app_uuid 39e5770e) is now DONE, updated 2026-08-11T22:41Z — one of the Experian/northpond tickets in scope for [[wm-s2f382]].
 ERROR-1668 ('[Server Log · dumbledore · northpond] [DatastoreStandardizedPositions] [northpond] Failed to generate da..') is STILL Backlog, still assigned to Abhishek, last updated 2026-08-11T15:40Z. It is one of the four-ticket dumbledore datastore-generation cluster (1667 marlette / 1668 northpond / 1669 happymoney / 1670 prosper) filed within two hours on 08-05, which the 08-05 sweep already called the single best first investigation because one shared cause is likely. It has now sat a week untouched. Note the overlap: the datastore-generation failure it reports is the same surface as [[wm-4s2sad]] (comparison job dead across all 11 platforms) and [[wm-tvjjgw]] (legacy northpond datastore starving) — worth confirming they are one root cause before working them as three.
 No new ERROR tickets were assigned to Abhishek in this window.
+- 2026-08-14T13:53Z [claude-code] INTAKE SWEEP 2026-08-14 — Linear ERROR queue movement since the last sweep.
+
+NEWLY ASSIGNED TO ABHISHEK:
+- ERROR-1178 "Error contacting Experian Cashflow API … Read timed out" (Backlog, touched
+  2026-08-14 13:38Z). https://linear.app/edge-focus/issue/ERROR-1178/
+  Shape suggests a transient UAT-host timeout (uat-us-api.experian.com), but that is a read of the
+  title, not a check of the event history — untriaged. It makes a fourth Experian-flavoured ticket
+  alongside the three in [[wm-s2f382]].
+
+CLOSED WITHOUT ACTION FROM US:
+- ERROR-1533 (missing_statement_file:northpond:issuance) went Done 2026-08-13 16:28 IST once
+  issuance_20260804.csv landed. That is [[wm-9axevw]], now closed and verified.
+
+STILL OPEN AND MINE:
+- ERROR-1668 [DatastoreStandardizedPositions] [northpond] Failed to generate datastore. This is
+  almost certainly the tail of the same 2026-08-04 issuance gap; the datastore chain has since
+  rebuilt cleanly (verified 2026-08-14), so it is a candidate to close as recovered rather than to
+  fix. https://linear.app/edge-focus/issue/ERROR-1668/
+- ERROR-400 [northpond_loan_fl] Experian Credit Pull Failed (low, Backlog).
