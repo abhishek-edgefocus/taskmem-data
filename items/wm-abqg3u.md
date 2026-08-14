@@ -6,9 +6,9 @@ status: next
 size: xs
 people: [Abhijeet, Dustin, Trishit]
 tags: [northpond, edgex, transfers]
-links: [relates:wm-gj5tkx, parent:wm-4sxy5d]
+links: [relates:wm-gj5tkx]
 created: 2026-08-14T13:53:27Z
-updated: 2026-08-14T14:55:28Z
+updated: 2026-08-14T14:56:17Z
 source: claude-code
 effort: ~15m
 label: EDGEX purchase categories
