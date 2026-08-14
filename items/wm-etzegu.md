@@ -7,9 +7,9 @@ priority: p2
 size: m
 people: [Trishit]
 tags: [northpond, dev-1445, alerting]
-links: [parent:wm-j523sq, parent:wm-btu784]
+links: [parent:wm-j523sq]
 created: 2026-07-27T14:05:01Z
-updated: 2026-08-14T14:55:29Z
+updated: 2026-08-14T14:56:18Z
 source: claude-code
 label: Oliv retarget fallback alert
 ---
