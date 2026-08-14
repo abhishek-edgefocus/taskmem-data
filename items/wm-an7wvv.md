@@ -2,7 +2,7 @@
 id: wm-an7wvv
 type: task
 title: Present taskmem to the broader team
-status: next
+status: dropped
 size: m
 tags: [taskmem]
 created: 2026-07-31T12:55:58Z
