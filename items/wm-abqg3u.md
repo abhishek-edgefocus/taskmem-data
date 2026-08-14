@@ -2,10 +2,15 @@
 id: wm-abqg3u
 type: question
 title: Ask #transfer-data which purchase categories EDGEX 2026-1NN actually includes (fl / ff / td / secondary)
-status: open
+status: next
+size: xs
+people: [Abhijeet, Dustin, Trishit]
+tags: [northpond, edgex, transfers]
 created: 2026-08-14T13:53:27Z
-updated: 2026-08-14T13:53:27Z
+updated: 2026-08-14T13:53:37Z
 source: claude-code
+effort: ~15m
+label: EDGEX purchase categories
 ---
 
 Abhijeet told Abhishek to take this to #transfer-data on 2026-08-13 01:39 IST ("northpond che kahi
