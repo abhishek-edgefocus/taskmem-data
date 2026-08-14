@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [relates:wm-5z3pjt, relates:wm-nwvcg9, parent:wm-d7m3xz]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-14T19:56:16Z
+updated: 2026-08-14T20:27:05Z
 source: claude-code
 ---
 
@@ -334,3 +334,17 @@ Two corrections to my own expectations while writing these:
 2. I expected PRINCIPAL=0 on charged-off rows; it is NULL. Checked prod before assuming a bug: across silver.positions there is not one non-NULL PRINCIPAL on a charged_off row on ANY platform (165M rows on lc). NULL is the convention; PRINCIPAL_AT_CHARGE_OFF carries the number. Fixture now pins it.
 
 Local: 3774 unit passed, 6 northpond integration passed (4 existing + 2 new).
+- 2026-08-14T20:27Z [claude-code] Two more commits pushed (cf19509038, 4582456e9c).
+
+1. NORTHPOND_EDGEX_PURCHASE_START is GONE. Abhishek asked for the hack removed; a straight delete would have emitted 96 spurious transfers (EDGEX purchases start 08-11, current_investor starts 08-13). Replaced with: carry each loan's own earliest attribution from Oliv back over the pre-reporting period, gated on the loan being purchased by the as-of date. Verified safe in prod 2026-08-15 across all 485 purchased loans - 0 loans on multiple purchase dates, 0 loans with multiple FUNDs on the tape - so the earliest attribution is also the only one. No date literal remains in either fund expression; a test asserts it.
+
+2. CURRENT_INVESTOR_NUMBER was missing _null_coerced - 174 loans would have stored the literal string 'NULL'.
+
+CORRECTION on INV103/INV105 (I was wrong twice here):
+- I claimed NORTHPOND_ACCOUNT_FUND_MAP's INV103/INV105 entries were unfounded. They are NOT. Dustin's #platform-data-owners EDGEX 2026-1NN account-ID list is the source (Oliv: Purchaser I = INV105, Grantor Trust = INV103), and prod confirms the convention - upgrade writes 9417954 and prosper 15983181 as ACCOUNT_ID for the same fund. Map left unchanged.
+- I claimed the Nelnet loan tape reads INV101 for every loan and carries no signal. That was an artifact of Oliv's HAND-BUILT sample. Nate confirmed 2026-08-15: 'that is a mistake ... I manually generated the previous ones'. His real 2026-08-14 extract has current_investor_number = INV103 on 218 / NULL on 174, matching the raw VELOCITY tape field 40 exactly.
+- Also dropped the earlier note that INV103/104/105/106 are collateral/buyback/withholding buckets. They are investor IDs.
+
+ANSWER to 'which column identifies INV103 vs INV105': current_investor_number on the cleaned loan file. It is entity-level (finer than our fund vocabulary - INV103 and INV105 both roll up to edgex20261NN), so it does NOT drive FUND. INV105 is rare and absent today.
+
+Local: 3774 unit passed, 6 northpond integration passed, ruff clean.
