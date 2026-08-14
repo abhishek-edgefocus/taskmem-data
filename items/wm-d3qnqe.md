@@ -2,10 +2,15 @@
 id: wm-d3qnqe
 type: task
 title: Experian / NorthPond API health: confirm the 401 story, then fix it
-status: open
+status: active
+size: xl
+people: [Nate, Abhijeet, Kabeer]
+tags: [northpond, api-health, oncall]
+refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-08-14T14:54:55Z
-updated: 2026-08-14T14:54:55Z
+updated: 2026-08-14T14:55:14Z
 source: claude-code
+label: Experian API health
 ---
 
 Container for the Experian-side API health thread. Created 2026-08-14 while restructuring the
