@@ -6,10 +6,10 @@ status: open
 priority: p3
 size: l
 tags: [northpond, edgex, predictions]
-links: [parent:wm-j523sq, blocked-by:wm-qs96kd]
+links: [parent:wm-j523sq, blocked-by:wm-qs96kd, parent:wm-3sxcre]
 refs: [DEV-1498=https://linear.app/edge-focus/issue/DEV-1498/setup-northpond-cmopbep-and-silvernorthpond-api-credit-attributes]
 created: 2026-07-20T15:25:55Z
-updated: 2026-08-03T13:44:20Z
+updated: 2026-08-14T19:57:11Z
 source: claude-code
 ---
 
