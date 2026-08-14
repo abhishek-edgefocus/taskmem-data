@@ -7,7 +7,7 @@ priority: p1
 size: xs
 people: [Nate, Trishit]
 tags: [northpond]
-links: [parent:wm-j523sq, follows:wm-c5jytx, relates:wm-vye9hn]
+links: [parent:wm-j523sq, follows:wm-c5jytx, relates:wm-vye9hn, relates:wm-btu784]
 refs: [DEV-1445=https://linear.app/edge-focus/issue/DEV-1445/retarget-northpond-at-orig-cashflows-to-olivs-anl]
 created: 2026-07-28T17:38:16Z
 updated: 2026-08-14T14:56:18Z
