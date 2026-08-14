@@ -9,8 +9,9 @@ waiting_on: Nate
 nudge: 2026-08-17
 people: [Nate]
 tags: [northpond, edgex, nelnet]
+links: [parent:wm-gj5tkx]
 created: 2026-08-14T13:52:50Z
-updated: 2026-08-14T13:52:55Z
+updated: 2026-08-14T13:52:56Z
 source: claude-code
 label: Nelnet cutover + backfill
 ---
