@@ -4,7 +4,7 @@ type: question
 title: Ask Nate to keep application_uuid on purchase file v1 before v0 is retired
 status: open
 created: 2026-08-14T20:09:49Z
-updated: 2026-08-14T20:09:49Z
+updated: 2026-08-14T20:18:44Z
 source: claude-code
 ---
 
@@ -17,3 +17,6 @@ Live rather than hypothetical: Nate said on 2026-08-11 "the v0 logic is outdated
 Ask: either keep application_uuid on v1, or agree the offers join moves to oliv_loan_number via issuance_v2 before v0 is retired.
 
 Headers verified 2026-08-15 against the 2026-08-11 files Nate posted (v0 F0BPEAE3T61, v1 F0BPBL1MCBV). Written up in ~/notes/northpond/04-findings.md (finding #1).
+
+## Log
+- 2026-08-14T20:18Z [claude-code] Note: 04-findings.md was renumbered on 2026-08-15 - this one is now finding 2, titled 'Purchase file v1 would cost us application_uuid'. Reference it by title, not number.
