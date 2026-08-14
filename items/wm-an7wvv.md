@@ -6,7 +6,7 @@ status: next
 size: m
 tags: [taskmem]
 created: 2026-07-31T12:55:58Z
-updated: 2026-07-31T12:55:58Z
+updated: 2026-08-14T19:54:52Z
 source: claude-code
 label: taskmem team demo
 ---
@@ -26,3 +26,6 @@ repo.
   Experian) and link internal Linear/Slack — screenshot a sanitized subset or
   a scratch WM_DIR
 - Decide the ask: "adopt it", "steal the pattern", or "feedback only"
+
+## Log
+- 2026-08-14T19:54Z [claude-code] DROPPED 2026-08-15 on Abhishek's instruction, together with [[wm-h9kzux]] — the whole taskmem rollout thread is discarded. It was never scheduled or scoped beyond 'pick the date/audience'.
