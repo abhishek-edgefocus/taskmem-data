@@ -2,10 +2,16 @@
 id: wm-d7m3xz
 type: task
 title: EDGEX 2026-1NN deal readiness (Oliv)
-status: open
+status: active
+priority: p1
+size: xl
+people: [Nate, Trishit, Abhijeet]
+tags: [northpond, edgex, oliv]
+refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-08-14T19:56:08Z
-updated: 2026-08-14T19:56:08Z
+updated: 2026-08-14T19:56:16Z
 source: claude-code
+label: EDGEX deal readiness
 ---
 
 Umbrella for everything the EDGEX 2026-1NN deal needs from the Oliv/NorthPond side. Created
