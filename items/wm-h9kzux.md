@@ -2,7 +2,7 @@
 id: wm-h9kzux
 type: task
 title: Demo the Claude task manager at Frank's Linear Discussion
-status: next
+status: dropped
 priority: p1
 size: s
 due: 2026-07-31
