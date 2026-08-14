@@ -44,3 +44,8 @@ efhyf position history, not just fresh first-look originations.
 - Abhijeet's steer (DM): https://edgefocuspartners.slack.com/archives/D0B2A3WSJ5N/p1786483011826879 (same DM, 2026-08-13 01:39 IST)
 - Nate on non-static investor logic: https://edgefocuspartners.slack.com/archives/D0BAD46CT27/p1786559018138169
 - Related feed work: [[wm-gj5tkx]]
+
+## Log
+- 2026-08-14T13:53Z [claude-code] Created 2026-08-14 during the intake sweep, from the Abhijeet DM of 2026-08-13 plus Nate's 2026-08-12 warning that the investor logic is not static. Nobody has been asked yet.
+
+Fix to one link in the body above: the URL given for Abhijeet's steer (…/p1786483011826879) is his 2026-08-12 02:46 IST message in that DM, not the 01:39 IST line quoted — I did not have a permalink for that one. Right channel (D0B2A3WSJ5N), wrong message; scroll down from it to 2026-08-13 01:39.
