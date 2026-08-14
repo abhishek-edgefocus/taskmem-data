@@ -2,10 +2,18 @@
 id: wm-g8p2m2
 type: task
 title: Land PR #6277 (Nelnet feeds end to end) before Oliv's Monday cutover
-status: open
+status: next
+priority: p1
+size: s
+due: 2026-08-16
+people: [Abhijeet]
+tags: [northpond, edgex, nelnet]
+refs: [PR6277=https://github.com/edgefocus/efp/pull/6277, DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-08-14T13:52:29Z
-updated: 2026-08-14T13:52:29Z
+updated: 2026-08-14T13:52:35Z
 source: claude-code
+effort: <1h
+label: Nelnet PR merge
 ---
 
 PR https://github.com/edgefocus/efp/pull/6277 "DEV-1481: Ingest Oliv's Nelnet servicer feeds end
