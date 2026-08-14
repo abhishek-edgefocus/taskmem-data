@@ -2,7 +2,7 @@
 id: wm-8a5pwn
 type: followup
 title: Ask Nate for two columns on the Nelnet transaction export: the Oliv OLV loan number, and dropping Last Name
-status: next
+status: done
 priority: p1
 size: xs
 people: [Nate]
