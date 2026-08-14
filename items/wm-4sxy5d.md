@@ -46,3 +46,6 @@ The two asks of Nate carry external lead time, so they run in parallel rather th
 - PR #6209 (EDGEX date split) — https://github.com/edgefocus/efp/pull/6209
 - DEV-1509 — https://linear.app/edge-focus/issue/DEV-1509/rename-experimental-northpond-fund
 - Project: [[wm-j523sq]]
+
+## Log
+- 2026-08-14T14:54Z [claude-code] Correction to the body above: the '## Next steps' section tells you to run 'taskmem chain wm-8w4ntq' — that id does not exist. I wrote the body before the CLI assigned an id. The correct command is 'taskmem chain wm-4sxy5d --oneline'.
