@@ -7,9 +7,9 @@ priority: p1
 size: s
 people: [Kabeer]
 tags: [northpond]
-links: [parent:wm-j523sq, parent:wm-d3qnqe]
+links: [parent:wm-j523sq]
 created: 2026-07-22T13:47:21Z
-updated: 2026-08-14T14:55:30Z
+updated: 2026-08-14T14:56:18Z
 source: claude-code
 ---
 
