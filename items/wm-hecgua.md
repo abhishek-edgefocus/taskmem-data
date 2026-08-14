@@ -7,7 +7,7 @@ priority: high
 due: 2026-08-12
 links: [parent:wm-su6q4d, relates:wm-6zdqhy]
 created: 2026-08-12T12:18:40Z
-updated: 2026-08-14T14:56:56Z
+updated: 2026-08-14T14:57:06Z
 source: claude-code
 effort: <1h
 ---
@@ -58,3 +58,20 @@ gets cleaned or reset, then land it alongside `openroad_verified.py`.
 - 2026-08-12T13:03Z [claude-code] PROD CONFIRMATION 2026-08-12 for the Frank reply: origin/master silver/comparison/ still has only happymoney, innovate, marlette, northpond, sofi, upgrade, upstart _verified.py — no openroad_verified.py. Frank is right that the file is missing.
 
 BUT the reply needs a second half now, because the prod numbers changed the story. The 2026-07 validation this item defends (1,079 dates, 16-row mismatch table, PR #5807) was run in DEV. In PROD today silver.positions openroad holds 280 rows / 35 loans / 8 dates ending 2026-07-06, and gold.positions_comparison_daily reports COMMON_COUNT=0 against the legacy datastore on 141 of 142 dates. Writing openroad_verified.py now would register by-design differences against a table that is 37 days stale and ~1,070 days short of history — i.e. it would paper over [[wm-85nuv4]] and [[wm-prm54n]] rather than close Frank's gap. Sequence the reply accordingly: acknowledge the missing file, say the validation was done and where the evidence lives, and flag that the prod backfill/refresh has to land before the file means anything.
+- 2026-08-14T14:57Z [claude-code] SPLIT AND RETITLED 2026-08-14, while restructuring the memory into ordered threads.
+
+This item held two things with opposite urgency, and keeping them together hid the urgent one.
+Salvaging the untracked docs is unblocked and genuinely at risk — a single uncommitted copy in
+~/repos/efp/docs/openroad-silver-vs-datastore/ on dpx, in a checkout 128 commits behind master
+that could be reset or cleaned at any time. Writing openroad_verified.py, by contrast, must NOT
+happen yet: prod silver.positions for openroad is a month stale and ~1,070 dates short, so the
+file would register by-design differences against data that is itself broken.
+
+The registration half is now [[wm-skvqac]], which follows this item and is blocked behind reviving
+the silver chain and the datastore deprecation. This item keeps only the salvage, and the title
+was changed to match — it previously read "... + create openroad_verified.py", which would have
+been a standing lie once the split happened.
+
+The body above still describes both halves; read its section 4 and the openroad_verified.py notes
+as belonging to [[wm-skvqac]] now. Everything about the docs themselves, the provenance evidence,
+Frank's question and the dashboard finding stays here and is unchanged.
