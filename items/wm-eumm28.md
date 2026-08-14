@@ -2,14 +2,14 @@
 id: wm-eumm28
 type: task
 title: Ask Nate to backfill issuance_v2 current_investor to 2026-08-11 (unblocks deleting the northpond fund date-hack)
-status: next
+status: dropped
 priority: p2
 size: xs
 people: [Nate]
 tags: [northpond, edgex]
 links: [relates:wm-4sxy5d, parent:wm-4sxy5d]
 created: 2026-08-14T13:56:36Z
-updated: 2026-08-14T20:18:44Z
+updated: 2026-08-14T20:27:11Z
 source: claude-code
 ---
 
