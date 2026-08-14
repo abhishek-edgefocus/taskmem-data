@@ -7,7 +7,7 @@ priority: p2
 size: l
 people: [Nate, Trishit]
 tags: [northpond, edgex]
-links: [parent:wm-j523sq, relates:wm-5z3pjt, relates:wm-nwvcg9, parent:wm-d7m3xz]
+links: [relates:wm-5z3pjt, relates:wm-nwvcg9, parent:wm-d7m3xz]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
 updated: 2026-08-14T19:56:16Z
