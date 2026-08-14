@@ -6,9 +6,10 @@ status: active
 size: xl
 people: [Nate, Abhijeet]
 tags: [northpond, edgex, backfill]
+links: [parent:wm-j523sq]
 refs: [PR-6209=https://github.com/edgefocus/efp/pull/6209]
 created: 2026-08-14T14:54:05Z
-updated: 2026-08-14T14:54:22Z
+updated: 2026-08-14T14:54:23Z
 source: claude-code
 label: EDGEX fund attribution
 ---
