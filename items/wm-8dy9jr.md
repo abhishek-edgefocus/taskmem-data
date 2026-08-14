@@ -9,7 +9,7 @@ people: [Nate, Trishit]
 tags: [northpond, edgex, compliance]
 links: [relates:wm-gj5tkx, relates:wm-nwvcg9]
 created: 2026-08-12T15:29:33Z
-updated: 2026-08-12T16:36:50Z
+updated: 2026-08-14T13:53:10Z
 source: claude-code
 ---
 
@@ -47,3 +47,22 @@ IMMEDIATE ACTIONS TO CONSIDER (needs Abhishek's call, none taken)
 - 2026-08-12T16:36Z [claude-code] NARROWED 2026-08-12 after the Nate call transcript. The go-forward half of this is DECIDED: EF will not ingest PII, and Nate has agreed to deliver a truncated PII-free file (he already produces that shape for other loan buyers). So the code changes I scoped this morning — positional PII stripping and extension dispatch in strip_statement_pii.py — are NOT needed, provided the replacement file arrives as a named-column CSV. If it does, the existing pii_columns mechanism plus S3CsvFile covers everything.
 WHAT REMAINS IS PURELY CLEANUP, and it is still real: the 13 daily VELOCITY_SERVICING_DF2_* files already sitting in s3://efp-raw/statements/northpond/nelnet/daily_loan/ (2026-07-31 through 2026-08-12) still contain plaintext SSN, DOB, address, phone, email and bank routing numbers for up to 353 borrowers, in the NON-PII bucket. Deciding whether those are purged or moved to efp-pii is Abhishek's call and is unaffected by the source-side fix.
 Also note the raw feed will keep landing until Oliv actually cuts over to the truncated file, so the exposure grows by one file a day until then. Worth confirming the cutover date with Nate.
+- 2026-08-14T13:53Z [claude-code] EXPOSURE UPDATE 2026-08-14 (counted directly in S3 from dpx, read-only).
+
+The count in the body is stale. s3://efp-raw/statements/northpond/nelnet/daily_loan/ now holds
+FIFTEEN raw VELOCITY_SERVICING_DF2_* files, 2026-07-31 through 2026-08-14, not thirteen — one
+arrived each of the last two days (…_20260813_… at 2026-08-13 12:38, 371714 bytes; …_20260814_…
+at 2026-08-14 12:38, 390163 bytes). The files are growing steadily, so the borrower count behind
+the plaintext SSN/DOB/address/phone/email/routing-number fields is higher than the 353 recorded
+for the 08-12 file. The transaction-side leak (borrower Last Name in
+V_Transaction_Detail_Export_*.xlsx) is also still arriving daily, through 2026-08-14.
+
+THE GO-FORWARD FIX HAS A DATE NOW: Oliv target Monday 2026-08-17 to switch to the PII-free
+`olivfinancial_*` exports (see [[wm-3vkbn9]]). That means roughly three more raw files land
+(08-15, 08-16, 08-17) before the bleeding stops, taking the total to about eighteen — and more if
+the cutover slips, which is the thing to watch.
+
+WHAT IS STILL UNDECIDED AND IS NOW THE WHOLE ITEM: whether the already-landed files get purged
+from efp-raw or moved to efp-pii. That is Abhishek's call, no action has been taken, and the
+source-side fix does nothing about them. Worth settling this week rather than after the cutover,
+because once the feed goes quiet the pile stops being visible and stays where it is.
