@@ -7,7 +7,7 @@ priority: p2
 size: m
 people: [Trishit]
 tags: [northpond, dev-1445, alerting]
-links: [relates:wm-btu784]
+links: [relates:wm-btu784, parent:wm-btu784]
 created: 2026-07-27T14:05:01Z
 updated: 2026-08-14T19:57:13Z
 source: claude-code
