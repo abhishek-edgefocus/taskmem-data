@@ -2,10 +2,15 @@
 id: wm-skvqac
 type: task
 title: Write openroad_verified.py and register the by-design OpenRoad positions differences
-status: open
+status: next
+size: s
+people: [Frank]
+tags: [openroad, datastores, data-quality]
 created: 2026-08-14T14:55:14Z
-updated: 2026-08-14T14:55:14Z
+updated: 2026-08-14T14:55:28Z
 source: claude-code
+effort: <1h
+label: openroad_verified.py
 ---
 
 Split out of [[wm-hecgua]] on 2026-08-14, because that item held two things with opposite urgency:
