@@ -7,9 +7,8 @@ priority: p2
 size: xs
 people: [Nate]
 tags: [northpond, edgex]
-links: [parent:wm-4sxy5d]
 created: 2026-08-14T13:56:36Z
-updated: 2026-08-14T14:55:28Z
+updated: 2026-08-14T14:56:17Z
 source: claude-code
 ---
 
