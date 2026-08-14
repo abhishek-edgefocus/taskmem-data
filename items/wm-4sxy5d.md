@@ -9,7 +9,7 @@ tags: [northpond, edgex, backfill]
 links: [parent:wm-d7m3xz]
 refs: [PR-6209=https://github.com/edgefocus/efp/pull/6209]
 created: 2026-08-14T14:54:05Z
-updated: 2026-08-14T20:10:01Z
+updated: 2026-08-14T20:18:44Z
 source: claude-code
 label: EDGEX fund attribution
 ---
@@ -50,3 +50,4 @@ The two asks of Nate carry external lead time, so they run in parallel rather th
 ## Log
 - 2026-08-14T14:54Z [claude-code] Correction to the body above: the '## Next steps' section tells you to run 'taskmem chain wm-8w4ntq' — that id does not exist. I wrote the body before the CLI assigned an id. The correct command is 'taskmem chain wm-4sxy5d --oneline'.
 - 2026-08-14T20:10Z [claude-code] Wrote up the whole NorthPond/Oliv picture at ~/notes/northpond/ (README + feeds/columns, standardized column mapping, EDGEX deal state, findings; the 2026-08-12 feeds doc is archived there). Verified 2026-08-15: PR #6277 is OPEN, commits 64597180ff and 131a4e85b0 are NOT ancestors of origin/master - so prod still runs the NORTHPOND_EDGEX_PURCHASE_START='2026-08-01' date hack and ingests no Nelnet feeds. Two new findings filed: wm-tvqc6y (no 'recovery' DESCRIPTION on the Nelnet transaction leg) and wm-4tjdus (purchase file v1 drops application_uuid).
+- 2026-08-14T20:18Z [claude-code] 2026-08-15: Oliv fixed the cleaned Nelnet loan tape's investor column (was INV101 for everything, a bug Nate acknowledged and regenerated within 5 minutes). It now reads INV103 on 218 of 392 loans and agrees perfectly with the purchase files on all 113 purchased loans - but 105 more are tagged with no purchase event. Filed [[wm-uxwcxn]] to ask Nate what the tag means. Notes at ~/notes/northpond/ updated (findings 1, feeds doc, mapping doc, deal state).
