@@ -6,6 +6,7 @@ status: next
 size: xs
 people: [Abhijeet, Dustin, Trishit]
 tags: [northpond, edgex, transfers]
+links: [relates:wm-gj5tkx]
 created: 2026-08-14T13:53:27Z
 updated: 2026-08-14T13:53:37Z
 source: claude-code
