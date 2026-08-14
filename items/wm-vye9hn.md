@@ -7,10 +7,10 @@ priority: p1
 size: s
 people: [Trishit]
 tags: [northpond]
-links: [parent:wm-j523sq, follows:wm-fzbz7m, relates:wm-etzegu]
+links: [parent:wm-j523sq, follows:wm-fzbz7m, relates:wm-etzegu, parent:wm-btu784]
 refs: [DEV-1445=https://linear.app/edge-focus/issue/DEV-1445/retarget-northpond-at-orig-cashflows-to-olivs-anl]
 created: 2026-07-28T17:37:00Z
-updated: 2026-07-31T12:55:57Z
+updated: 2026-08-14T14:55:29Z
 source: claude-code
 label: Oliv ef_scores stale 33
 ---
