@@ -2,10 +2,17 @@
 id: wm-3vkbn9
 type: followup
 title: Wait for Oliv's Nelnet cutover signal, then chase the agreed backfill to 2026-08-11
-status: open
+status: waiting
+size: xs
+due: 2026-08-17
+waiting_on: Nate
+nudge: 2026-08-17
+people: [Nate]
+tags: [northpond, edgex, nelnet]
 created: 2026-08-14T13:52:50Z
-updated: 2026-08-14T13:52:50Z
+updated: 2026-08-14T13:52:55Z
 source: claude-code
+label: Nelnet cutover + backfill
 ---
 
 Two loose ends from the 2026-08-14 Nate DM exchange, both now in Oliv's hands.
