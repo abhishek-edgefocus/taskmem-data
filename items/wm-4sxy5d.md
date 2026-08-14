@@ -2,10 +2,15 @@
 id: wm-4sxy5d
 type: task
 title: EDGEX 2026-1NN fund attribution and the first live Oliv purchases
-status: open
+status: active
+size: xl
+people: [Nate, Abhijeet]
+tags: [northpond, edgex, backfill]
+refs: [PR-6209=https://github.com/edgefocus/efp/pull/6209]
 created: 2026-08-14T14:54:05Z
-updated: 2026-08-14T14:54:05Z
+updated: 2026-08-14T14:54:22Z
 source: claude-code
+label: EDGEX fund attribution
 ---
 
 Container for the thread that starts with the first real EDGEX purchase file (2026-08-11) and ends
