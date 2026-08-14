@@ -2,7 +2,7 @@
 id: wm-9axevw
 type: task
 title: northpond datastore chain frozen at 2026-08-03: missing issuance_20260804.csv poisons standardized_positions every night
-status: next
+status: done
 priority: high
 size: s
 tags: [northpond, datastores, oncall]
