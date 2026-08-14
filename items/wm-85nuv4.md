@@ -6,9 +6,9 @@ status: next
 priority: high
 size: m
 tags: [openroad, datastores]
-links: [parent:wm-su6q4d, relates:wm-prm54n, parent:wm-hjbt5a, blocks:wm-prm54n, blocks:wm-skvqac]
+links: [parent:wm-su6q4d, relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-14T14:55:31Z
+updated: 2026-08-14T14:56:19Z
 source: claude-code
 effort: half-day
 ---
