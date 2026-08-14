@@ -47,3 +47,31 @@ directly under the project.
 - Prod Dagster — https://dagster-prod.edgefocuspartners.com
 - Project: [[wm-su6q4d]]
 - The broader sensor audit this came out of: [[wm-hjbt5a]]
+
+## Log
+- 2026-08-14T19:55Z [claude-code] RESCOPED 2026-08-15 on Abhishek's instruction, after measuring prod. He asked for the OpenRoad
+thread to cover what is actually pending — Frank's verified-differences question, CMOP/BEP, and
+the comparison board that shows no data — rather than just the deprecation run.
+
+The body above says CMOP/BEP stays outside this sequence. THAT IS NO LONGER TRUE and the title has
+been changed to match. The reason is a prod measurement taken today: PROD.SILVER.PREDICTED_CASHFLOWS
+for openroad holds only prediction_type='at_orig', 2,507 rows, max as_of_date 2024-12-12.
+Predictions are derived downstream of positions, and silver.positions openroad stops at
+2026-07-06 — so CMOP/BEP is blocked behind the same dead chain as everything else, not parallel
+to it. It is now step 4.
+
+THE COMPARISON BOARD, which is the third thing Abhishek named: it is not off. The job runs daily
+and last wrote 2026-08-11 with as_of through 2026-08-09 — but COMMON_COUNT=0 on 141 of 142 dates,
+because there is almost no Snowflake data to compare the legacy datastore against. So it is the
+same root cause again, and it needs no item of its own: reviving the chain is what fixes the board,
+and confirming COMMON_COUNT goes non-zero is the honest completion test for step 1. Full numbers,
+including the cross-platform pattern, are on [[wm-85nuv4]] and [[wm-4s2sad]].
+
+FOUR STEPS NOW, all four blocked behind the same operational toggle:
+  1. revive the silver chain (enable openroad_statement_sensor, watch the first tick)
+  2. deprecate the datastores
+  3. write openroad_verified.py and answer Frank
+  4. enable CMOP + BEP
+Still outside the sequence and genuinely unblocked: salvaging the untracked comparison docs
+([[wm-hecgua]] — the only copy is in a stale checkout), the FULLY_PAID_DATE mapping
+([[wm-ay9uu3]]) and the model_requests ingestion ([[wm-bpmxnb]]).
