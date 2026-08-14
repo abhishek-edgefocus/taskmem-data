@@ -6,7 +6,7 @@ status: active
 size: xl
 people: [Abhijeet, Frank]
 tags: [openroad, datastores, dagster]
-links: [parent:wm-su6q4d]
+links: [parent:wm-su6q4d, relates:wm-hjbt5a]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-08-14T14:56:46Z
 updated: 2026-08-14T14:56:55Z
