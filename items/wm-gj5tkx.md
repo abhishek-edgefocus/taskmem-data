@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [parent:wm-j523sq, relates:wm-5z3pjt, relates:wm-nwvcg9]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-13T19:09:24Z
+updated: 2026-08-14T13:52:05Z
 source: claude-code
 ---
 
@@ -267,3 +267,44 @@ Nelnet status values added to NORTHPOND_STATUS_MAP (repayment/paid in full/charg
 THREE EXISTING TESTS UPDATED, deliberately not re-pointed blindly: transfers_test x2 and transactions_test x1 asserted the bare FCC table name / the 'Current'-only filter. Replaced with stronger assertions that BOTH feeds are present and that the fee filter spans both vocabularies.
 
 VERIFIED: 13/13 transaction columns and 56/56 positions columns mapped, 0 unmapped, 0 dangling refs; every column the three union consumers reference is emitted by the union (checked programmatically); TRANAMT = -PRINCIPAL + INTPAID holds on all 17 PAYMENT rows + the reversal; fund_with_purchase_tape_expr refactor asserted byte-identical to master. ruff + mypy clean over 20 files, 898 targeted tests pass. Full edgefocus/transformations/ sweep was green (2524 passed) before the standardized layer went in and is re-running now.
+- 2026-08-14T13:52Z [claude-code] FILE NAMES AND GO-LIVE DATE LOCKED 2026-08-14 (Nate DM, D0BAD46CT27, 01:33-02:05 IST).
+This is the last open design question on the feed; what remains is landing the PR.
+
+NAMING — SETTLED. Abhishek asked Nate to rename the PII-free files to a single-date-token form
+because the current names carry two or three date/time tokens and we parse the as-of date out of
+the key:
+  nelnet/daily_transaction/2026/08/V_Transaction_Detail_Export_Daily_OlivFinancial_2026-08-13-05-28-55_20260813_060201.xlsx
+  nelnet/daily_loan/2026/08/VELOCITY_SERVICING_DF2_20260813_20260813_030224.
+He proposed nelnet_positions_YYYYMMDD.csv / nelnet_transaction_YYYYMMDD.csv; Nate countered with
+the names already used in the samples, and Abhishek accepted them verbatim:
+  nelnet/daily_loan/YYYY/MM/olivfinancial_loan_YYYYMMDD.csv
+  nelnet/daily_transaction/YYYY/MM/olivfinancial_transaction_YYYYMMDD.csv
+Same paths as today, one date token, and Nate confirmed "we would have a singular date / the
+schema would be as the samples provided are".
+NO CODE CHANGE NEEDED: PR #6277 already parses exactly these names — verified in the diff of
+edgefocus/transformations/bronze/parsing_rules/northpond.py, which registers
+northpond_nelnet_positions on olivfinancial_loan_(?P<date>\d{8})\.csv and
+northpond_nelnet_transactions on olivfinancial_transaction_(?P<date>\d{8})\.csv, plus ignore
+rules for the superseded VELOCITY_SERVICING_DF2_* and V_Transaction_Detail_Export_*.xlsx keys.
+
+GO-LIVE — MONDAY 2026-08-17 (target, not a commitment Nate has confirmed in those words).
+Nate: "Any concerns if this is live next week?" and "We typically try to avoid deploys Thursday
+evening into the weekend." Abhishek: "Ingestion is dev ready on our end, so just let us know when
+they start flowing" and "I think we should be good to wait till Monday." So the cutover is
+Oliv-side and we are waiting on their signal.
+
+BACKFILL — AGREED IN PRINCIPLE, DATE NOT SET. Abhishek: "I think it'd be a good idea to backfill
+both the loan and transaction files in the new format from the day we received the first purchase
+file" (that is 2026-08-11, purchase_file_v0_20260811.csv). Nate: "We can definitely backfill after
+we go live." Tracked as [[wm-4mhcgw]].
+
+STILL LANDING IN THE OLD FORMAT AS OF TODAY: s3 shows VELOCITY_SERVICING_DF2_20260814_* and
+V_Transaction_Detail_Export_..._20260814_*.xlsx both arrived 2026-08-14 12:38. Nothing has cut
+over yet, and the PII exposure keeps growing until it does — see [[wm-8dy9jr]].
+
+PR #6277 STATE 2026-08-14: OPEN, mergeStateStatus BLOCKED (branch protection, not conflicts),
+reviewDecision REVIEW_REQUIRED — no human has reviewed it since it was opened 2026-08-13. Head is
+113fd3a "Fix nested window functions and align the transaction as-of date", which resolves the one
+HIGH finding Sentry's bot raised on the PR (LAG() nested inside LAST_VALUE() in
+_NELNET_POSITIONS_PROJECTION — illegal in Snowflake, would have blown up the first time a Nelnet
+loan charged off). The bot has marked it resolved. Landing this before the cutover is [[wm-xtyzed]].
