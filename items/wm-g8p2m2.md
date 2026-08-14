@@ -11,7 +11,7 @@ tags: [northpond, edgex, nelnet]
 links: [parent:wm-gj5tkx, blocks:wm-3vkbn9]
 refs: [PR6277=https://github.com/edgefocus/efp/pull/6277, DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-08-14T13:52:29Z
-updated: 2026-08-14T13:52:56Z
+updated: 2026-08-14T20:10:01Z
 source: claude-code
 effort: <1h
 label: Nelnet PR merge
@@ -53,3 +53,4 @@ date below is the day before the cutover, but nobody will review it over the wee
 
 ## Log
 - 2026-08-14T13:52Z [claude-code] Created 2026-08-14 during the intake sweep. Inferred from the Nate DM (naming and Monday go-live locked 2026-08-14 01:33-02:05 IST) plus the GitHub state of #6277 — the PR has had no human review since it opened and the cutover is three days out.
+- 2026-08-14T20:10Z [claude-code] Reviewed the branch while writing ~/notes/northpond/02-standardized-mapping.md. Two things worth a check before/at merge: (1) the Nelnet transaction bridge is an INNER join on issuance_v2.SERVICER_LOAN_NUMBER, so unbridged rows are held back silently - count Nelnet transaction rows vs rows surviving the bridge after Monday's cutover; (2) STATE / INCOME / ORIGINATION_FEE_PCT / FIRST_PAYMENT_DUE_DATE still come only from issuance v1 joined on the numeric loan id, so confirm v1 issuance still lists Nelnet-serviced loans or those four go NULL for the whole EDGEX book.
