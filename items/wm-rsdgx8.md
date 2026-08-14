@@ -6,9 +6,9 @@ status: next
 priority: p3
 size: s
 tags: [northpond, linear]
-links: [relates:wm-unb6pr, relates:wm-rgwdyu]
+links: [relates:wm-unb6pr, relates:wm-rgwdyu, parent:wm-3sxcre]
 created: 2026-07-20T15:11:15Z
-updated: 2026-07-28T17:40:28Z
+updated: 2026-08-14T19:57:12Z
 source: claude-code
 ---
 
