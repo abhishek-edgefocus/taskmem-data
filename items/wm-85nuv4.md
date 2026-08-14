@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac, parent:wm-jr5bup]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-14T14:56:55Z
+updated: 2026-08-14T19:55:18Z
 source: claude-code
 effort: half-day
 ---
@@ -69,3 +69,36 @@ BRONZE IS HEALTHY — this is important for sequencing: bronze.statement_rows op
 This closes the diagnosis: the fix is to enable the sensor in the prod Dagster UI (an operational toggle, no PR). The job code and the sensor registration on origin/master are both correct — definitions.py:406-408, minIntervalSeconds=30, target statements_openroad.
 
 CAUTION BEFORE FLIPPING IT: with the sensor off, no one has ever seen this job run unattended. Turning it on will start it consuming the 44 bronze dates already queued, and then whatever the backfill adds. Watch the first tick — three OTHER platform jobs are currently failing every sensor run (see the new sensor audit item).
+- 2026-08-14T19:55Z [claude-code] MEASURED IN PROD 2026-08-15 (read-only, PROD.GOLD / PROD.SILVER / PROD.BRONZE) — the gap is now
+38 days and this is what it is doing to the comparison board.
+
+STILL DEAD, unchanged since the 2026-08-12 diagnosis:
+  PROD.SILVER.POSITIONS openroad    8 as-of dates, 2026-06-29..2026-07-06,   280 rows
+  PROD.BRONZE.STATEMENT_ROWS openroad positions   46 dates, through 2026-08-13, 1,610 rows
+So bronze has kept ingesting daily and silver has consumed none of it. 38 dates unconsumed, two
+more than on 08-12.
+
+THE CONSEQUENCE ABHISHEK REMEMBERED — "the comparison dashboard was off, there was no data inside
+OpenRoad" — is real, and it is worse than the board being off:
+  PROD.GOLD.POSITIONS_COMPARISON_DAILY, openroad: 142 rows, as_of through 2026-08-09,
+  last written 2026-08-11 06:03 PT — and COMMON_COUNT = 0 on 141 of those 142 dates.
+The comparison job is HEALTHY and running on schedule. It renders a board every day that reports
+nothing in common between the legacy datastore and Snowflake, because Snowflake only has 8 dates
+to compare. A dead board would at least look dead; this one looks fine and says zero.
+
+NOT AN OPENROAD-ONLY PATTERN — the zero-common counts line up almost exactly with the never-ticked
+sensors from [[wm-hjbt5a]]:
+  innovate 142/142 zero    (sensor never ticked)
+  openroad 141/142         (sensor never ticked)
+  upstart  134/142         (sensor never ticked)
+  lc       133/142         (sensor never ticked)
+  anchored 102/142         (sensor healthy — so this one needs a different explanation)
+  sofi 14, prosper 15, marlette 17, upgrade 30, happymoney 76, northpond 93
+That is strong evidence the sensor audit and the comparison-coverage problem are the same problem
+seen from two ends, and that fixing the sensors is what makes the boards meaningful.
+
+ALSO WORTH KNOWING BEFORE THE CMOP/BEP WORK: PROD.SILVER.PREDICTED_CASHFLOWS for openroad holds
+only prediction_type='at_orig', 2,507 rows, max as_of_date 2024-12-12. OpenRoad predictions are
+effectively not being produced at all. Logged on [[wm-xe6w4q]] too.
+
+Query kept at /tmp/or_cmp.py on dpx; run it from ~/repos/efp with .env sourced.
