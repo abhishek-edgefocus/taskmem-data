@@ -6,6 +6,7 @@ status: active
 size: xl
 people: [Trishit, Nate]
 tags: [northpond, predictions]
+links: [parent:wm-j523sq]
 refs: [DEV-1445=https://linear.app/edge-focus/issue/DEV-1445/retarget-northpond-at-orig-cashflows-to-olivs-anl]
 created: 2026-08-14T14:54:38Z
 updated: 2026-08-14T14:54:55Z
