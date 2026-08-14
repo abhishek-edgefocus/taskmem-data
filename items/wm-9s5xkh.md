@@ -5,7 +5,7 @@ title: Integrate NorthPond/Oliv dashboard into Fund Monitoring: represent EFHYF 
 status: open
 priority: p3
 tags: [northpond]
-links: [parent:wm-j523sq, relates:wm-hz3hm9, follows:wm-jxuaum, parent:wm-3sxcre]
+links: [relates:wm-hz3hm9, follows:wm-jxuaum, parent:wm-3sxcre]
 created: 2026-07-21T12:32:03Z
 updated: 2026-08-14T19:57:12Z
 source: claude-code
