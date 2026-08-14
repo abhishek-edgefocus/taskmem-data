@@ -1,13 +1,13 @@
 ---
 id: wm-hecgua
 type: task
-title: Commit or salvage the untracked OpenRoad silver-vs-datastore docs + create openroad_verified.py
+title: Commit or salvage the untracked OpenRoad silver-vs-datastore docs before the stale checkout is cleaned
 status: next
 priority: high
 due: 2026-08-12
 links: [parent:wm-su6q4d, relates:wm-6zdqhy]
 created: 2026-08-12T12:18:40Z
-updated: 2026-08-12T13:03:45Z
+updated: 2026-08-14T14:56:56Z
 source: claude-code
 effort: <1h
 ---
