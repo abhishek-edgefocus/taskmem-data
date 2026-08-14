@@ -6,10 +6,10 @@ status: active
 size: xl
 people: [Trishit, Nate]
 tags: [northpond, predictions]
-links: [parent:wm-j523sq]
+links: [parent:wm-j523sq, parent:wm-d7m3xz]
 refs: [DEV-1445=https://linear.app/edge-focus/issue/DEV-1445/retarget-northpond-at-orig-cashflows-to-olivs-anl]
 created: 2026-08-14T14:54:38Z
-updated: 2026-08-14T14:54:55Z
+updated: 2026-08-14T19:56:16Z
 source: claude-code
 label: Oliv ANL prediction chain
 ---
