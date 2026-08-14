@@ -2,10 +2,15 @@
 id: wm-btu784
 type: task
 title: Oliv ANL retarget: finish the prediction chain and stop it silently falling back
-status: open
+status: active
+size: xl
+people: [Trishit, Nate]
+tags: [northpond, predictions]
+refs: [DEV-1445=https://linear.app/edge-focus/issue/DEV-1445/retarget-northpond-at-orig-cashflows-to-olivs-anl]
 created: 2026-08-14T14:54:38Z
-updated: 2026-08-14T14:54:38Z
+updated: 2026-08-14T14:54:55Z
 source: claude-code
+label: Oliv ANL prediction chain
 ---
 
 Container for everything still outstanding from the DEV-1445 Oliv-ANL retarget and Trishit's
