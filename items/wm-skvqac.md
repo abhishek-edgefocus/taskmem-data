@@ -6,7 +6,7 @@ status: next
 size: s
 people: [Frank]
 tags: [openroad, datastores, data-quality]
-links: [follows:wm-hecgua]
+links: [follows:wm-hecgua, parent:wm-jr5bup]
 created: 2026-08-14T14:55:14Z
 updated: 2026-08-14T14:56:56Z
 source: claude-code
