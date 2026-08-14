@@ -6,9 +6,9 @@ status: next
 priority: p1
 size: s
 tags: [northpond, dagster, errors]
-links: [relates:wm-3rsskm, parent:wm-btu784, blocks:wm-3rsskm]
+links: [relates:wm-3rsskm, parent:wm-btu784, blocks:wm-3rsskm, parent:wm-hjbt5a]
 created: 2026-08-10T20:05:48Z
-updated: 2026-08-14T14:55:29Z
+updated: 2026-08-14T14:55:31Z
 source: claude-code
 ---
 
