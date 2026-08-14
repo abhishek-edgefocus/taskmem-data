@@ -7,7 +7,7 @@ priority: p2
 size: m
 people: [Trishit, Nate, Nakula]
 tags: [northpond, ownership]
-links: [parent:wm-j523sq, relates:wm-9dx47e, relates:wm-d3qnqe, parent:wm-d3qnqe]
+links: [parent:wm-j523sq, relates:wm-9dx47e, parent:wm-d3qnqe]
 refs: [dm-thread=https://edgefocuspartners.slack.com/archives/D0B8A1T4S0N/p1785262559117759]
 created: 2026-07-29T13:42:33Z
 updated: 2026-08-14T19:57:12Z
