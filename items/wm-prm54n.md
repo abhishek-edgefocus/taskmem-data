@@ -8,10 +8,10 @@ size: l
 due: 2026-08-03
 people: [Abhijeet]
 tags: [openroad, datastores]
-links: [relates:wm-bvqkhh, relates:wm-tvjjgw, blocks:wm-skvqac]
+links: [relates:wm-bvqkhh, relates:wm-tvjjgw, blocks:wm-skvqac, parent:wm-jr5bup]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-07-29T15:33:30Z
-updated: 2026-08-14T14:56:55Z
+updated: 2026-08-14T14:56:56Z
 source: claude-code
 label: OpenRoad datastore deprecation
 ---
