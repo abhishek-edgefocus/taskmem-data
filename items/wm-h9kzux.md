@@ -8,9 +8,10 @@ size: s
 due: 2026-07-31
 people: [Frank]
 tags: [taskmem, demo]
+links: [blocks:wm-an7wvv]
 refs: [dm=https://edgefocuspartners.slack.com/archives/D0B3WL5PG8Z/p1785467416757929]
 created: 2026-07-31T12:56:51Z
-updated: 2026-08-03T13:44:41Z
+updated: 2026-08-14T14:55:31Z
 source: claude-code
 label: Frank Linear Discussion demo
 ---
