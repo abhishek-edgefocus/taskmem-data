@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [parent:wm-j523sq, relates:wm-5z3pjt, relates:wm-nwvcg9]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-14T13:52:05Z
+updated: 2026-08-14T13:53:10Z
 source: claude-code
 ---
 
@@ -308,3 +308,4 @@ reviewDecision REVIEW_REQUIRED — no human has reviewed it since it was opened 
 HIGH finding Sentry's bot raised on the PR (LAG() nested inside LAST_VALUE() in
 _NELNET_POSITIONS_PROJECTION — illegal in Snowflake, would have blown up the first time a Nelnet
 loan charged off). The bot has marked it resolved. Landing this before the cutover is [[wm-xtyzed]].
+- 2026-08-14T13:53Z [claude-code] CORRECTION to the entry immediately above (same session, 2026-08-14): I wrote two item ids before the items existed, so [[wm-4mhcgw]] and [[wm-xtyzed]] are not real and resolve to nothing. The backfill/cutover follow-up is [[wm-3vkbn9]] and the PR-landing task is [[wm-g8p2m2]]; both are now children of this item.
