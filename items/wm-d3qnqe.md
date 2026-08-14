@@ -6,6 +6,7 @@ status: active
 size: xl
 people: [Nate, Abhijeet, Kabeer]
 tags: [northpond, api-health, oncall]
+links: [parent:wm-j523sq]
 refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-08-14T14:54:55Z
 updated: 2026-08-14T14:55:14Z
