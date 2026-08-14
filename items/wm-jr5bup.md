@@ -1,7 +1,7 @@
 ---
 id: wm-jr5bup
 type: task
-title: Revive the OpenRoad silver chain, then deprecate its datastores
+title: OpenRoad: revive the dead silver chain, then clear everything stacked behind it
 status: active
 size: xl
 people: [Abhijeet, Frank]
@@ -9,7 +9,7 @@ tags: [openroad, datastores, dagster]
 links: [parent:wm-su6q4d, relates:wm-hjbt5a]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-08-14T14:56:46Z
-updated: 2026-08-14T14:56:55Z
+updated: 2026-08-14T19:55:50Z
 source: claude-code
 label: OpenRoad revive + deprecate
 ---
