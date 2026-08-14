@@ -7,9 +7,9 @@ priority: p1
 size: s
 people: [Trishit]
 tags: [northpond]
-links: [relates:wm-g22j5e]
+links: [relates:wm-g22j5e, parent:wm-btu784]
 created: 2026-07-31T17:36:11Z
-updated: 2026-08-10T20:05:57Z
+updated: 2026-08-14T14:55:29Z
 source: claude-code
 ---
 
