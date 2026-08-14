@@ -7,10 +7,10 @@ priority: p1
 size: xs
 people: [Nate, Trishit]
 tags: [northpond]
-links: [follows:wm-c5jytx, relates:wm-vye9hn, relates:wm-btu784]
+links: [follows:wm-c5jytx, relates:wm-vye9hn, relates:wm-btu784, parent:wm-btu784]
 refs: [DEV-1445=https://linear.app/edge-focus/issue/DEV-1445/retarget-northpond-at-orig-cashflows-to-olivs-anl]
 created: 2026-07-28T17:38:16Z
-updated: 2026-08-14T19:57:13Z
+updated: 2026-08-14T19:57:14Z
 source: claude-code
 label: Nate 1.36 ANL gross-vs-net
 ---
