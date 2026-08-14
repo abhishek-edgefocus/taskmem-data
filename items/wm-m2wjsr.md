@@ -7,10 +7,10 @@ priority: p2
 size: s
 people: [Abhijeet]
 tags: [northpond, data-quality]
-links: [parent:wm-j523sq, parent:wm-3sxcre]
+links: [parent:wm-3sxcre]
 refs: [DEV-1522=https://linear.app/edge-focus/issue/DEV-1522/fix-northpond-status-at-purchase, PR-6207=https://github.com/edgefocus/efp/pull/6207]
 created: 2026-08-11T08:49:02Z
-updated: 2026-08-14T19:57:10Z
+updated: 2026-08-14T19:57:11Z
 source: claude-code
 label: northpond status_at_purchase nulls
 ---
