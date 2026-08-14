@@ -9,7 +9,7 @@ people: [Nate]
 tags: [northpond, edgex]
 links: [relates:wm-4sxy5d, parent:wm-4sxy5d]
 created: 2026-08-14T13:56:36Z
-updated: 2026-08-14T19:57:14Z
+updated: 2026-08-14T20:18:44Z
 source: claude-code
 ---
 
@@ -28,3 +28,6 @@ Once those land and are re-parsed, delete from constants.py:
 and the corresponding tests in northpond_constants_test.py.
 
 Note also: bronze ingested the OLD 2026-08-13 issuance_v2 before Nate re-pushed it (prod silver still shows the combined 'current_or_intended_investor' and no servicer_loan_number). That file needs a re-parse regardless, or current_investor is NULL everywhere and FUND silently falls back to the purchase tape for every loan.
+
+## Log
+- 2026-08-14T20:18Z [claude-code] This ask may no longer be needed. PR #6277 deletes NORTHPOND_EDGEX_PURCHASE_START entirely and resolves FUND as: (1) issuance_v2.current_investor as of the date, (2) for a loan already purchased by that date, its EARLIEST known attribution carried backwards, (3) account map. Arm 2 covers as_of 2026-08-11 and 2026-08-12 for the 29 loans, because they are on the purchase tape for those dates and Oliv's 2026-08-13 file gives them an attribution to carry back. Verify against the 29 before dropping the ask - and note the 2026-08-13 issuance_v2 re-parse is still needed regardless, since bronze ingested the pre-repush version.
