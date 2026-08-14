@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [parent:wm-j523sq, relates:wm-5z3pjt, relates:wm-nwvcg9]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-14T14:16:12Z
+updated: 2026-08-14T18:09:03Z
 source: claude-code
 ---
 
@@ -323,3 +323,14 @@ Two real defects found and fixed while doing this:
 
 CORRECTION to the earlier CI diagnosis: the terraform apply timeout ('context deadline exceeded' on 5 pre-existing views) is NOT caused by the new .tf files. Reproduced the exact CI path (pr_database._apply_terraform against an ephemeral DB): 293 resources, 44s, clean, twice. The CI failure was environmental Snowflake API slowness in that window.
 - 2026-08-14T14:16Z [claude-code] CI green on PR #6277 after the fund rework: Run Tests 9m7s pass, Run integration tests 16m51s pass, Seer pass, Select tests pass. The integration job that failed at 27m and 47m in the two prior runs now passes in 16m51s with no change to the 5 views that were timing out - confirming the local reproduction. PR is mergeStateStatus=BLOCKED only on REVIEW_REQUIRED. Ready for review.
+- 2026-08-14T18:09Z [claude-code] Added the missing integration coverage (commit 131a4e85b0). The branch had none - the 4 existing northpond md tests all drive the FCC leg and pass over this change because the UNION does not disturb them, which is not the same as the Nelnet path working.
+
+Two fixtures, both passing:
+- northpond_nelnet_transactions.md (63s): built from Oliv's real 2026-08-13 sample rows. Pins the type filter, payment/reversal sign conventions, the INNER join dropping unmatched loans, no fan-out across issuance_v2 snapshots, MAX_BY taking the LATEST investor (efhyf on 08-12 -> edgex20261NN on 08-13), oliv -> northpond_balancesheet, and EFFDATE vs RPTDATE.
+- northpond_nelnet_positions.md (118s): the derived charge-off columns. Seeds 4 days but processes only 2, so the earlier rows exist purely as window-function history. Pins CHARGE_OFF_DATE = first day of the run (steady on day 2), and PRINCIPAL_AT_CHARGE_OFF = 900 = the balance the day BEFORE charge-off, not the 0 the file reports.
+
+Two corrections to my own expectations while writing these:
+1. I put IS_RAW_RECORD_MODIFIED on the nelnet stmt table fixture; the validity test rejected it. The code is right - those tables deliberately do not emit it and terraform matches.
+2. I expected PRINCIPAL=0 on charged-off rows; it is NULL. Checked prod before assuming a bug: across silver.positions there is not one non-NULL PRINCIPAL on a charged_off row on ANY platform (165M rows on lc). NULL is the convention; PRINCIPAL_AT_CHARGE_OFF carries the number. Fixture now pins it.
+
+Local: 3774 unit passed, 6 northpond integration passed (4 existing + 2 new).
