@@ -7,9 +7,9 @@ priority: p2
 size: s
 people: [Abhijeet]
 tags: [northpond, platform-data-owners]
-links: [relates:wm-j523sq]
+links: [relates:wm-j523sq, parent:wm-3sxcre]
 created: 2026-07-29T18:10:01Z
-updated: 2026-07-29T18:10:05Z
+updated: 2026-08-14T19:57:11Z
 source: claude-code
 ---
 
