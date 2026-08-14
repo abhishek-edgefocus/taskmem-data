@@ -8,9 +8,9 @@ size: s
 due: 2026-08-11
 people: [Nate, Trishit]
 tags: [northpond, edgex]
-links: [relates:wm-jewha5, relates:wm-n7usn7, relates:wm-tvjjgw]
+links: [relates:wm-jewha5, relates:wm-n7usn7, relates:wm-tvjjgw, parent:wm-4sxy5d]
 created: 2026-07-31T14:19:39Z
-updated: 2026-08-12T13:29:43Z
+updated: 2026-08-14T14:55:28Z
 source: claude-code
 ---
 
