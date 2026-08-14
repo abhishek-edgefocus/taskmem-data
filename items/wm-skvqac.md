@@ -6,9 +6,9 @@ status: next
 size: s
 people: [Frank]
 tags: [openroad, datastores, data-quality]
-links: [parent:wm-su6q4d, follows:wm-hecgua]
+links: [follows:wm-hecgua]
 created: 2026-08-14T14:55:14Z
-updated: 2026-08-14T14:55:28Z
+updated: 2026-08-14T14:56:56Z
 source: claude-code
 effort: <1h
 label: openroad_verified.py
