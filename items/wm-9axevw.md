@@ -8,7 +8,7 @@ size: s
 tags: [northpond, datastores, oncall]
 links: [relates:wm-tvjjgw, relates:wm-hjbt5a, parent:wm-3y3ckv]
 created: 2026-08-12T14:10:51Z
-updated: 2026-08-12T21:06:40Z
+updated: 2026-08-14T13:50:59Z
 source: claude-code
 effort: <1h
 ---
@@ -126,3 +126,26 @@ file exist, so no ack row is needed in either path.
 DELIVERY PATH (verified in repo): Oliv drops on SFTP (flat remote dir) -> Dagster job sftp_sync_northpond_job syncs SFTP->EFS /efs/data/statements/northpond/ on cron '30 * * * *' (hourly at :30, orchestration/definitions.py:297) -> [EFS->s3://efp-raw/statements/northpond/ leg NOT located in repo; SFTPSync writes EFS only and /efs/data is not mounted on dpx, so this hop is unverified] -> nightly dumbledore generate_datastores ~21:00 PT. Empirically the end-to-end lag is small: issuance files appear in S3 at a consistent 16:36-17:08 UTC daily. With the ask going out ~21:15 UTC there is ~7h of headroom before tonight's 04:00 UTC run, so it should catch tonight, but the unverified hop means it could slip a night. NOT a reason to delay the ask.
 
 Told him the genuine Aug 4 file is the better ask if Oliv still has it (issuance is cumulative and generated daily, so what failed on Aug 4 was most likely the DELIVERY, not the generation).
+- 2026-08-14T13:50Z [claude-code] RESOLVED + VERIFIED 2026-08-14. The copy-the-Aug-3-file plan worked end to end.
+
+SOURCE FIXED: s3://efp-raw/statements/northpond/issuance/2026/08/issuance_20260804.csv now
+exists, uploaded 2026-08-12 21:38, 125255 bytes — byte-for-byte the same size as
+issuance_20260803.csv, i.e. Oliv re-dropped the Aug 3 file under the Aug 4 name exactly as
+asked. August now has no gap: 08-01 through 08-13 all present.
+
+CHAIN CAUGHT UP (checked s3://efp-derived/datastores/northpond/ on dpx today):
+  standardized_positions/v1899/2026-08-13.parquet  written 2026-08-14 03:59
+  positions/v1899/2026-08-13.parquet               written 2026-08-14 04:20
+  transfers/v1899/transfers.parquet                written 2026-08-14 04:16
+  cfframe/v1899/cfframe.parquet                    written 2026-08-14 04:59
+So the two nightly runs since the file landed (2026-08-13 and 2026-08-14) rebuilt 08-04
+onwards and the ~20 skipped dependents are current again. No code change was needed and none
+was made.
+
+Linear ERROR-1533 (missing_statement_file:northpond:issuance) was closed 2026-08-13 16:28 IST,
+consistent with the above.
+
+STILL WORTH DOING, but not here: options (b) prior-date fallback for a missing issuance file
+and (c) stop one failed array index failing the whole datastore. Both are durable fixes for a
+failure mode that has now recurred at least six times (2025-12-01, 2026-01-06..11, 2026-02-04/05,
+2026-02-13, 2026-08-04). Neither is captured as its own item yet — raise if wanted.
