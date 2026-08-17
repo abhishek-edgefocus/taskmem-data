@@ -2,9 +2,14 @@
 id: wm-dfec2v
 type: followup
 title: Answer Eshan's Oliv file-cadence question in #platform-data-owners (PR #6306 thread)
-status: open
+status: next
+priority: p1
+size: xs
+due: 2026-08-17
+people: [Eshan, Kabeer]
+tags: [northpond, edgex]
 created: 2026-08-17T09:54:13Z
-updated: 2026-08-17T09:54:13Z
+updated: 2026-08-17T09:54:19Z
 source: claude-code
 ---
 
