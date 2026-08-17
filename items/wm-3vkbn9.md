@@ -11,7 +11,7 @@ people: [Nate]
 tags: [northpond, edgex, nelnet]
 links: [parent:wm-gj5tkx]
 created: 2026-08-14T13:52:50Z
-updated: 2026-08-14T13:52:56Z
+updated: 2026-08-17T09:54:24Z
 source: claude-code
 label: Nelnet cutover + backfill
 ---
@@ -49,3 +49,4 @@ the cutover slips is another day of raw PII arriving in efp-raw ([[wm-8dy9jr]]).
 
 ## Log
 - 2026-08-14T13:52Z [claude-code] Created 2026-08-14 during the intake sweep from the Nate DM (D0BAD46CT27) exchange of 2026-08-14 01:33-02:05 IST. Waiting on Nate/Oliv for the go-live signal; nudge set to Monday.
+- 2026-08-17T09:54Z [claude-code] 2026-08-17 09:53 UTC CUTOVER HAS NOT HAPPENED. Checked S3 directly: s3://efp-raw/statements/northpond/nelnet/daily_loan/2026/08/ and daily_transaction/2026/08/ still end at 2026-08-16 in the OLD formats (VELOCITY_SERVICING_DF2_20260816_* and V_Transaction_Detail_Export_Daily_OlivFinancial_2026-08-16-*.xlsx). No olivfinancial_* keys on either prefix. Today's drop had not landed yet at check time - these files land ~12:37 UTC, so 08-17 was still ~3h out; re-check after 13:00 UTC before pinging Nate. Raw PII keeps arriving meanwhile (see wm-8dy9jr). Also noted: purchase_file/v0 is WEEKDAY-ONLY - last file is purchase_file_v0_20260814.csv, nothing on 08-15/08-16, so the gap is the weekend and not a miss.
