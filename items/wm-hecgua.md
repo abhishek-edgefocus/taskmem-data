@@ -7,7 +7,7 @@ priority: high
 due: 2026-08-12
 links: [parent:wm-su6q4d, relates:wm-6zdqhy]
 created: 2026-08-12T12:18:40Z
-updated: 2026-08-14T14:57:06Z
+updated: 2026-08-17T11:17:52Z
 source: claude-code
 effort: <1h
 ---
@@ -75,3 +75,7 @@ been a standing lie once the split happened.
 The body above still describes both halves; read its section 4 and the openroad_verified.py notes
 as belonging to [[wm-skvqac]] now. Everything about the docs themselves, the provenance evidence,
 Frank's question and the dashboard finding stays here and is unchanged.
+- 2026-08-17T11:17Z [claude-code] 2026-08-17: rescued both untracked ledgers off dpx into ~/notes (Mac, mirrored to dp:~/notes).
+- OpenRoad (this item): ~/repos/efp/docs/openroad-silver-vs-datastore/ -> notes/areas/efp/projects/dev-1393-openroad-datastore/ (README.md 75L + positions-mismatches-2026-07-01.md 64L, unchanged, rescue banner added).
+- Sibling NorthPond copy at dp:~/docs/northpond-silver-vs-datastore/ (5 files, also untracked) -> notes/areas/efp/platforms/northpond/history/dev-1075-datastore-ledger/.
+Loss risk is gone; item stays OPEN because the actual ask -- committing the OpenRoad docs to the repo -- has not been done. Notes copy is a backup, not the deliverable.
