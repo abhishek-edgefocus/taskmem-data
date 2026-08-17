@@ -10,7 +10,7 @@ people: [Eshan, Kabeer]
 tags: [northpond, edgex]
 links: [relates:wm-gj5tkx, parent:wm-d7m3xz]
 created: 2026-08-17T09:54:13Z
-updated: 2026-08-17T09:54:19Z
+updated: 2026-08-17T10:13:11Z
 source: claude-code
 ---
 
@@ -36,3 +36,6 @@ CAVEAT to state plainly: the issuance file carries NO investor/fund tag. Header 
 
 Analysis scripts: scratchpad lead.py / hitrate.py (session 10c34cf0).
 Draft prepared 2026-08-17; Abhishek posts it, not the agent (no agent-initiated writes).
+
+## Log
+- 2026-08-17T10:13Z [claude-code] MEASURED PER-LOAN 2026-08-17, scoped to the EDGEX 2026-1NN loans only. PROD PROOF: PROD.SILVER.NORTHPOND_STMT_PURCHASE_TAPES holds exactly 113 rows with PURCHASE_DATE >= 2026-01-01, across 4 dates (08-11:29, 08-12:50, 08-13:17, 08-14:17), all ACCOUNT_NAME=northpond_efhyf. NOTE the 08-11 batch of 29 still carries FUND='efhyf' (stale - written before PR #6209 merged 2026-08-11T21:48Z); 08-12/13/14 correctly carry FUND='edgex20261NN'. Rebuild tracked on [[wm-cqgb5n]]. By the date rule all 113 are EDGEX 2026-1NN. LEAD TIMES (issuance first-sighting -> purchase_date), all 113 matched in issuance, 0 unmatched, 0 clipped at the July-1 staging boundary: overall min=1 median=3 max=4 mean=2.8 days; distribution {1d:8, 2d:47, 3d:15, 4d:43}. Per file: 08-11 = 29 loans, 3-4d, first seen 08-07(27)/08-08(2), $63,700; 08-12 = 50 loans, 1-4d, first seen 08-08(16)/08-09(13)/08-10(17)/08-11(4), $126,800; 08-13 = 17 loans, 1-2d, first seen 08-11(13)/08-12(4), $45,800; 08-14 = 17 loans, all exactly 2d, first seen 08-12(17), $47,700. Total $284,000 across 113 loans. Per-loan CSV saved to ~/edgex_lead_detail.csv on the Mac. Scripts: scratchpad edgex_lead2.py (prod) + final.py (join); staged S3 copies under /tmp on dpx.
