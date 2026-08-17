@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [relates:wm-5z3pjt, relates:wm-nwvcg9, parent:wm-d7m3xz]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-14T20:27:05Z
+updated: 2026-08-17T09:46:57Z
 source: claude-code
 ---
 
@@ -348,3 +348,15 @@ CORRECTION on INV103/INV105 (I was wrong twice here):
 ANSWER to 'which column identifies INV103 vs INV105': current_investor_number on the cleaned loan file. It is entity-level (finer than our fund vocabulary - INV103 and INV105 both roll up to edgex20261NN), so it does NOT drive FUND. INV105 is rare and absent today.
 
 Local: 3774 unit passed, 6 northpond integration passed, ruff clean.
+- 2026-08-17T09:46Z [claude-code] PR #6277 split into two branches at Abhishek's request - 21 files / +1967 was too much for one review.
+
+- abhishek/dev-1481-nelnet-ingest (14 files, +1522/-136), 3 bisectable commits: issuance_v2 investor columns -> FUND derived from them -> the two Nelnet stmt tables + parsing rules + terraform. Green standalone: 3765 unit, 5 integration, lint clean, dagster validates.
+- abhishek/dev-1481-nelnet-standardized (11 files, +521/-39), 1 commit on top: the FCC+Nelnet UNION, positions/transfers/service-fees, transactions_nelnet, 2 md tests. 3767 unit, 7 integration.
+
+Split boundary is Abhishek's: FUND is a stmt-table column so fund derivation rides with ingestion. I had argued for a third PR isolating it because it changes FUND on the EXISTING FCC tables (stmt_positions/stmt_transactions) and so carries a backfill tail; he reasoned it belongs with the layer that owns the column, which is sound. Reviewer should know PR 1 is not purely additive.
+
+TRAP HIT WHILE SPLITTING: the old branch was 15 commits behind master. A naive 'git checkout <branch> -- edgefocus/ orchestration/' would have REVERTED 20 unrelated files (anchored, marlette, upgrade, prosper, stmt_utils, definitions.py). Caught it in git status. Rebuilt surgically, file by file. One genuine overlap: master added target_stream_group_by to northpond/transfers.py in 0bf2a28f0a which the branch predated - applied our hunks as a 3-way patch instead of overwriting, and asserted both changes survived.
+
+Also earlier this session: replaced 26 substring-on-SQL assertions with northpond_fund_resolution.md, which runs the real SQL and asserts the resolved fund for 9 loans - including the no-spurious-transfer property (same loan reads edgex20261NN on both 08-11 and 08-13) that nothing tested before.
+
+OPEN: #6277 still points at the old branch and has review history. Repoint vs close-and-reopen is Abhishek's call - not touched.
