@@ -2,9 +2,12 @@
 id: wm-e9bhr2
 type: task
 title: Keep the ~/notes NorthPond knowledge base current as EDGEX moves
-status: open
+status: next
+priority: p2
+size: s
+tags: [northpond, notes]
 created: 2026-08-17T11:18:19Z
-updated: 2026-08-17T11:18:19Z
+updated: 2026-08-17T11:18:23Z
 source: claude-code
 ---
 
