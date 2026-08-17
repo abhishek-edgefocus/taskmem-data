@@ -11,7 +11,7 @@ tags: [northpond, edgex, nelnet]
 links: [parent:wm-gj5tkx, blocks:wm-3vkbn9]
 refs: [PR6277=https://github.com/edgefocus/efp/pull/6277, DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-08-14T13:52:29Z
-updated: 2026-08-17T09:56:47Z
+updated: 2026-08-17T14:04:40Z
 source: claude-code
 effort: <1h
 label: Nelnet PR merge
@@ -66,3 +66,4 @@ date below is the day before the cutover, but nobody will review it over the wee
 Descriptions written to ~/pr-style.md: what changed -> DAG -> Snowflake proof. Both carry the validation numbers inline but the SCREENSHOTS ARE MISSING - I cannot take them. Each has a marked slot plus the exact assertion SQL to run. Abhishek needs to paste the Dagster DAG shot and the Snowflake query+result frames before review, or the descriptions do not meet his own bar.
 
 Also flagged in #6323: it is NOT purely additive - it changes FUND on the existing FCC stmt_positions/stmt_transactions, so it carries a backfill tail (ties to wm-cqgb5n).
+- 2026-08-17T14:04Z [claude-code] 2026-08-17: PR #6277 was CLOSED by Abhishek at 09:56 UTC, superseded and split for reviewability into #6323 (ingest Nelnet feeds into silver + move FUND onto Oliv's current_investor, +1541/-139) and #6324 (merge loans into standardized positions/transfers, +501/-17, stacked on 6323). BOTH ARE OPEN AND UNMERGED as of 14:05 UTC — #6323 has only a Sentry comment, #6324 has NO reviews at all. This item's title still names #6277; the work now lands via 6323+6324. NOTE #6323 DOES map the new issuance_v2 investor columns (ColumnDef CURRENT_INVESTOR / INTENDED_INVESTOR) and resolves FUND from current_investor rather than intended_investor — so the earlier finding that master does not parse those columns is true of master only, not of this open PR.
