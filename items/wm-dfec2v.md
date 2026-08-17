@@ -8,6 +8,7 @@ size: xs
 due: 2026-08-17
 people: [Eshan, Kabeer]
 tags: [northpond, edgex]
+links: [relates:wm-gj5tkx]
 created: 2026-08-17T09:54:13Z
 updated: 2026-08-17T09:54:19Z
 source: claude-code
