@@ -11,7 +11,7 @@ tags: [northpond, edgex, nelnet]
 links: [parent:wm-gj5tkx, blocks:wm-3vkbn9]
 refs: [PR6277=https://github.com/edgefocus/efp/pull/6277, DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-08-14T13:52:29Z
-updated: 2026-08-17T14:04:40Z
+updated: 2026-08-17T14:28:44Z
 source: claude-code
 effort: <1h
 label: Nelnet PR merge
@@ -67,3 +67,12 @@ Descriptions written to ~/pr-style.md: what changed -> DAG -> Snowflake proof. B
 
 Also flagged in #6323: it is NOT purely additive - it changes FUND on the existing FCC stmt_positions/stmt_transactions, so it carries a backfill tail (ties to wm-cqgb5n).
 - 2026-08-17T14:04Z [claude-code] 2026-08-17: PR #6277 was CLOSED by Abhishek at 09:56 UTC, superseded and split for reviewability into #6323 (ingest Nelnet feeds into silver + move FUND onto Oliv's current_investor, +1541/-139) and #6324 (merge loans into standardized positions/transfers, +501/-17, stacked on 6323). BOTH ARE OPEN AND UNMERGED as of 14:05 UTC — #6323 has only a Sentry comment, #6324 has NO reviews at all. This item's title still names #6277; the work now lands via 6323+6324. NOTE #6323 DOES map the new issuance_v2 investor columns (ColumnDef CURRENT_INVESTOR / INTENDED_INVESTOR) and resolves FUND from current_investor rather than intended_investor — so the earlier finding that master does not parse those columns is true of master only, not of this open PR.
+- 2026-08-17T14:28Z [claude-code] Real-data drill on #6323 found and fixed a genuine bug: the fund rework made 259 already-purchased loans emit a FROM=TO=northpond_balancesheet self-transfer.
+
+Root cause: transfers.py hardcodes TAPE_FROM_FUND=northpond_balancesheet for every purchase-tape row (a loan reaching that table is by definition bought OUT of the balance sheet). NORTHPOND_INVESTOR_FUND_MAP maps 'northpond'/'oliv' -> northpond_balancesheet, correct for a loan's CURRENT fund but never valid as a purchase destination. The shared map leaking into PURCHASE_TAPE_FUND_EXPR was the defect.
+
+Proven end to end against real prod data, not inferred: 0 self-transfers in prod today -> 263 after materializing #6323 as pushed -> 0 again after the fix. My first fix attempt (drop the backfill arm entirely) was WRONG - verified it would have misclassified all 113 real EDGEX purchases (08-11..08-14) back to efhyf. Final fix is narrow: NULLIF both investor arms against northpond_balancesheet on the purchase-tape expression only, so it falls through to the account map instead. Deduped diff vs master: 0 divergences (down from 259), while all 113 EDGEX purchases still resolve correctly.
+
+Committed 1ebdf1c6f1, pushed to abhishek/dev-1481-nelnet-ingest. Adds a regression test (northpond_purchase_tapes_fund.md) targeting NorthpondStmtPurchaseTapes directly - the table that actually owns the defect - plus a structural guard test.
+
+NOTE: #6324 (standardized) is now based on the pre-fix tip of #6323 and needs rebasing before it's tested again - not yet done, user redirected focus to #6323 only this session.
