@@ -8,7 +8,7 @@ size: s
 tags: [northpond, datastores, oncall]
 links: [relates:wm-tvjjgw, relates:wm-hjbt5a, parent:wm-3y3ckv]
 created: 2026-08-12T14:10:51Z
-updated: 2026-08-14T13:50:59Z
+updated: 2026-08-18T17:52:35Z
 source: claude-code
 effort: <1h
 ---
@@ -149,3 +149,4 @@ STILL WORTH DOING, but not here: options (b) prior-date fallback for a missing i
 and (c) stop one failed array index failing the whole datastore. Both are durable fixes for a
 failure mode that has now recurred at least six times (2025-12-01, 2026-01-06..11, 2026-02-04/05,
 2026-02-13, 2026-08-04). Neither is captured as its own item yet — raise if wanted.
+- 2026-08-18T17:52Z [claude-code] EFS->S3 hop RESOLVED 2026-08-18 (via cross-session peer abhishek-69, relayed through abhishek-da). Previously marked unverified in this item's body (DELIVERY PATH section). It's the copy_from_efs Dagster asset calling copy_efs_to_s3() in edgefocus/transformations/bronze/strip_statement_pii.py - routes PII-flagged files to efp-pii and everything else to efp-raw. So the full chain is now: Oliv SFTP -> sftp_sync_northpond_job (hourly :30) -> EFS /efs/data/statements/northpond/ -> copy_from_efs asset / copy_efs_to_s3() (PII-routing split efp-pii vs efp-raw) -> s3://efp-raw/statements/northpond/... Not independently verified by me in this session, but two peer sessions cross-confirmed it.
