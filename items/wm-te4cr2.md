@@ -8,7 +8,7 @@ size: s
 tags: [northpond, dagster, errors]
 links: [relates:wm-3rsskm, parent:wm-btu784, blocks:wm-3rsskm]
 created: 2026-08-10T20:05:48Z
-updated: 2026-08-14T14:56:19Z
+updated: 2026-08-18T14:23:27Z
 source: claude-code
 ---
 
@@ -76,3 +76,11 @@ SIDE OBSERVATION (not this ticket): configs/default_passwords.json has a real
 
 ## Log
 - 2026-08-12T13:48Z [claude-code] ESCALATION 2026-08-12 from prod Dagster (read-only): this is not a single-asset failure. northpond_exp_predictions raising 'AssertionError: .efp_toplevel not found' is failing the ENTIRE statements_northpond job on every sensor tick — 20 consecutive FAILUREs, last SUCCESS 2026-08-05 18:44 UTC. The same runs also fail northpond_transfers with 'ValueError: Validation failed with 1116 error(s)', so there are two independent breakages in the same job. Full audit in [[wm-hjbt5a]].
+- 2026-08-18T14:23Z [claude-code] RECONFIRMED 2026-08-18 (read-only prod Dagster + Snowflake). Still failing, nothing fixed.
+
+- statements_northpond: 46 CONSECUTIVE FAILUREs. Last SUCCESS 2026-08-05 18:44Z; streak starts 2026-08-06 12:44Z; latest failure 2026-08-18 13:18Z. 13 days red.
+- Latest run 30b5765a: 13 steps SUCCESS, 2 FAILURE - northpond_exp_predictions (AssertionError: .efp_toplevel not found, unchanged) and northpond_transfers (ValueError: Validation failed with 129 error(s); count drifts 1430 -> 1116 -> 129, so it tracks data volume, not a fixed defect).
+- FIX STILL NOT LANDED: origin/master orchestration/Dockerfile has no COPY of .efp_toplevel (COPY lines are pyproject/README, configs, edgefocus, lib/efp, orchestration only). Last commit touching that file is 12f619a48, 2026-07-11 - predates the breakage. No PR open for it.
+- DOWNSTREAM IMPACT QUANTIFIED: PROD.SILVER.PREDICTED_CASHFLOWS for northpond holds exactly ONE slice - channel northpond_loan_fl / at_orig, all rows sourced from the issuance path (s3://efp-raw/statements/northpond/issuance/...), 25,740 rows / 715 loans, MAX_LOADED 2026-08-17. ZERO rows from the /predictions/ path, i.e. the exp slice has still never written a single row. Confirms the asset has never succeeded.
+- northpond_api_predictions SUCCEEDS on every run, so the api at_orig slice is current and 713/715 loans in silver.positions have predictions. The 2 without were purchased 2026-04-16. So this is NOT a total predictions outage - it is the exp slice missing plus a permanently red job.
+- Note for [[wm-vye9hn]]: silver.ef_scores rows for northpond carry PLATFORM = NULL (200,926 NULL-platform rows, covering all 715 northpond efp_ids). Filtering ef_scores by platform='northpond' returns 0 - do not read that as the scores being absent.
