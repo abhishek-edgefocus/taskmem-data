@@ -2,7 +2,7 @@
 id: wm-3vkbn9
 type: followup
 title: Wait for Oliv's Nelnet cutover signal, then chase the agreed backfill to 2026-08-11
-status: waiting
+status: done
 size: xs
 due: 2026-08-17
 waiting_on: Nate
