@@ -2,10 +2,13 @@
 id: wm-39q8fh
 type: task
 title: NorthPond FUND attribution races Oliv's issuance_v2 arrival — newest as_of_date is always stale
-status: open
+status: next
+priority: high
+tags: [northpond, edgex, dashboards, data-quality]
 created: 2026-08-19T20:04:30Z
-updated: 2026-08-19T20:04:30Z
+updated: 2026-08-19T20:04:36Z
 source: claude-code
+estimate: <1h
 ---
 
 Found 2026-08-20 while investigating the EDGEX deployment dashboard
