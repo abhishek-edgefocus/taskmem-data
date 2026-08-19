@@ -7,7 +7,7 @@ priority: high
 tags: [northpond, edgex, dashboards, data-quality]
 links: [relates:wm-cqgb5n, relates:wm-d7m3xz]
 created: 2026-08-19T20:04:30Z
-updated: 2026-08-19T20:04:36Z
+updated: 2026-08-19T20:54:00Z
 source: claude-code
 estimate: <1h
 ---
@@ -89,3 +89,6 @@ attribute from the purchase tape directly.
 
 Related: wm-cqgb5n (two fund names at once — same surface, different cause),
 wm-uxwcxn (does INV103 mean sold-to vs earmarked-for).
+
+## Log
+- 2026-08-19T20:54Z [claude-code] Refined the characterisation 2026-08-20: the 46 orphaned loans are NOT newly-seen loans. All 46 were already in silver.positions from 2026-08-15..08-18 under fund=to_be_purchased_edgex20261NN, and issuance_v2 called them CURRENT_INVESTOR='oliv' on 08-17/08-18 before flipping all 46 to 'edgex20261NN' on 08-19 (that flip IS the sale event). So the loan and its EDGEX destination were both already known; only the sale-happened-today signal is applied late. Feed arrival medians (IST): positions ~18:08, issuance v1 and v2 both ~22:07 (measured over 20-30 days of S3 LastModified; dpx is UTC). FUND is stamped on the nelnet stmt tape at ~18:18 IST off the previous day's issuance; to_be_purchased rebuilds ~00:40 IST off the fresh one. Net: the sale is applied same-day on the to_be_purchased side and one day late on the purchased side, so the day's purchases are removed from one bucket without being added to the other.
