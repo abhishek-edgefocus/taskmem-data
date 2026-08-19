@@ -7,7 +7,7 @@ priority: normal
 size: ~15m
 tags: [northpond, oliv, nate, statements]
 created: 2026-08-19T19:37:08Z
-updated: 2026-08-19T22:06:45Z
+updated: 2026-08-19T22:14:36Z
 source: claude-code
 ---
 
@@ -60,3 +60,4 @@ rather than papering over it with 08-03's data.
 ## Log
 - 2026-08-19T20:16Z [claude-code] Abhishek sent the ask to Nate in Slack (2026-08-20). Now waiting on his reply. Pre-agreed stance for the response: payment_configuration_20260804 may be copy-forwarded, transaction_boards_20260804 must be the real 8/4 file.
 - 2026-08-19T22:06Z [claude-code] Nate replied 2026-08-20: 'these are FCC(?) files' + 'to follow up'. He is questioning ownership — believes transaction_boards/payment_configuration may come from FCC rather than Oliv. Needs an answer from our side; the evidence is already in this item's body.
+- 2026-08-19T22:14Z [claude-code] 2026-08-20 huddle with Nate (DM D0BAD46CT27, 03:22-03:33 IST, AI notes F0BRFFLN2F3): Abhishek raised both missing files again. Nate's position on the call: a file may simply not be produced when there are no transactions; he opened the AWS account live and saw transaction_boards files for 2026-08-16 and 08-23(?) plus 'two files on the' date in question, said 'that is strange' and could not explain it, and took the action to look back through their side. Agreed outcome: Nate investigates and reports the backfill status for BOTH files by 2026-08-20 (he may check the same night). Abhishek explicitly de-prioritised it on the call ('FCC ones are not in EDGEX, so not super high priority') while asking that it still get patched up. Nate did NOT repeat the 'these are FCC files' ownership challenge on the huddle.
