@@ -7,7 +7,7 @@ priority: high
 due: 2026-08-12
 links: [parent:wm-su6q4d, relates:wm-6zdqhy]
 created: 2026-08-12T12:18:40Z
-updated: 2026-08-17T11:17:52Z
+updated: 2026-08-19T18:10:19Z
 source: claude-code
 effort: <1h
 ---
@@ -79,3 +79,16 @@ Frank's question and the dashboard finding stays here and is unchanged.
 - OpenRoad (this item): ~/repos/efp/docs/openroad-silver-vs-datastore/ -> notes/areas/efp/projects/dev-1393-openroad-datastore/ (README.md 75L + positions-mismatches-2026-07-01.md 64L, unchanged, rescue banner added).
 - Sibling NorthPond copy at dp:~/docs/northpond-silver-vs-datastore/ (5 files, also untracked) -> notes/areas/efp/platforms/northpond/history/dev-1075-datastore-ledger/.
 Loss risk is gone; item stays OPEN because the actual ask -- committing the OpenRoad docs to the repo -- has not been done. Notes copy is a backup, not the deliverable.
+- 2026-08-19T18:10Z [claude-code] CHECKOUT HAS MOVED ON, DOCS ALMOST LOST BUT RECOVERED -- checked 2026-08-19 (read-only, no git operations that alter state -- only log/stash list/show).
+
+~/repos/efp on dpx is no longer on abhishek/dev-1393-fixes-in-openroad-positions -- it has been reused for DEV-1481 Nelnet work and is now on abhishek/dev-1481-northpond-stmt-dedup-guard (reflog shows branch switches through 2026-08-17..08-18). docs/openroad-silver-vs-datastore/ is GONE from the working tree.
+
+IT IS NOT LOST: stash@{1} ('On dev-1393-fixes-in-openroad-positions: temp: swap for dev-1481-standardized DAG screenshot', created 2026-08-17/18 during the branch swap) captured it as part of an untracked-files snapshot. Confirmed via :
+  docs/openroad-silver-vs-datastore/README.md                        75 lines
+  docs/openroad-silver-vs-datastore/positions-mismatches-2026-06-10.md  67 lines
+  docs/openroad-silver-vs-datastore/positions-mismatches-2026-07-01.md  64 lines
+(one more mismatches file than previously known -- a 2026-06-10 snapshot in addition to 07-01). All bundled with ~70 other untracked scratch files (check_*.py / verify_*.py) from the same swap.
+
+RISK UNCHANGED, JUST RELOCATED: this now lives only in one stash entry in one checkout. A stash is exactly as fragile as an untracked working-tree file -- , , or reusing this checkout again could lose it permanently, and stashes don't push anywhere. Do not run git stash operations on ~/repos/efp on dpx without pulling these 3 files out first.
+
+NEXT ACTION, unchanged in substance: extract docs/openroad-silver-vs-datastore/ from stash@{1} (git checkout stash@{1}^3 -- docs/openroad-silver-vs-datastore/, or git show stash@{1}^3:<path> per file) and commit it somewhere durable, same treatment as docs/northpond-silver-vs-datastore/ ([[wm-6zdqhy]]).
