@@ -4,7 +4,7 @@ type: question
 title: Ask Nate what current_investor_number=INV103 on the Nelnet loan tape means — sold to EDGEX, or earmarked for it?
 status: open
 created: 2026-08-14T20:18:22Z
-updated: 2026-08-19T21:36:13Z
+updated: 2026-08-19T21:47:21Z
 source: claude-code
 ---
 
@@ -27,3 +27,4 @@ Written up in ~/notes/northpond/04-findings.md (finding 1).
 
 ## Log
 - 2026-08-19T21:36Z [claude-code] 2026-08-20 EdgeX dashboard review raised the same population from the other side: ~400K 'to be purchased' / ~150K DoD jump on the dashboard, cumulative NorthPond principal purchase ~8,005K. Drafted the Slack message to Nate covering (1) confirm EDGEX 2026-1NN takes only Experian-era Oliv loans and NO TU/NorthPond backbook, (2) explicit heads-up on any backbook->EDGEX move, (3) whether the 3-4d issuance->purchase gap fully explains the build-up, (4) whether any of the intended=EDGEX queue could settle into Purchaser I / stay on Oliv balance sheet (Dustin account step still pending), (5) expected Aug/Sep run rate. Abhishek sends it, not the agent. Meeting also flagged separately: principal-balance drop is OUR bug not Nate's; E3/E4 90/10-vs-60/40 is an Eric question gated on the principal balance being fixed; backbook terminology to be aligned with Sean.
+- 2026-08-19T21:47Z [claude-code] 2026-08-20 FINAL MESSAGE SENT by Abhishek to Nate (short version, after he cut the draft down): 'From the issuance and positions files, we're seeing about $400-500K of loans coming through over the next 3-4 days, including a sudden ~$150K jump in a single day. Wanted to understand what these loans are - we were expecting only Experian-era Oliv loans in this deal, and no TransUnion / NorthPond backbook loans.' Deliberately left OPEN-ENDED - he did not want bulleted questions ('don't wanna enforce him to just respond to these bullets'). The Purchaser I fallback question and the Aug/Sep run-rate question were cut and remain unasked. Now waiting on Nate's reply.
