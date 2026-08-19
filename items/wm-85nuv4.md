@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac, parent:wm-jr5bup, blocks:wm-xe6w4q]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-14T19:55:50Z
+updated: 2026-08-19T18:10:19Z
 source: claude-code
 effort: half-day
 ---
@@ -102,3 +102,14 @@ only prediction_type='at_orig', 2,507 rows, max as_of_date 2024-12-12. OpenRoad 
 effectively not being produced at all. Logged on [[wm-xe6w4q]] too.
 
 Query kept at /tmp/or_cmp.py on dpx; run it from ~/repos/efp with .env sourced.
+- 2026-08-19T18:10Z [claude-code] RECONFIRMED IN PROD 2026-08-19 (read-only GraphQL + Snowflake, no changes made). Nothing has moved since the 08-14/15 diagnosis:
+- openroad_statement_sensor: still STOPPED, runningCount=0, zero ticks ever (still empty ticks array).
+- statements_openroad job run history: still exactly ONE run in its life -- runId 8907d34a-909f-4879-b3a1-f0c174113135, SUCCESS, 2026-07-07, tags show dagster/from_ui=true (manual UI launch, no sensor tag). Confirmed via runsOrError query.
+- silver.positions openroad: still 8 as-of dates, 2026-06-29..2026-07-06, 280 rows. Byte-identical to 08-12/08-15 measurements.
+- bronze.statement_rows openroad positions: now 51 dates through 2026-08-18 (was 46 through 08-13 on 08-14). Bronze keeps advancing daily as expected -- gap between last silver date (07-06) and current bronze date (08-18) is now 43 days and still growing.
+- bronze.statement_files openroad: still only 51 positions + 51 payments + 33 purchase_tape registered, ZERO transactions files. File-registry backfill (ordered-plan step 2) still has not been run.
+- silver.predicted_cashflows openroad: unchanged, 2507 rows, prediction_type=at_orig only, max as_of_date 2024-12-12.
+- GOLD.POSITIONS_COMPARISON_DAILY openroad: unchanged, 142 rows, ZERO_COMMON=141/142, last write 2026-08-11 06:03:57 PT. NEW OBSERVATION: LAST_RUN for every platform in this table is stuck around 2026-08-06..08-11 -- i.e. the comparison job itself appears to not have produced a fresh row for ANY platform in 8 days as of 2026-08-19. Not yet investigated; may be a separate, newer problem layered on top of [[wm-4s2sad]]. Worth a follow-up if no one is already on it.
+- Sibling sensor check: innovate_statement_sensor and foursight_statement_sensor are also STOPPED (openroad is not alone) -- consistent with [[wm-hjbt5a]]'s '5 platform statement sensors never enabled' finding.
+
+Bottom line: nothing has been done since 08-15. The fix is still exactly what was scoped: enable the sensor, watch the first tick, then backfill the file registry. No new blockers found.
