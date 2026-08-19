@@ -10,7 +10,7 @@ tags: [northpond, data-quality]
 links: [parent:wm-3sxcre]
 refs: [DEV-1522=https://linear.app/edge-focus/issue/DEV-1522/fix-northpond-status-at-purchase, PR-6207=https://github.com/edgefocus/efp/pull/6207]
 created: 2026-08-11T08:49:02Z
-updated: 2026-08-14T19:57:11Z
+updated: 2026-08-19T19:12:30Z
 source: claude-code
 label: northpond status_at_purchase nulls
 ---
@@ -31,3 +31,6 @@ rows would be a second problem.
 
 Captured here because it was assigned by someone else and had no taskmem item — nothing in
 Slack mentions it.
+
+## Log
+- 2026-08-19T19:12Z [claude-code] Scoped down: of 773 NULL status_at_purchase rows for northpond, 771 are to_be_purchased_edgex20261NN pending-purchase rows (legitimately NULL, out of scope for PR #6207). Only 2 real offenders: OLV12563044 (as_of 2025-06-18) and OLV12563061 (as_of 2025-06-24) — earliest positions snapshot lands one day before the inferred purchase TRANSFER_DATE, so the ASOF join in generate_purchases_join() can't match. Fixed via corrections/rules/northpond/2025_06_status_at_purchase_asof_gap.py (first correction file for this platform). Tested in DEV_ABHISHEK via isolated apply_corrections_to_temp_table() run (confirmed correct before/after) rather than a full reprocess, since that dev database is separately missing upstream data for old northpond dates. PR open: https://github.com/edgefocus/efp/pull/6390. Still needed after merge: sync corrections to prod + reprocess northpond positions for 2025-06-18 and 2025-06-24.
