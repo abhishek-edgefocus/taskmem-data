@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac, parent:wm-jr5bup, blocks:wm-xe6w4q]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-19T18:10:19Z
+updated: 2026-08-19T19:42:40Z
 source: claude-code
 effort: half-day
 ---
@@ -113,3 +113,59 @@ Query kept at /tmp/or_cmp.py on dpx; run it from ~/repos/efp with .env sourced.
 - Sibling sensor check: innovate_statement_sensor and foursight_statement_sensor are also STOPPED (openroad is not alone) -- consistent with [[wm-hjbt5a]]'s '5 platform statement sensors never enabled' finding.
 
 Bottom line: nothing has been done since 08-15. The fix is still exactly what was scoped: enable the sensor, watch the first tick, then backfill the file registry. No new blockers found.
+- 2026-08-19T19:42Z [claude-code] SENSOR-REVIVAL ATTEMPTED 2026-08-19/20 — TWO REAL BLOCKERS FOUND, BOTH ROOT-CAUSED TO EXACT ERROR COUNTS. Abhishek ran statements_openroad manually from the Dagster UI with as_of_date=all on every op. Twice (runs 4b394017-ce04-47a1-b5a4-1bda1a184c41 and 14320188-8bbd-4ec6-b31e-96fa9e33ddce). Both FAILED identically.
+
+WHAT SUCCEEDED (and this is real progress — the stmt-parsing layer scales):
+openroad_stmt_positions, openroad_stmt_payments, openroad_stmt_purchase_tapes, openroad_stmt_transactions,
+openroad_transactions, openroad_transactions_itd all SUCCESS across the full 51-date backlog.
+
+WHAT FAILED — deterministic, NOT transient (identical counts on both runs):
+1. openroad_transfers  — 35 validation errors
+2. openroad_api_predictions — 1139 validation errors
+openroad_positions + all gold/cashflow assets never ran (they depend on openroad_transfers).
+
+*** BLOCKER 1 — CHANNELS constant omission (code defect, one-line fix, no data issue) ***
+All 35 transfers errors are the SAME error: 'channel is not a canonical CHANNELS constant'.
+OPENROAD_CHANNEL = 'openroad_auto_refi' is defined at
+edgefocus/transformations/silver/statement_rows/openroad/constants.py:8 and is written as a hardcoded
+literal into every transfers row (CHANNEL: f"'{OPENROAD_CHANNEL}'"), but 'openroad_auto_refi' was NEVER
+added to the shared CHANNELS class in edgefocus/transformations/silver/statement_rows/constants.py:87.
+prosper/marlette/sofi/happymoney/upgrade/northpond/upstart/anchored/lc/innovate are all registered there;
+openroad is simply missing. _canonical_values_validation_sql builds its allowed list from that class via
+_constant_values(), so EVERY openroad transfers row fails, in any database. Database-independent, fully
+deterministic. FIX: add OPENROAD_AUTO_REFI = 'openroad_auto_refi' to CHANNELS (mirror INNOVATE_AUTO_REFI,
+which is the same single-auto-refi-channel shape). Note innovate IS registered and openroad is not —
+openroad looks like it was simply skipped when the canonical-values validation was introduced.
+
+*** BLOCKER 2 — VANTAGE4 is NULL for ALL 35 openroad loans in PROD (this is DEV-1396, see [[wm-bpmxnb]]) ***
+The 1139 count is EXACTLY reproduced by a read-only PROD query. Mechanism:
+  SERVICING_FEE = COALESCE(payload:servicing_fee, openroad_servicing_fee_sql(vantage4))
+  openroad_servicing_fee_sql returns NULL when vantage4 IS NULL or outside [350,850] (deliberate —
+  'so a bad/missing credit score fails the downstream cashflow-config validation loudly').
+  Validation rule requires SERVICING_FEE IS NOT NULL AND BETWEEN 0 AND 0.1.
+MEASURED IN PROD (read-only, replicating the transform's own matched_loans join):
+  35 loans total, 2,507 total periods (= the full row count)
+  35/35 loans have VANTAGE4 NULL in PROD.SILVER.OPENROAD_OFFERS
+  19 loans survive because the gateway logged payload:servicing_fee (2023-10-27 onward)
+  16 loans have NO payload fee AND NULL vantage4 -> SERVICING_FEE NULL
+  those 16 loans sum to exactly 1,139 periods == the 1139 Dagster errors. Exact match.
+PROD.SILVER.OPENROAD_OFFERS VANTAGE4: 68,818 non-null of 6,043,026 (1.1%).
+So the code's designed fallback CANNOT fire in prod because the credit score it depends on was never
+ingested. The module docstring claims it 'covers all 16 pre-logging loans from their vantage score alone'
+— that is true in dev and FALSE in prod. This is the same DEV-1396 gap already recorded on [[wm-hecgua]]
+(#2/#3 credit_score/VANTAGE4) and [[wm-bpmxnb]]: the real TU score lives in flat model_requests/
+model_responses statement files that were never ingested to bronze.
+
+METHOD NOTE / TRAP FOR THE NEXT AGENT — dry_run=True IS NOT A VALIDATION TEST.
+Transform.generate_temp_table() returns 0 immediately when dry_run=True (transform.py:264-269): it logs the
+SQL and never builds the temp table, so _apply_validations is skipped entirely (it is gated on temp_rows>0).
+A dry_run therefore ALWAYS 'passes' regardless of the data. I initially reported these failures as transient
+on the strength of clean dry-runs; that conclusion was wrong and cost a wasted prod re-run.
+ALSO: a bare snowflake.session() with ~/repos/efp/.env resolves to DEV_ABHISHEK, not PROD — dev has
+1,151,134 non-null VANTAGE4 vs prod's 68,818, which is exactly why the predictions transform passes in dev
+and fails in prod. Always pass database='PROD' explicitly when reproducing a prod failure.
+
+SEQUENCING: blocker 1 is a trivial code fix and unblocks transfers -> openroad_positions -> gold. Blocker 2
+gates predictions only, and depends on DEV-1396 ingestion (or an explicit decision to relax/park the
+servicing-fee rule for the 16 pre-logging loans). The sensor should NOT be enabled until at least blocker 1
+lands, or every tick will fail the same way.
