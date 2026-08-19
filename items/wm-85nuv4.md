@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac, parent:wm-jr5bup, blocks:wm-xe6w4q]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-19T19:42:40Z
+updated: 2026-08-19T20:53:04Z
 source: claude-code
 effort: half-day
 ---
@@ -169,3 +169,25 @@ SEQUENCING: blocker 1 is a trivial code fix and unblocks transfers -> openroad_p
 gates predictions only, and depends on DEV-1396 ingestion (or an explicit decision to relax/park the
 servicing-fee rule for the 16 pre-logging loans). The sensor should NOT be enabled until at least blocker 1
 lands, or every tick will fail the same way.
+- 2026-08-19T20:53Z [claude-code] PR RAISED FOR BLOCKER 1 + BLOCKER 2 REDIAGNOSED (2026-08-19/20).
+
+BLOCKER 1 — PR #6393 OPEN: https://github.com/edgefocus/efp/pull/6393
+  'ERROR-1711: Register openroad_auto_refi as a canonical CHANNELS constant'
+  branch abhishek/openroad-channel-constant off master d195816ec, 1 file +3.
+  Adds OPENROAD_AUTO_REFI to CHANNELS in statement_rows/constants.py, placed beside
+  INNOVATE_AUTO_REFI. Purely additive — only OpenRoad rows carry that value, so no other
+  platform's validation changes; efhyf was already in FUNDS. Verified the allowlist now resolves
+  it (30 channels, was 29) and pytest edgefocus/transformations/silver/statement_rows/ is
+  733 passed / 1 skipped.
+  Anchored to ERROR-1711, the Dagster ticket auto-filed 2026-08-19T18:36Z for exactly these
+  failing assets. ERROR-1711 covers BOTH failed assets so it should stay open until the
+  predictions half is also resolved — the PR body says so explicitly.
+
+BLOCKER 2 — NO PR NEEDED, and my earlier framing of it was incomplete. It is not 'DEV-1396 must
+be built'; the ingestion and the silver wiring both already exist and are deployed. The real
+defect is that PROD.SILVER.OPENROAD_OFFERS is stale for 2024/2025 and most of 2023 — those dates
+were materialized before the vantage4 wiring landed on 2026-08-01 (52026b99f / PR #5974), and the
+stream watermark will never revisit them. Full evidence, including a read-only proof that
+re-running the transform for 2023-06-30 turns 0 scored rows into 703, is on [[wm-bpmxnb]].
+FIX: backfill the openroad_offers asset (ingest_api_output job) with as_of_date=all, then re-run
+statements_openroad. Still do NOT enable openroad_statement_sensor until #6393 merges.
