@@ -2,12 +2,13 @@
 id: wm-hbujve
 type: task
 title: Ask Nate for the remaining 2026-08-04 Oliv files (payment_configuration copy-forward, transaction_boards needs real data)
-status: next
+status: blocked
 priority: normal
 size: ~15m
+due: 2026-08-21
 tags: [northpond, oliv, nate, statements]
 created: 2026-08-19T19:37:08Z
-updated: 2026-08-19T22:14:36Z
+updated: 2026-08-19T22:21:07Z
 source: claude-code
 ---
 
