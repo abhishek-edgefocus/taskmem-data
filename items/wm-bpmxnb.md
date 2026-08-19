@@ -9,7 +9,7 @@ tags: [openroad]
 links: [parent:wm-su6q4d]
 refs: [DEV-1396=https://linear.app/edge-focus/issue/DEV-1396/ingest-openroad-model-requestsmodel-responses-statement-files-for-real]
 created: 2026-07-14
-updated: 2026-08-19T19:42:40Z
+updated: 2026-08-19T20:53:04Z
 source: dpx-tasks #6
 label: OpenRoad model_requests ingest
 ---
@@ -36,3 +36,56 @@ far off: decide explicitly whether to relax the SERVICING_FEE rule / park those 
 but note the rule exists precisely to stop NaN servicing fees silently corrupting predicted cashflows
 (DEV-1331), so relaxing it needs a deliberate call, not a quiet edit.
 Context and the full diagnosis are on [[wm-85nuv4]].
+- 2026-08-19T20:53Z [claude-code] *** DEV-1396 NEEDS NO CODE — THE INGESTION AND THE WIRING BOTH ALREADY EXIST. IT IS A BACKFILL. ***
+Investigated end to end 2026-08-19/20 (all read-only). The ticket as written says 'ingest the
+model_requests/model_responses statement files into bronze and wire the real score into
+silver.openroad_offers'. BOTH halves are already done in prod. Correcting the ticket's premise:
+
+1. INGESTION EXISTS. PROD.BRONZE.API_EVENTS already holds openroad model_requests:
+   321,363 rows, 1,197 as-of dates, 2023-05-11..2026-08-19, of which 65,244 carry
+   payload:transunionCreditAttributes:vantage4Score. Coverage by year (mr_rows / with_v4):
+   2023 33,894/16,547 · 2024 93,067/18,098 · 2025 98,166/10,551 · 2026 96,280/20,059.
+   So there is nothing to ingest — the flat parquet columns are already exploded into nested
+   JSON at bronze ingest, exactly as openroad_offers.py's comment describes.
+
+2. WIRING EXISTS. openroad_offers.py already builds a model_requests CTE and does
+   COALESCE(mr.TU_VANTAGE4, payload:...creditInformation:vantage4) AS VANTAGE4.
+   It landed 2026-08-01 in 52026b99f — 'DEV-1331: Source OpenRoad RECOVERY_FRAC/SERVICING_FEE
+   at source (+ MOB alignment)' (PR #5974). DEV-1396 was largely implemented by DEV-1331.
+
+3. THE ACTUAL DEFECT IS A STALE TABLE. PROD.SILVER.OPENROAD_OFFERS VANTAGE4 non-null by year:
+   2023 3,021 of 606,366 · 2024 0 of 1,734,909 · 2025 0 of 1,864,432 · 2026 66,348 of 1,839,675.
+   2026 is populated because those dates were processed AFTER 2026-08-01; 2024/2025 and nearly
+   all of 2023 were processed BEFORE it and the stream watermark will never revisit them.
+   This also proves the DEPLOYED prod image already has the wiring — otherwise 2026 would be 0 too.
+
+PROOF IT IS PURELY STALENESS (read-only, PROD, generate_sql() stripped to a plain SELECT):
+   as_of_date 2023-06-30 — prod currently HOLDS 1,311 offer rows, 0 with VANTAGE4.
+                           re-running the transform WOULD produce 1,311 rows, 703 with VANTAGE4
+                           (range 529..797). Identical row count, so it is not data availability.
+
+AND IT DEMONSTRABLY FIXES THE PREDICTIONS BLOCKER: the 16 loans that fail
+openroad_api_predictions all have offer dates 2023-06-30..2023-10-24 (all pre-dating the
+2023-10-27 payload-logging cutover, which is why they have no payload:servicing_fee). Their
+scores ARE in bronze for the exact (as_of_date, timestamp_ns) join keys the transform uses —
+verified 16/16, values 602..831, every one inside the schedule's valid [350,850] domain:
+  4841228 671 · 4857417 619 · 4875674 623 · 4923612 719 · 4944444 831 · 4944443 602
+  4972236 635 · 4950979 622 · 4994794 666 · 4950980 660 · 4976517 614 · 4981199 731
+  4986460 747 · 4998579 720 · 5011302 664 · 5044723 650
+Cross-checked independently against the source parquet in
+s3://efp-derived/gateway/openroad/openroad_auto_refi/model_requests/<date>/000.parquet — same
+16/16, same values. So once offers is backfilled, SERVICING_FEE resolves for all 16 and the
+1,139 validation errors go away.
+
+THE FIX (operational, no PR):
+  1. Run the ingest_api_output job's openroad_offers asset with as_of_date=all
+     (openroad_offers lives in orchestration/jobs/ingest_api_output.py:50, NOT in
+     statements_openroad). ~6.0M rows / 1,197 dates — consider a warehouse larger than
+     COMPUTE_WH_XS_PROD.
+  2. Then re-run statements_openroad; openroad_api_predictions should pass.
+  Note openroad_offers_bucketed / openroad_offers_daily sit downstream in the same job.
+
+RECOMMENDATION: rewrite DEV-1396's description to 'backfill silver.openroad_offers so the
+already-wired TU vantage4 lands on historical dates', or close it as delivered by DEV-1331 and
+track the backfill on the OpenRoad revival thread [[wm-85nuv4]]. As written the ticket sends
+whoever picks it up to build an ingestion that is already there.
