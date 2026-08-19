@@ -7,7 +7,7 @@ priority: normal
 size: ~15m
 tags: [northpond, oliv, nate, statements]
 created: 2026-08-19T19:37:08Z
-updated: 2026-08-19T19:37:08Z
+updated: 2026-08-19T20:16:27Z
 source: claude-code
 ---
 
@@ -56,3 +56,6 @@ which bites whenever someone wires this feed into transactions/transactions_itd
 Draft prepared for Nate: copy-forward is fine for payment_configuration; for
 transaction_boards request the REAL 08-04 file, or consciously accept the gap
 rather than papering over it with 08-03's data.
+
+## Log
+- 2026-08-19T20:16Z [claude-code] Abhishek sent the ask to Nate in Slack (2026-08-20). Now waiting on his reply. Pre-agreed stance for the response: payment_configuration_20260804 may be copy-forwarded, transaction_boards_20260804 must be the real 8/4 file.
