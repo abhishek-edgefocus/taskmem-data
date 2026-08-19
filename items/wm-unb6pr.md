@@ -6,7 +6,7 @@ status: blocked
 priority: p3
 links: [follows:wm-rgwdyu]
 created: 2026-07-16T11:22:33Z
-updated: 2026-07-29T16:39:29Z
+updated: 2026-08-19T22:15:38Z
 source: claude
 label: TU/Experian breakdown decision
 ---
@@ -59,3 +59,4 @@ Links:
 - 2026-07-28T17:41Z [claude-code] FACT CORRECTION 2026-07-28 (GitHub). The body says this is a follow-on from 'DEV-1395 / PR #5884 (which shipped the v1/v2 filter for the per-loan at-purchase panels only)'. PR #5884 was never merged — it is CLOSED, unmerged, last touched 2026-07-16. The at-purchase features actually shipped in PR #5917 (DEV-1428, 'Surface NorthPond at-purchase features via silver.positions'), merged 2026-07-17. Also worth noting PR #5925 (DEV-1024, the v1/v2 model_version breakdown for composition metrics) is still an OPEN DRAFT, untouched since 2026-07-17 — so the per-loan v1/v2 filter this item calls settled precedent may itself not be fully shipped. Nothing about the gold-grain analysis in the body changes; only the provenance was wrong.
 Status stays blocked/low: it remains a real design decision (MODEL_VERSION in the grain of gold.realized_cashflows_calendar_month_daily) that nobody has picked up, and no Linear ticket exists for it (see [[wm-rsdgx8]]).
 - 2026-07-29T16:39Z [claude-code] 2026-07-28: new evidence — MODEL_VERSION started mismatching at 100% on the NorthPond positions comparison board, first nonzero 2026-07-19 (the latest date in the substrate; it was 0% on every prior clean date back to 2026-06-16). Left unregistered in northpond_verified.py (PR #6058) since the cause is untraced and it plausibly relates to this v1/v2 breakdown work. Also tracked on wm-rzfews. Worth checking whether something shipped around 2026-07-19 started populating MODEL_VERSION in silver where the legacy datastore has nothing.
+- 2026-08-19T22:15Z [claude-code] 2026-08-20 huddle with Nate (transcript F0BR7AAV15H, ~08:00): the TU/Experian split is NOT a field in any file — it is a single time cutover ('we literally just flipped the model one day'; every application after that day is Experian, before it is TU), with a small fuzzy window where an application opened pre-cutover but completed post-cutover stays TU. Crucially Nate said he can hand over the complete TU loan list as a STATIC set — 'this block of loans are all TU and everything else is Experian from here going forward'. That static list is the cheapest unblock for this item; Abhishek told Nate he does not need it yet, so it has to be asked for. Also from the same call: Oliv-vs-NorthPond (post/pre acquisition) is INDEPENDENT of Experian-vs-TU, so do not derive the v1/v2 split from the fund/investor marking. See [[wm-xmufr2]].
