@@ -2,9 +2,13 @@
 id: wm-xmufr2
 type: followup
 title: Set up the 3-person call with Trishit + Nate on the EDGEX volume / Experian-vs-Oliv semantics
-status: open
+status: next
+priority: high
+size: ~15m
+due: 2026-08-20
+tags: [northpond, oliv, nate, edgex, trishit]
 created: 2026-08-19T22:15:29Z
-updated: 2026-08-19T22:15:29Z
+updated: 2026-08-19T22:15:38Z
 source: claude-code
 ---
 
