@@ -7,7 +7,7 @@ priority: normal
 size: ~15m
 tags: [northpond, oliv, nate, statements]
 created: 2026-08-19T19:37:08Z
-updated: 2026-08-19T20:16:27Z
+updated: 2026-08-19T22:06:44Z
 source: claude-code
 ---
 
@@ -59,3 +59,4 @@ rather than papering over it with 08-03's data.
 
 ## Log
 - 2026-08-19T20:16Z [claude-code] Abhishek sent the ask to Nate in Slack (2026-08-20). Now waiting on his reply. Pre-agreed stance for the response: payment_configuration_20260804 may be copy-forwarded, transaction_boards_20260804 must be the real 8/4 file.
+- 2026-08-19T22:06Z [claude-code] Nate replied 2026-08-20: 'these are FCC(?) files' + 'to follow up'. He is questioning ownership — believes transaction_boards/payment_configuration may come from FCC rather than Oliv. Needs an answer from our side; the evidence is already in this item's body.
