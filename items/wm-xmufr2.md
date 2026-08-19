@@ -7,8 +7,9 @@ priority: high
 size: ~15m
 due: 2026-08-20
 tags: [northpond, oliv, nate, edgex, trishit]
+links: [relates-to:wm-unb6pr]
 created: 2026-08-19T22:15:29Z
-updated: 2026-08-19T22:15:38Z
+updated: 2026-08-19T22:15:56Z
 source: claude-code
 ---
 
