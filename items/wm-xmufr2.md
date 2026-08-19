@@ -9,7 +9,7 @@ due: 2026-08-20
 tags: [northpond, oliv, nate, edgex, trishit]
 links: [relates-to:wm-unb6pr, relates-to:wm-d7m3xz]
 created: 2026-08-19T22:15:29Z
-updated: 2026-08-19T22:15:56Z
+updated: 2026-08-19T22:20:43Z
 source: claude-code
 ---
 
@@ -30,3 +30,6 @@ FACTS NATE GAVE ON THE CALL (usable without the meeting):
 - Long term: Nate's plan is to keep sharing the full data payload as files, augment them as needed, and only later find a better way to expose the dataset. No integration discussion has happened yet.
 
 Related: [[wm-unb6pr]] (v1/v2 TU vs Experian breakdown — Nate's static TU set is the unblock), [[wm-d7m3xz]] (EDGEX 2026-1NN readiness), [[wm-4sxy5d]] (EDGEX fund attribution + first live Oliv purchases).
+
+## Log
+- 2026-08-19T22:20Z [claude-code] Merged both sides for Trishit: the 2026-08-19 EDGEX dashboard-review notes (his open questions) + the 2026-08-20 Nate huddle answers. Trishit-facing summary drafted (Nate's answers on Experian-only purchase files, the TU/Experian time cutover + static TU list, the independence of Oliv/NorthPond vs Experian/TU that contradicts Trishit's framing, issuance = full portfolio since inception, and the unexplained $400-500K / $150K volume). Message pending Abhishek sending it; asks Trishit for extra agenda items before booking the 3-person slot.
