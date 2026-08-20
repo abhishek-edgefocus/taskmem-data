@@ -9,7 +9,7 @@ tags: [openroad, datastores, dagster]
 links: [parent:wm-su6q4d, relates:wm-hjbt5a]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-08-14T14:56:46Z
-updated: 2026-08-14T19:55:50Z
+updated: 2026-08-20T18:50:08Z
 source: claude-code
 label: OpenRoad revive + deprecate
 ---
@@ -75,3 +75,4 @@ FOUR STEPS NOW, all four blocked behind the same operational toggle:
 Still outside the sequence and genuinely unblocked: salvaging the untracked comparison docs
 ([[wm-hecgua]] — the only copy is in a stale checkout), the FULLY_PAID_DATE mapping
 ([[wm-ay9uu3]]) and the model_requests ingestion ([[wm-bpmxnb]]).
+- 2026-08-20T18:50Z [claude-code] 2026-08-21 00:18 IST: PR #6393 (openroad_auto_refi CHANNELS constant) posted for review in #platform-data-owners. Dev chain proved end-to-end 15/15 RUN_SUCCESS; offers backfill rehearsed (1.8 min, 5.76M rows, idempotent) but NOT yet run in prod.
