@@ -10,7 +10,7 @@ tags: [northpond, oliv, nate, statements]
 created: 2026-08-19T19:37:08Z
 updated: 2026-08-20T20:24:54Z
 source: claude-code
-next: Eyeball the Grafana panel after tonight's 16:00 UTC monitoring_daily run — northpond rows should be gone. Then close.
+next: Nothing to do manually. After tonight's 16:00 UTC run, confirm ERROR-1529 + ERROR-1530 flipped to Done and the Grafana panel dropped northpond. Then close.
 ---
 
 Follow-up to the 2026-08-04 Oliv file gap. On 2026-08-13 Abhishek asked Nate
