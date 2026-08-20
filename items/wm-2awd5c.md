@@ -8,7 +8,7 @@ size: xs
 people: [Kabeer]
 tags: [marlette, review]
 created: 2026-08-20T13:14:00Z
-updated: 2026-08-20T13:14:04Z
+updated: 2026-08-20T20:48:28Z
 source: claude-code
 ---
 
@@ -25,3 +25,6 @@ Both PRs verified against the branches; already approved + green CI. Asks to rel
 - State the post-fix calendar-month NCF figure explicitly. Arithmetic implies 985.577MM vs from-origination 985.578MM, which is the actual proof the tightened gate did not drop payments — but the PR only quantifies the $330,875 recovered, never what the stricter direction removes.
 - Invariant worth naming: the add-back adds TOTAL_RECOVERY (SUM of recovery_amount_expr, default principal_amount) into an NCF from which recovery rows' transaction_amount was removed. The MOB path in the same module treats those as different quantities on purpose (utils.py:1900-1904: recovery is a "memo breakout, NOT an additive component"). They coincide for marlette today; nothing enforces it.
 - Third copy of the override is the moment to consider a class attribute rather than a fourth. Tracked on DEV-1642.
+
+## Log
+- 2026-08-20T20:48Z [claude-code] DONE — verified on GitHub 2026-08-21: PR #6402 (DEV-1642) and #6403 (ERROR-1692) are both MERGED and both carry an APPROVED review from abhishek-edgefocus. The comments were relayed via the approvals; nothing outstanding.
