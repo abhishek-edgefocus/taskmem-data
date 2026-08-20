@@ -10,7 +10,7 @@ tags: [northpond, platform-data-owners]
 links: [relates:wm-j523sq, parent:wm-3sxcre]
 refs: [DEV-1516=https://linear.app/edge-focus/issue/DEV-1516/add-fully-paid-date-mapping-for-northpond]
 created: 2026-07-29T18:10:01Z
-updated: 2026-08-20T10:58:07Z
+updated: 2026-08-20T11:53:16Z
 source: claude-code
 ---
 
@@ -40,3 +40,8 @@ Validation (2026-08-19): built the transform from master and from the branch int
 The one real disagreement, OLV12562729, is correct-by-construction: balance hits 0 on 2026-06-17 but the servicer only reports PaidOff on 2026-06-18, and our date follows STATUS.
 
 Left in DEV_ABHISHEK.PUBLIC for review: NP_POS_DEV1516_BASE and NP_POS_DEV1516_NEW.
+- 2026-08-20T11:53Z [claude-code] PR raised: https://github.com/edgefocus/efp/pull/6401 (branch abhishek/dev-1516-fully-paid-date, +214/-0, 2 files). Pushed from ~/claude-ws/dev-1516/efp at his explicit instruction, overriding the usual no-agent-initiated-writes handoff.
+
+Correction to the earlier log entry: the flapping affects 7 loans, not 8, under the MAPPED status. The raw-LOANSTATUS='PaidOff' query returns 8 because it includes OLV12562566, an override loan whose ChargedOff rows map to fully_paid from its first row — so it does not flap once the status mapping is applied. PR body states 7.
+
+PR body lives at ~/claude-ws/dev-1516/notes/PR_BODY.md on dpx; proof queries at ~/claude-ws/dev-1516/notes/proof.sql. Screenshots NOT yet attached — the body carries the results as markdown tables and says screenshots are being attached, so that is an open loose end on the PR. Also no Dagster run URL: validation was a direct CREATE TABLE AS of the transform's generated SQL into DEV_ABHISHEK, not a Dagster materialize.
