@@ -2,9 +2,11 @@
 id: wm-rn43ak
 type: task
 title: Re-login Claude Code on dpx and turn Remote Control on
-status: open
+status: blocked
+size: ~15m
+tags: [dpx]
 created: 2026-08-20T18:42:12Z
-updated: 2026-08-20T18:42:12Z
+updated: 2026-08-20T18:42:17Z
 source: claude-code
 ---
 
