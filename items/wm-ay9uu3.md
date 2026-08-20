@@ -9,7 +9,7 @@ tags: [openroad, platform-data-owners]
 links: [relates:wm-cgftbn, parent:wm-su6q4d]
 refs: [DEV-1539=https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad]
 created: 2026-08-12T13:30:20Z
-updated: 2026-08-20T20:48:29Z
+updated: 2026-08-20T20:51:11Z
 source: claude-code
 label: OpenRoad fully-paid date
 ---
@@ -75,3 +75,25 @@ Open loose ends before it leaves draft:
 
 DAG is genuinely unchanged — no new asset and no new source table; _FULLY_PAID_DATE_JOIN reads silver.openroad_stmt_positions, already a StreamSource of openroad_positions. So the DAG section is the literal 'unchanged' line, not a missing screenshot.
 - 2026-08-20T20:48Z [claude-code] 2026-08-21: PR #6413 opened as a DRAFT (DEV-1539: Map FULLY_PAID_DATE for OpenRoad). Branch abhishek/dev-1539-fully-paid-date, commit b8ba70536. The session surveyed all seven platforms mapping this column: six (prosper, anchored, sofi, marlette, figure) use a LAG/LAST_VALUE 'current fully-paid run' pattern; innovate and NorthPond #6401 use MIN; OpenRoad needed a departure from both. Kept in draft per the draft-until-ready rule.
+- 2026-08-20T20:51Z [claude-code] Verified on a Dagster server running from my own workspace, at his request.
+
+Server: http://dexterplus.edgefocus.net:13080, serving ~/claude-ws/dev-1539/efp (the branch code) with DAGSTER_HOME=~/claude-ws/dev-1539/dagster_home. Took 13080 because 13054 (repos-2), 13077 (oliv-exp), 13078 (openroad-gold) and 13079 (dev-1516) are other sessions' — all four confirmed still listening afterwards, nothing disturbed.
+
+Gotcha: ~/repos/efp/.venv has NO dagster-webserver (only dagster + dagster-daemon), and uv is not on the non-interactive PATH. Start it with ~/.local/bin/uv run --extra orchestration from the workspace, which builds the workspace's own .venv. Takes ~4 min the first time.
+
+Two independent forced rebuilds, both RUN_SUCCESS, 35 deleted / 35 inserted each:
+- 76a1e751-a407-40b9-99c2-87d19a1279b6 -> 2026-07-20 (the one date a loan transitions, so both branches fire)
+- a88bf9a5-cab3-4ce3-bd25-a9782f004d1b -> 2026-07-22 (second, independent)
+Both serve HTTP 200 at :13080/runs/<id>.
+
+DEV_ABHISHEK verification, all 25 OpenRoad dates:
+- Only the 2 rebuilt dates carry FULLY_PAID_DATE (14/14 each). The other 23 read 0 — untouched controls in the same table.
+- 0 leaked onto non-fully_paid rows, 0 in the future, 0 before origination, on EVERY date.
+- The two rebuilds agree loan-for-loan: 0 rows differ between 07-20 and 07-22. This rules out a run-order/watermark artifact, which the single-run evidence could not.
+- Recomputing the expected date straight from silver.openroad_stmt_positions, independently of the transform: 0 disagreements.
+- Cross-platform: of the 8 platforms in DEV_ABHISHEK.SILVER.POSITIONS only openroad (28 = 14 x 2) and northpond (76, from wm-cgftbn's own run) carry any date. Nothing else moved.
+- Branch split holds: 13 closing-payment (2024-09-04..2026-04-24), 1 transition (2026-07-20).
+
+PR #6413 body updated with the second run, the run URLs and the three zero-row assertions. The old body claimed 2026-07-22 read 0 dated, which the second rebuild made false — that table is corrected, not just extended.
+
+CI footnote: the first 'Run Tests' failure was the self-hosted runner losing communication, not the change. PyTest never executed. Re-ran the same commit untouched: all 4 checks green.
