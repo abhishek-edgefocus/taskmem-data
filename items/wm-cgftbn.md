@@ -8,8 +8,9 @@ size: s
 people: [Abhijeet]
 tags: [northpond, platform-data-owners]
 links: [relates:wm-j523sq, parent:wm-3sxcre]
+refs: [DEV-1516=https://linear.app/edge-focus/issue/DEV-1516/add-fully-paid-date-mapping-for-northpond]
 created: 2026-07-29T18:10:01Z
-updated: 2026-08-20T10:57:52Z
+updated: 2026-08-20T10:58:07Z
 source: claude-code
 ---
 
