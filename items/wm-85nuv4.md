@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac, parent:wm-jr5bup, blocks:wm-xe6w4q]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-20T13:58:43Z
+updated: 2026-08-20T14:42:07Z
 source: claude-code
 effort: half-day
 ---
@@ -268,3 +268,47 @@ and read-only (prod would produce 703 scored rows for 2023-06-30 where it curren
 PROD READINESS: the openroad_offers backfill is now low-risk — ~2 min, XS warehouse, idempotent,
 rehearsed at scale. Remaining blockers are unchanged: a REVIEWER on PR #6393, and that PR being
 DEPLOYED (not merely merged) before statements_openroad is re-run.
+- 2026-08-20T14:42Z [claude-code] *** CLEAN END-TO-END RUN ACHIEVED IN DEV_ABHISHEK 2026-08-20 — 15/15 assets, RUN_SUCCESS, exit 0. ***
+runId b649b636-23f4-4050-9df0-60de97bcac7f, full statements_openroad job via the real Dagster
+execution path (dagster job execute -f orchestration/definitions.py -j statements_openroad),
+as_of_date=all on every op, PYTHONPATH pinned to ~/claude-ws/openroad-fixes/efp, guarded to abort
+if the session resolved to PROD.
+
+ALL FIFTEEN GREEN:
+  openroad_stmt_purchase_tapes   openroad_stmt_positions   openroad_stmt_payments
+  openroad_stmt_transactions     openroad_transactions     openroad_transactions_itd
+  openroad_transfers             openroad_positions        openroad_api_predictions
+  openroad_positions_daily       openroad_realized_cashflows_from_origination
+  openroad_realized_cashflows_from_purchase
+  openroad_realized_cashflows_from_first_purchase
+  openroad_realized_cashflows_calendar_month
+  openroad_realized_cashflows_calendar_month_daily
+
+This is the first time the OpenRoad chain has EVER run end to end anywhere. openroad_positions and
+the entire gold/cashflow tail had never executed in any environment before today.
+
+HOW WE GOT THERE — three fixes, only ONE of which is code:
+1. CODE: PR #6393 registers openroad_auto_refi in CHANNELS. openroad_transfers went 35 validation
+   errors -> SUCCESS. This is the only change that ships to prod.
+2. DEV PROVISIONING: created the 5 OPENROAD_* streams in DEV_ABHISHEK.SILVER (offers, stmt_positions,
+   stmt_payments, stmt_purchase_tapes, stmt_transactions). Unblocked the 4 stmt_* assets.
+3. DEV PROVISIONING: created 2 more streams dev lacked but prod has —
+   BRONZE.GOOGLE_SHEET_TRANSFERS_STREAM and SILVER.REALIZED_CASHFLOWS_CALENDAR_MONTH_STREAM.
+   Unblocked openroad_realized_cashflows_calendar_month, the last failure (run 1 was 13/15).
+Items 2 and 3 are DEV-ONLY provisioning gaps — prod already has all 117 streams. They are not prod
+risks and require no PR; they exist because the streams are Terraform-managed and DEV_ABHISHEK was
+never provisioned for OpenRoad. All are reversible via DROP STREAM.
+
+METHOD NOTE: run 1 (13/15) and run 2 (15/15) used identical code and config; the only delta was the
+2 streams. So the failures were provisioning, not flakiness — and the job is repeatable.
+
+ONE OPEN ASYMMETRY, FLAGGED NOT RESOLVED: SILVER.REALIZED_CASHFLOWS_FROM_ORIGINATION has NO stream in
+PROD either (dev lacks it too). openroad_realized_cashflows_from_first_purchase, which sources from
+it, passed in dev WITHOUT that stream in both runs — so it appears genuinely unneeded rather than a
+latent prod failure. Worth remembering if that asset ever fails in prod on a stream lookup.
+
+PROD PICTURE NOW: both prod blockers are demonstrably fixed. Remaining prod steps unchanged —
+  (a) get PR #6393 reviewed, merged AND DEPLOYED (merge alone is not enough; prod Dagster runs an image),
+  (b) backfill openroad_offers (ingest_api_output job, as_of_date=all) — rehearsed at 1.8 min /
+      5.76M rows on XS, idempotent,
+  (c) re-run statements_openroad, then enable openroad_statement_sensor.
