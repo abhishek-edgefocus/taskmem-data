@@ -8,7 +8,7 @@ people: [Abhijeet]
 tags: [northpond, data-quality, reporting]
 links: [parent:wm-j523sq]
 created: 2026-08-14T19:56:57Z
-updated: 2026-08-14T19:57:10Z
+updated: 2026-08-20T20:48:46Z
 source: claude-code
 label: NorthPond DQ + reporting
 ---
@@ -43,3 +43,6 @@ and was confirmed outstanding on both platforms in the 2026-07-29 exchange with 
 ## Links
 - Project: [[wm-j523sq]]
 - Sibling threads: [[wm-d7m3xz]] (EDGEX deal) and [[wm-d3qnqe]] (Oliv error surface)
+
+## Log
+- 2026-08-20T20:48Z [claude-code] 2026-08-20 Linear tidy-up landed (the [P1] LINEAR-PROJECTS work): DEV-1486 Deprecate OpenRoad Datastores -> Done; DEV-1474, DEV-1468, DEV-1452, DEV-1627, DEV-1290 -> Done; DEV-1565 and DEV-1511 -> Duplicate. Still open: DEV-1396 (Backlog, closing comment drafted but NOT pasted), DEV-1539 (Todo, draft PR #6413), DEV-1516 (In Progress, PR #6401), DEV-1522 (In Progress, PR #6390), DEV-970 (In Review but PR #6223 is CHANGES_REQUESTED).
