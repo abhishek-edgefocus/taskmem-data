@@ -9,7 +9,7 @@ tags: [openroad]
 links: [parent:wm-su6q4d]
 refs: [DEV-1396=https://linear.app/edge-focus/issue/DEV-1396/ingest-openroad-model-requestsmodel-responses-statement-files-for-real]
 created: 2026-07-14
-updated: 2026-08-19T20:53:04Z
+updated: 2026-08-20T11:32:29Z
 source: dpx-tasks #6
 label: OpenRoad model_requests ingest
 ---
@@ -89,3 +89,33 @@ RECOMMENDATION: rewrite DEV-1396's description to 'backfill silver.openroad_offe
 already-wired TU vantage4 lands on historical dates', or close it as delivered by DEV-1331 and
 track the backfill on the OpenRoad revival thread [[wm-85nuv4]]. As written the ticket sends
 whoever picks it up to build an ingestion that is already there.
+- 2026-08-20T11:32Z [claude-code] CONCLUSIVE PROOF THE BACKFILL FIXES PREDICTIONS — no code change required (read-only, PROD, 2026-08-19/20).
+
+Replicated openroad_api_predictions' own matched_loans join, computing SERVICING_FEE two ways:
+once from the STALE offers VANTAGE4 as prod holds it today, once from the value a REBUILT
+openroad_offers would carry (COALESCE(model_requests TU score, partner-supplied vantage4) — the
+exact expression openroad_offers.py already uses).
+
+  loans                       35
+  loans scored NOW             0 / 35
+  loans scored AFTER backfill 35 / 35
+  failing rows NOW         1,139  (== the exact Dagster error count on both manual runs)
+  failing rows AFTER           0
+  total rows               2,507
+
+So a rebuild of silver.openroad_offers takes openroad_api_predictions from 1,139 validation
+errors to zero, with no code change anywhere. Every one of the 35 loans resolves a score, and
+every resulting servicing fee lands inside the validation's [0, 0.1] band.
+
+This closes the diagnosis: DEV-1396's two stated deliverables (ingest the files, wire the score)
+were both already delivered — the ingestion long since, the wiring on 2026-08-01 by DEV-1331 /
+PR #5974. The only outstanding work is re-materialising the historical dates.
+
+ORDER OF OPERATIONS (Abhishek validates in DEV_ABHISHEK before prod as a standing habit):
+  1. DEV first — rebuild openroad_offers in DEV_ABHISHEK, but SCOPE THE CHECK to the 2023 dates
+     that are empty in prod. Dev is NOT a proxy here: DEV_ABHISHEK.SILVER.OPENROAD_OFFERS has
+     1,151,134 non-null VANTAGE4 vs prod's 68,818, so a blanket dev pass proves little.
+  2. Then prod — openroad_offers asset (ingest_api_output job) with as_of_date=all,
+     ~6.0M rows / 1,197 dates; consider a warehouse above COMPUTE_WH_XS_PROD.
+  3. Then re-run statements_openroad. With PR #6393 merged too, the whole job should go green:
+     transfers 35->0 errors, predictions 1,139->0.
