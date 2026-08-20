@@ -9,7 +9,7 @@ due: 2026-08-20
 tags: [northpond, oliv, nate, edgex, trishit]
 links: [relates-to:wm-unb6pr, relates-to:wm-d7m3xz]
 created: 2026-08-19T22:15:29Z
-updated: 2026-08-19T22:20:43Z
+updated: 2026-08-20T19:41:14Z
 source: claude-code
 ---
 
@@ -33,3 +33,4 @@ Related: [[wm-unb6pr]] (v1/v2 TU vs Experian breakdown — Nate's static TU set 
 
 ## Log
 - 2026-08-19T22:20Z [claude-code] Merged both sides for Trishit: the 2026-08-19 EDGEX dashboard-review notes (his open questions) + the 2026-08-20 Nate huddle answers. Trishit-facing summary drafted (Nate's answers on Experian-only purchase files, the TU/Experian time cutover + static TU list, the independence of Oliv/NorthPond vs Experian/TU that contradicts Trishit's framing, issuance = full portfolio since inception, and the unexplained $400-500K / $150K volume). Message pending Abhishek sending it; asks Trishit for extra agenda items before booking the 3-person slot.
+- 2026-08-20T19:41Z [claude-code] Trishit message condensed to 3 lines and now also carries the E3/E4 answer from the 2026-08-21 Nate DM thread (1787246983.735039): Nate says 'closer to 70/30 right now' and is cutting lower-dollar loans which pulls it up further; screenshot F0BRL4A9PKQ (pivot: 75.7/24.3 grand total, 58.5/41.5 for <2K, 79.0/21.0 for 2K+, dollar-weighted on ORIGINAL loan amount over an E3/E4-only universe). Our 60/40 is current principal balance with E2 in the denominator, so bases differ. Abhishek attaches Nate's image and offers the 3-person call in the same message.
