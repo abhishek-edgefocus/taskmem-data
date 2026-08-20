@@ -9,7 +9,7 @@ tags: [openroad, platform-data-owners]
 links: [relates:wm-cgftbn, parent:wm-su6q4d]
 refs: [DEV-1539=https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad]
 created: 2026-08-12T13:30:20Z
-updated: 2026-08-20T19:47:35Z
+updated: 2026-08-20T20:48:29Z
 source: claude-code
 label: OpenRoad fully-paid date
 ---
@@ -74,3 +74,4 @@ Open loose ends before it leaves draft:
 2. The 4923612 legacy difference (-35d) is flagged in the body but not yet registered anywhere. Decide with the reviewer whether to match legacy exactly or register it as a verified difference in the openroad set ([[wm-skvqac]]).
 
 DAG is genuinely unchanged — no new asset and no new source table; _FULLY_PAID_DATE_JOIN reads silver.openroad_stmt_positions, already a StreamSource of openroad_positions. So the DAG section is the literal 'unchanged' line, not a missing screenshot.
+- 2026-08-20T20:48Z [claude-code] 2026-08-21: PR #6413 opened as a DRAFT (DEV-1539: Map FULLY_PAID_DATE for OpenRoad). Branch abhishek/dev-1539-fully-paid-date, commit b8ba70536. The session surveyed all seven platforms mapping this column: six (prosper, anchored, sofi, marlette, figure) use a LAG/LAST_VALUE 'current fully-paid run' pattern; innovate and NorthPond #6401 use MIN; OpenRoad needed a departure from both. Kept in draft per the draft-until-ready rule.
