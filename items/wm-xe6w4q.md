@@ -10,7 +10,7 @@ tags: [openroad, predictions]
 links: [relates:wm-79k8df, relates:wm-prm54n, relates:wm-85nuv4, parent:wm-jr5bup]
 refs: [DEV-1499=https://linear.app/edge-focus/issue/DEV-1499/setup-openroad-cmopbep]
 created: 2026-07-29T15:33:45Z
-updated: 2026-08-14T19:55:29Z
+updated: 2026-08-20T11:52:26Z
 source: claude-code
 label: OpenRoad CMOP + BEP
 ---
@@ -55,3 +55,4 @@ follow-on work" implies. Worth settling with Abhijeet as one question rather tha
 
 Sequencing consequence: the silver chain has to be alive first ([[wm-85nuv4]]) — predictions are
 derived downstream of positions, and silver.positions openroad stops at 2026-07-06.
+- 2026-08-20T11:52Z [claude-code] 2026-08-20 17:20 IST: Abhishek de-prioritised CMOP+BEP for OpenRoad — low priority.
