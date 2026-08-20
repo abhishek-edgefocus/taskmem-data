@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac, parent:wm-jr5bup, blocks:wm-xe6w4q]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-20T14:42:07Z
+updated: 2026-08-20T18:45:25Z
 source: claude-code
 effort: half-day
 ---
@@ -312,3 +312,4 @@ PROD PICTURE NOW: both prod blockers are demonstrably fixed. Remaining prod step
   (b) backfill openroad_offers (ingest_api_output job, as_of_date=all) — rehearsed at 1.8 min /
       5.76M rows on XS, idempotent,
   (c) re-run statements_openroad, then enable openroad_statement_sensor.
+- 2026-08-20T18:45Z [pr-manager] PR #6393 description rewritten (pr-manager tab, 2026-08-20). Removed the failure narration Abhishek objected to: the two FAILURE run rows (4b394017 / 14320188), the pasted 'channel is not a canonical CHANNELS constant' log sample, and the Python REPL constant check. Validation section now cites the green DEV_ABHISHEK run b649b636-23f4-4050-9df0-60de97bcac7f — openroad_transfers 35 deleted / 35 inserted, 3m1s, statements_openroad exit 0. NOTE: the earlier rehearsal (reh_stmt.log, run 7a9ce5e6) did NOT validate #6393 — openroad_transfers was skipped there because openroad_stmt_positions/purchase_tapes failed on missing DEV_ABHISHEK streams. The validation comes from the later run only.
