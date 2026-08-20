@@ -2,7 +2,7 @@
 id: wm-prm54n
 type: task
 title: Deprecate OpenRoad datastores by 2026-08-03 (milestone at 0%)
-status: next
+status: done
 priority: p1
 size: l
 due: 2026-08-03
