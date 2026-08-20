@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac, parent:wm-jr5bup, blocks:wm-xe6w4q]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-19T20:53:04Z
+updated: 2026-08-20T12:43:23Z
 source: claude-code
 effort: half-day
 ---
@@ -191,3 +191,46 @@ stream watermark will never revisit them. Full evidence, including a read-only p
 re-running the transform for 2023-06-30 turns 0 scored rows into 703, is on [[wm-bpmxnb]].
 FIX: backfill the openroad_offers asset (ingest_api_output job) with as_of_date=all, then re-run
 statements_openroad. Still do NOT enable openroad_statement_sensor until #6393 merges.
+- 2026-08-20T12:43Z [claude-code] DEV REHEARSAL 2026-08-20 — PR #6393 VALIDATED, BUT DEV_ABHISHEK CANNOT FULLY REHEARSE OPENROAD (missing Snowflake streams).
+
+Ran the real Dagster execution path locally (dagster asset materialize / dagster job execute against
+definitions.py, PYTHONPATH pinned to ~/claude-ws/openroad-fixes/efp) with as_of_date=all, targeting
+DEV_ABHISHEK behind a guard that aborts if CURRENT_DATABASE()=PROD.
+
+WHAT PASSED (run directly via the Transform classes, before the Dagster attempt):
+  openroad_transfers        SUCCESS  35 inserted / 35 deleted   <- WAS 35 validation errors on master.
+                            Log line: 'All validation checks passed'. This is a clean before/after
+                            for PR #6393 in the same DB on the same data: 35 errors -> 0.
+  openroad_api_predictions  SUCCESS  2,507 inserted / 2,507 deleted.
+
+WHAT FAILED, AND WHY IT IS NOT A PROD RISK:
+  openroad_offers               FAILED - Object 'DEV_ABHISHEK.SILVER.OPENROAD_OFFERS_STREAM' does not exist
+  openroad_stmt_positions       FAILED - OPENROAD_STMT_POSITIONS_STREAM does not exist
+  openroad_stmt_payments        FAILED - OPENROAD_STMT_PAYMENTS_STREAM does not exist
+  openroad_stmt_purchase_tapes  FAILED - OPENROAD_STMT_PURCHASE_TAPES_STREAM does not exist
+
+ROOT CAUSE: the Snowflake STREAM objects the Transform framework uses for change tracking are
+Terraform-managed (snowflake_stream_on_table, e.g. terraform/snowflake/silver_openroad_offers.tf:428),
+NOT created by application code. DEV_ABHISHEK was never provisioned with OpenRoad's.
+  PROD.SILVER          117 streams, incl. all 5 OPENROAD_* streams
+  DEV_ABHISHEK.SILVER   16 streams, ZERO openroad
+Watermarks ARE auto-created by the code ('Ensuring watermark exists for pipeline...'); streams are not.
+
+WHY transfers/predictions still ran in dev: they write to the SHARED tables silver.transfers and
+silver.predictions, whose streams do exist in DEV_ABHISHEK. Only the platform-specific
+silver.openroad_* targets need the missing streams. That asymmetry is worth remembering — it makes
+dev look partially functional for a platform it cannot actually rehearse.
+
+CONSEQUENCE FOR ABHISHEK'S DEV-FIRST HABIT ([[validate-in-dev-abhishek-first]]): for OpenRoad, a full
+dev rehearsal is not currently possible. To enable one, the 5 OPENROAD_* streams must be created in
+DEV_ABHISHEK (dev-only DDL, mirroring the terraform, reversible via DROP STREAM). Otherwise the
+openroad_offers backfill goes to prod without an operational rehearsal — its OUTCOME is well evidenced
+(see [[wm-bpmxnb]]) but its RUNTIME behaviour at ~6M rows / 1,197 dates is untested anywhere.
+
+TIMING DATA STILL OBTAINED: the offers attempt failed after 4m24s and the statements job after 2m6s,
+both on stream lookup, so neither figure says anything about the real rebuild cost.
+
+NOTE: a first attempt at loading definitions.py resolved the 'orchestration' package to ~/repos/efp
+(another agent's live checkout) because that venv has the repo installed editable. Fixed by exporting
+PYTHONPATH=<my workspace>:<my workspace>/lib. Nothing was written from that checkout, but any agent
+running Dagster from ~/claude-ws must pin PYTHONPATH or it will silently execute another agent's code.
