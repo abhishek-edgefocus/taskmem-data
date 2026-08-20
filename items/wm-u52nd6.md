@@ -9,7 +9,7 @@ tags: [northpond, oncall, api-health]
 links: [parent:wm-3y3ckv, relates:wm-9kvv8c, parent:wm-d3qnqe]
 refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-07-29T13:43:02Z
-updated: 2026-08-20T20:58:35Z
+updated: 2026-08-20T21:25:21Z
 source: claude-code
 label: Experian 401 OAuth fix DEV-1478
 ---
@@ -58,3 +58,8 @@ THE CHANGE: rejection (401/403) -> discard token, re-authenticate, retry once; a
 VALIDATION: ruff format + ruff check clean, mypy (legacy mypy.ini) clean, 38 tests pass (32 existing northpond_v2_api_test + 6 new). New file lib/efp/experian_data/handler_test.py -- the 4 behavioural tests were confirmed to FAIL against unpatched master and pass with the fix; the other 2 are invariants that hold on both.
 
 NOT DONE / NEXT: nothing exercised against real Experian UAT -- the fix is unit-tested only. The retry has no jitter and no in-process lock, so if a burst of threads in one worker all 401 together they will each re-authenticate; acceptable at this volume but worth a note in review. Deploy/verify path still to be agreed.
+- 2026-08-20T21:25Z [claude-code] PR OPENED (DRAFT) 2026-08-20: https://github.com/edgefocus/efp/pull/6416 -- 'DEV-1478: Recover from Experian token rejections by refreshing and retrying the credit pull'. Branch abhishek/dev-1478-northpond-experian-credit-pulls-intermittently-fail-with-401 pushed to origin, base master, +294/-30 across 2 files, isDraft=true. Body written to ~/pr-style.md conventions (what changed -> 'DAG - unchanged.' -> validation with exact counts -> out of scope -> Fixes sentry / Closes DEV-1478).
+
+STAYS IN DRAFT UNTIL the evidence gap closes, per [[pr-draft-until-ready]]: the PR states plainly that nothing has been exercised against Experian UAT and that the fix is unit-tested only. The proof that actually closes this is a post-deploy re-run of the full-day gateway scan showing the 27/day 500s drop to ~0. Scan is reproducible from s3://efp-raw/gateway/northpond/northpond_loan_fl/<date>/v2/endpoint_transactions/ -- same method as the 2026-08-19 baseline logged on [[wm-rrvgdr]].
+
+NO SCREENSHOTS attached -- there is no Snowflake table to query here so the style guide's usual proof genre does not apply; evidence is inline tables instead. If Abhishek wants an image, the Sentry EFP-ERRORS-AW 90-day graph is the one that shows 'long-standing and ongoing' at a glance.
