@@ -2,7 +2,7 @@
 id: wm-cgftbn
 type: task
 title: Map FULLY_PAID_DATE for NorthPond after PR #6008
-status: next
+status: active
 priority: p2
 size: s
 people: [Abhijeet]
