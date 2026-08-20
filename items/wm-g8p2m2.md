@@ -11,7 +11,7 @@ tags: [northpond, edgex, nelnet]
 links: [parent:wm-gj5tkx, blocks:wm-3vkbn9]
 refs: [PR6277=https://github.com/edgefocus/efp/pull/6277, DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-08-14T13:52:29Z
-updated: 2026-08-17T14:28:44Z
+updated: 2026-08-20T10:03:19Z
 source: claude-code
 effort: <1h
 label: Nelnet PR merge
@@ -76,3 +76,4 @@ Proven end to end against real prod data, not inferred: 0 self-transfers in prod
 Committed 1ebdf1c6f1, pushed to abhishek/dev-1481-nelnet-ingest. Adds a regression test (northpond_purchase_tapes_fund.md) targeting NorthpondStmtPurchaseTapes directly - the table that actually owns the defect - plus a structural guard test.
 
 NOTE: #6324 (standardized) is now based on the pre-fix tip of #6323 and needs rebasing before it's tested again - not yet done, user redirected focus to #6323 only this session.
+- 2026-08-20T10:03Z [claude-code] Closing this out: both successor PRs are merged and approved — #6323 (DEV-1481, Nelnet feeds into silver, approved by eshan-edgefocus) and #6324 (DEV-1627, standardized positions/transfers), last touched 2026-08-17 and 2026-08-19. #6277 itself is CLOSED-as-superseded. Verified via gh pr view on 2026-08-20; nothing left on this item, the Monday cutover work landed.
