@@ -11,7 +11,7 @@ tags: [openroad, datastores]
 links: [relates:wm-bvqkhh, relates:wm-tvjjgw, blocks:wm-skvqac, parent:wm-jr5bup]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-07-29T15:33:30Z
-updated: 2026-08-14T14:56:56Z
+updated: 2026-08-20T11:52:26Z
 source: claude-code
 label: OpenRoad datastore deprecation
 ---
@@ -150,3 +150,4 @@ So the only file type fully ingested is the purchase tape. Bronze holds 44 of ~1
 EXPECTED AFTER BACKFILL: ~1,119 as-of dates x 35 loans = ~39,000 rows in silver.positions (vs 280 today). Consistent with the earlier dev-side estimate of ~32K rows/~1,080 dates. Volume is trivial — the files are 1.3KB-16.6KB, ~15MB total.
 
 SEQUENCING CORRECTION: backfill is NOT the first move. See [[wm-85nuv4]] — the openroad silver job has not run since 2026-07-07, so backfilled files would land in bronze and stop there. Bronze ingest is healthy and current; the dead consumer is the silver job.
+- 2026-08-20T11:52Z [claude-code] 2026-08-20 17:20 IST: Abhishek says the OpenRoad datastore deprecation is already done. Marking done on his confirmation — note the Linear milestone may still read 0% and need updating separately.
