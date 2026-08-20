@@ -9,7 +9,7 @@ tags: [openroad, platform-data-owners]
 links: [relates:wm-cgftbn, parent:wm-su6q4d]
 refs: [DEV-1539=https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad]
 created: 2026-08-12T13:30:20Z
-updated: 2026-08-12T13:30:38Z
+updated: 2026-08-20T10:58:07Z
 source: claude-code
 label: OpenRoad fully-paid date
 ---
@@ -32,3 +32,12 @@ Caveat before starting: the OpenRoad silver chain has not run since 2026-07-07 (
 - DEV-1539 — https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad
 - DEV-1516 (NorthPond twin) — https://linear.app/edge-focus/issue/DEV-1516/add-fully-paid-date-mapping-for-northpond
 - Origin PR #6008 (added the column) — https://github.com/edgefocus/efp/pull/6008
+
+## Log
+- 2026-08-20T10:58Z [claude-code] DEV-1516 (the NorthPond twin) is implemented — see wm-cgftbn. Two findings carry over to OpenRoad:
+
+1. Do NOT assume the LAG/LAST_VALUE current-run pattern is right. It is what prosper/anchored/sofi/marlette/figure use, but NorthPond needed MIN because its tape flaps in and out of the paid-off status with the balance already at zero. Check OpenRoad's tape for the same flapping before choosing: count loans with more than one not-paid -> paid transition, and look at whether the balance is already 0 at the first one.
+
+2. The legacy closed_positions datastore is not a trustworthy oracle for this column. It stamps one row per transition and consumers keep the LAST, which produced dates months after the real payoff for NorthPond. Compare against its FIRST row per efp_id, not its last.
+
+The NorthPond implementation is a LEFT JOIN subquery over the un-date-filtered positions source, gated in COLUMN_MAPPING on the row's own mapped status — copyable shape for openroad/positions.py.
