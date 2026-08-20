@@ -9,7 +9,7 @@ people: [Abhijeet]
 tags: [northpond, platform-data-owners]
 links: [relates:wm-j523sq, parent:wm-3sxcre]
 created: 2026-07-29T18:10:01Z
-updated: 2026-08-14T19:57:11Z
+updated: 2026-08-20T10:57:52Z
 source: claude-code
 ---
 
@@ -24,3 +24,18 @@ The work (all in edgefocus/transformations/silver/statement_rows/northpond/posit
 4. Use the mapped status (generate_status_mapping), not raw LOANSTATUS='PaidOff' — the two NORTHPOND_PAID_OFF_OVERRIDE_LOANS are forced from ChargedOff to fully_paid.
 
 Prod sizing / validation baseline (2026-07-29): 73 fully_paid northpond loans, all 73 present in silver.northpond_stmt_positions; 72/73 agree between MIN(as_of) on raw LoanStatus='PaidOff' and MIN(as_of) on silver.positions STATUS='fully_paid'. The single disagreement is an override loan, which confirms point 4. Date range 2024-12-19 to 2026-07-23.
+
+## Log
+- 2026-08-20T10:57Z [claude-code] Implemented on branch abhishek/dev-1516-fully-paid-date in ~/claude-ws/dev-1516/efp (commit 4aa299d22, not yet pushed).
+
+Landscape had moved since the 2026-07-29 analysis: prosper, anchored, sofi, marlette, figure and innovate all map FULLY_PAID_DATE now, and NorthPond gained the Nelnet+FCC union (PR #6277), so the derivation runs over NORTHPOND_POSITIONS_UNION rather than the bare FCC table.
+
+Key finding that changed the design: NorthPond takes MIN, not the LAG/LAST_VALUE current-run pattern the sibling platforms use. 7 of the 77 ever-fully-paid loans flap — they report PaidOff, then Current again for a day or two with CURRENTPRINCIPAL already 0, then flip back. OLV12562742 does it six times between 2025-06-18 and 2025-11-27; the run pattern would date that payoff 162 days late. Innovate maps it the same way for the same reason.
+
+The legacy datastore is NOT a usable oracle here: it stamps one fully_paid row per transition and consumers keep the LAST, which reads 2026-08-12 for loans that truly paid off in 2025 (a datastore-side artifact — the tape is continuously PaidOff through that date). Only 35/77 agree with the datastore's last value; 74/77 agree with its FIRST value, which is what we now produce.
+
+Validation (2026-08-19): built the transform from master and from the branch into DEV_ABHISHEK and diffed — 1,198 rows each, identical on all 144 other columns (only UPDATED_AT moves), FULLY_PAID_DATE 0 -> 77. Full history: 19,628/19,628 fully_paid rows dated across 77 loans, 0 set on non-fully-paid rows, 0 in the future. Both Nelnet payoffs (OLV12563339, OLV12563356 -> 2026-08-01) and both override loans dated correctly.
+
+The one real disagreement, OLV12562729, is correct-by-construction: balance hits 0 on 2026-06-17 but the servicer only reports PaidOff on 2026-06-18, and our date follows STATUS.
+
+Left in DEV_ABHISHEK.PUBLIC for review: NP_POS_DEV1516_BASE and NP_POS_DEV1516_NEW.
