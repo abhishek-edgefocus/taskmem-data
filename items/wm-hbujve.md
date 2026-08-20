@@ -2,14 +2,15 @@
 id: wm-hbujve
 type: task
 title: Ask Nate for the remaining 2026-08-04 Oliv files (payment_configuration copy-forward, transaction_boards needs real data)
-status: blocked
+status: next
 priority: normal
 size: ~15m
 due: 2026-08-21
 tags: [northpond, oliv, nate, statements]
 created: 2026-08-19T19:37:08Z
-updated: 2026-08-20T20:00:52Z
+updated: 2026-08-20T20:00:59Z
 source: claude-code
+next: Paste the two acknowledgement rows into the "Acknowledged Missing Files" sheet (tab Acknowledgements), then confirm the Grafana panel drops northpond.
 ---
 
 Follow-up to the 2026-08-04 Oliv file gap. On 2026-08-13 Abhishek asked Nate
