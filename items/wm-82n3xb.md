@@ -6,8 +6,9 @@ status: next
 priority: normal
 people: [Nate]
 tags: [northpond, edgex, oliv]
+links: [relates:wm-39q8fh]
 created: 2026-08-20T20:31:29Z
-updated: 2026-08-20T20:31:39Z
+updated: 2026-08-20T20:31:43Z
 source: claude-code
 estimate: 15m
 ---
