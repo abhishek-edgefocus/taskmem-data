@@ -10,7 +10,7 @@ tags: [northpond, platform-data-owners]
 links: [relates:wm-j523sq, parent:wm-3sxcre]
 refs: [DEV-1516=https://linear.app/edge-focus/issue/DEV-1516/add-fully-paid-date-mapping-for-northpond]
 created: 2026-07-29T18:10:01Z
-updated: 2026-08-20T12:20:54Z
+updated: 2026-08-20T18:50:08Z
 source: claude-code
 ---
 
@@ -54,3 +54,4 @@ Two gotchas for next time: the dagster CLI needs PYTHONPATH=<ws>/efp:<ws>/efp/li
 Run 9e89e5a5-7bac-43dc-baba-bc1fbec4fc61, RUN_SUCCESS in 11m19s, 1,164 deleted / 1,164 inserted for as_of 2026-08-17.
 
 Result in DEV_ABHISHEK.SILVER.POSITIONS: on the rebuilt date 76/76 fully_paid rows dated, 0 leaked, 0 in the future; the untouched neighbouring dates 2026-08-15 and 08-16 still show 76 fully_paid and 0 dated, which is a clean before/after within one table. Flappers all take the first payoff (OLV12562742 -> 2025-06-18), both override loans and both Nelnet loans dated. 76 rather than prod's 77 because dev source data stops at 2026-08-17.
+- 2026-08-20T18:50Z [claude-code] 2026-08-21 00:18 IST: PR #6401 (DEV-1516 NP FULLY_PAID_DATE) posted for review in #platform-data-owners.
