@@ -10,7 +10,7 @@ tags: [northpond, oliv, nate, statements]
 created: 2026-08-19T19:37:08Z
 updated: 2026-08-20T20:22:23Z
 source: claude-code
-next: Paste the two acknowledgement rows into the "Acknowledged Missing Files" sheet (tab Acknowledgements), then confirm the Grafana panel drops northpond.
+next: Eyeball the Grafana panel after tonight's 16:00 UTC monitoring_daily run — northpond rows should be gone. Then close.
 ---
 
 Follow-up to the 2026-08-04 Oliv file gap. On 2026-08-13 Abhishek asked Nate
