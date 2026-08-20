@@ -9,7 +9,7 @@ tags: [northpond, oncall, api-health]
 links: [parent:wm-3y3ckv, relates:wm-9kvv8c, parent:wm-d3qnqe]
 refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-07-29T13:43:02Z
-updated: 2026-08-20T20:48:46Z
+updated: 2026-08-20T20:58:35Z
 source: claude-code
 label: Experian 401 OAuth fix DEV-1478
 ---
@@ -40,3 +40,21 @@ PII?) is a Sentry-hygiene question, not this auth bug.
 Also note the two are now coupled — the spot check is the evidence that would confirm or kill this ticket's diagnosis, so doing it first is cheap and de-risks the fix.
 - 2026-08-20T12:11Z [claude-code] Sanjali chased this in DM 2026-08-20 15:40 IST (D0BN47AEZ9N), linking ERROR-1178 and ERROR-400: 'any updates on the Experian pull errors?'. Abhishek replied same day committing to implement the fix NEXT WEEK (w/c 2026-08-24) — first hard-ish commitment on DEV-1478, previously open-ended. Also: Abhishek wants the scattered northpond Experian tickets clubbed as duplicates of ONE investigation ticket. DEV-1478 is the natural master (already relatedTo ERROR-400, carries the full diagnosis + fix shape). Candidate duplicates identified 2026-08-20: ERROR-400, ERROR-1280 (Cashflow API 401 'Access token is invalid'), ERROR-1178 (Cashflow API read timeout — transport not auth, weakest fit). CAVEAT surfaced while triaging: ERROR-1178 and ERROR-1280 are Sentry-linked and auto-flip Backlog<->Done on every regression (1178 has flipped ~11 times since May). Marking them Duplicate in Linear will NOT stop the churn — the Sentry issue has to be merged/resolved-in-next-release too, or they reopen. Nothing mutated yet; awaiting Abhishek's go-ahead.
 - 2026-08-20T20:48Z [claude-code] 2026-08-20 12:19-12:20 UTC: the Experian credit-pull error cluster landed in Linear — ERROR-1178, ERROR-1280 and ERROR-400 are all now status=Duplicate, consolidated under DEV-1478 (Backlog, High). Sanjali's 15:40 IST ping pointed at ERROR-1178 and ERROR-400, both of which are now folded in. DEV-1478 remains the single open master.
+- 2026-08-20T20:58Z [claude-code] FIX WRITTEN 2026-08-20, committed locally, NOT pushed (awaiting Abhishek's go-ahead).
+
+WORKSPACE: dpx ~/claude-ws/dev-1478/efp, branch abhishek/dev-1478-northpond-experian-credit-pulls-intermittently-fail-with-401, commit e9640c85f off master 8c4303497.
+
+ROOT CAUSE CONFIRMED IN CODE (lib/efp/experian_data/handler.py):
+- get_raw_credit_info fetched a token only when __bearer_token was None or the LOCAL _token_expires_at clock had elapsed.
+- The POST result set is_success = (status_code == 200). A 401 therefore returned (body, False) and left the cached token in place -- no invalidation, no retry.
+- So a token retired server-side gets replayed by that worker until its local expiry elapses; every request routed to that worker 401s in ~0.1s until then. Matches the measured fast-failure signature and the steady all-day spread exactly.
+
+BLAST RADIUS -- important for the 'no shared code changes' rule: handler.py lives under lib/efp/ but NorthPond is its ONLY consumer. CreditPulledChannel takes experian_config=None for every other platform (happymoney, revolut, credible, openroad, foursight, anchored, sofi, tare all run TU only); grep for experian_config under json_endpoints/platforms/ returns northpond_loan_fl_channel.py exclusively. So the file is shared by location, not by use. Worth stating in the PR so a reviewer does not read it as a cross-platform change.
+
+ALSO LEARNED: northpond builds TWO ExperianCreditPull instances (scoring + cashflow), but _load_cashflow_credentials shows cashflow uses a SEPARATE Experian account, so those two do not contend for one token. The contention is strictly between gateway processes on the scoring credential.
+
+THE CHANGE: rejection (401/403) -> discard token, re-authenticate, retry once; a second rejection fails as before. Refresh 60s ahead of stated expiry so a token cannot lapse in flight. Request still persisted exactly once so bronze/silver request-response pairing is unchanged. Dropped the dead refresh_time attribute and folded 3 copies of the token-reset block into one helper.
+
+VALIDATION: ruff format + ruff check clean, mypy (legacy mypy.ini) clean, 38 tests pass (32 existing northpond_v2_api_test + 6 new). New file lib/efp/experian_data/handler_test.py -- the 4 behavioural tests were confirmed to FAIL against unpatched master and pass with the fix; the other 2 are invariants that hold on both.
+
+NOT DONE / NEXT: nothing exercised against real Experian UAT -- the fix is unit-tested only. The retry has no jitter and no in-process lock, so if a burst of threads in one worker all 401 together they will each re-authenticate; acceptable at this volume but worth a note in review. Deploy/verify path still to be agreed.
