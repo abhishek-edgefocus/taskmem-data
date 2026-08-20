@@ -2,8 +2,9 @@
 id: wm-82n3xb
 type: task
 title: Ask Nate to land issuance_v2 before the daily Nelnet loan tape
-status: next
+status: blocked
 priority: normal
+due: 2026-08-28
 people: [Nate]
 tags: [northpond, edgex, oliv]
 links: [relates:wm-39q8fh]
@@ -11,6 +12,7 @@ created: 2026-08-20T20:31:29Z
 updated: 2026-08-20T20:46:37Z
 source: claude-code
 estimate: 15m
+next: Nate is making the change next week; until then re-trigger statements_northpond after the issuance files land (~10:20), or land #6394 and stop needing to.
 ---
 
 ## Log
