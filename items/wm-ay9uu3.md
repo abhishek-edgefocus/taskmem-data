@@ -9,7 +9,7 @@ tags: [openroad, platform-data-owners]
 links: [relates:wm-cgftbn, parent:wm-su6q4d]
 refs: [DEV-1539=https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad]
 created: 2026-08-12T13:30:20Z
-updated: 2026-08-20T19:40:15Z
+updated: 2026-08-20T19:40:53Z
 source: claude-code
 label: OpenRoad fully-paid date
 ---
@@ -41,3 +41,29 @@ Caveat before starting: the OpenRoad silver chain has not run since 2026-07-07 (
 2. The legacy closed_positions datastore is not a trustworthy oracle for this column. It stamps one row per transition and consumers keep the LAST, which produced dates months after the real payoff for NorthPond. Compare against its FIRST row per efp_id, not its last.
 
 The NorthPond implementation is a LEFT JOIN subquery over the un-date-filtered positions source, gated in COLUMN_MAPPING on the row's own mapped status — copyable shape for openroad/positions.py.
+- 2026-08-20T19:40Z [claude-code] Implemented on branch abhishek/dev-1539-fully-paid-date in ~/claude-ws/dev-1539/efp (commit b8ba70536, NOT pushed — waiting on his call). PR body drafted at ~/claude-ws/dev-1539/notes/PR_BODY.md.
+
+Both open questions from the scoping notes are now answered, and one of the two answers changed the design.
+
+1. The OpenRoad tape carries NO payoff-date field. Listed all 65 columns of silver.openroad_stmt_positions and flattened every RAW_RECORD key on the 2026-08-18 rows (51 keys): nothing payoff/paid-off shaped. So the date has to be derived, same as NorthPond.
+
+2. The tape does NOT flap — 14 loans enter fully_paid, 0 ever exit, across all 51 days on file. So the NorthPond flapping rationale does not apply here, though MIN is still the right choice: OpenRoad's STATUS is derived from balances (generate_derived_status: ORIGINATION_PRINCIPAL - TOTAL_PRINCIPAL_PAID < 1), not from a servicer status column, so a payment reversal is the realistic flap risk and MIN keeps the true payoff if one ever lands.
+
+THE FINDING THAT CHANGED THE DESIGN — left-censoring, which no other platform has:
+The OpenRoad loan tape starts 2026-06-29 while the book goes back to 2023. All 35 loans are already on file on that first date, and 13 of the 14 that read fully_paid had paid off months to years earlier (2024-09 through 2026-04). A pure status-transition derivation — what every other platform does — would stamp all 13 with 2026-06-29, wrong by up to 22 months.
+
+So the mapping has two branches. Transition observed on the tape -> the transition AS_OF_DATE (the column's stated semantic). Already fully_paid on the loan's first tape row -> the LAST_PAYMENT_EFFECTIVE_DATE it carried there, i.e. the payment that closed it. That field is stable and non-null: 14/14 paid-off loans have exactly 1 distinct value.
+
+CORRECTION to the earlier note on this item, which said the legacy closed_positions datastore is not a trustworthy oracle. That was true for NorthPond and is NOT true for OpenRoad. The OpenRoad legacy datastore (s3://efp-derived/datastores/openroad/closed_positions/v1902/) holds one row per loan, not one per transition, and 13/14 of its dates match this implementation exactly. It is a usable oracle here.
+
+The single disagreement, 4923612: legacy 2025-05-27 vs ours 2025-04-22 (-35d). It is a legacy observation lag, not a disagreement about the loan — legacy stamped it the same day it also closed 5865766, while the tape puts 4923612's final payment on 2025-04-22 and the balance has not moved since. Our value is arguably the more accurate one. If reviewers want exact legacy parity this is the one row that has to move, and it belongs in the openroad verified-differences set (see [[wm-skvqac]]).
+
+The load-bearing validation row is 4976517 — the ONLY OpenRoad loan whose transition we actually observe. Legacy says 2026-07-20, we say 2026-07-20. Its final payment landed 2026-07-17, three days earlier, so this also confirms the date follows STATUS rather than the payment, as the column specifies.
+
+Validation: Dagster-materialized openroad_positions into DEV_ABHISHEK for 2026-07-20 (run 76a1e751-a407-40b9-99c2-87d19a1279b6, RUN_SUCCESS, 35 deleted / 35 inserted). Picked that date because it is the one date on which a loan transitions, so both branches are exercised. On the rebuilt date 14/14 fully_paid rows dated, 0 leaked onto non-fully-paid rows, 0 in the future; untouched 2026-07-19 and 07-21..23 still read 0 dated, a clean before/after inside one table; 0 loans differ from the untouched neighbour on any of 10 other columns. 1388 tests pass, ruff + mypy clean.
+
+Tests: 6 behavioural tests (TestFullyPaidDate) that execute the real join + mapping SQL through duckdb rather than asserting on SQL substrings. Mutation-checked 4 ways — MIN->MAX (4 fail), gate removed (3), censoring branch removed (2), transition branch removed (3).
+
+Two gotchas for the next OpenRoad workspace: my workspace has no .venv, so ~/repos/efp/.venv/bin/python works but ONLY with PYTHONPATH=<ws>/efp:<ws>/efp/lib; and the snowflake session helper reads .env from cwd, so copy ~/repos/efp/.env into the workspace and set SNOWFLAKE_DATABASE explicitly.
+
+Also worth knowing: the earlier staleness caveat on this item is stale itself. silver.openroad_stmt_positions is current to 2026-08-18 — it is silver.positions that is stuck at 2026-07-06 ([[wm-85nuv4]]). The tape was fine to size from.
