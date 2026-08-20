@@ -2,7 +2,7 @@
 id: wm-faurta
 type: question
 title: Check EDGEX E3/E4 origination mix with Eric - dashboard shows ~60/40, expectation was ~90/10
-status: next
+status: blocked
 priority: p2
 size: xs
 people: [Eric]
