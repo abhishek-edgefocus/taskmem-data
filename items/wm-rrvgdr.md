@@ -11,7 +11,7 @@ tags: [northpond, needs-reply, api-health]
 links: [relates:wm-u52nd6, parent:wm-3y3ckv, parent:wm-d3qnqe, blocks:wm-u52nd6]
 refs: [thread=https://edgefocuspartners.slack.com/archives/C04474NRLP6/p1785434540555299]
 created: 2026-07-31T12:55:10Z
-updated: 2026-08-20T19:20:17Z
+updated: 2026-08-20T19:53:22Z
 source: claude-code
 label: Nate spot-check token errors
 ---
@@ -53,3 +53,11 @@ The failing calls come back ~5x FASTER than a real credit pull. That is an immed
 RE-PRICES THE TICKET: 7 errors in a 1h58m window = 0.55% of requests. The July triage premise was '~1-2 apps/day, within normal range' and the low priority on [[wm-u52nd6]] was set from that. At 08-19 volume (13,432 requests that day) that premise is dead -- Nate was right that absolute error volume is tracking total volume. Full-day error count still being computed.
 
 STILL OWED TO NATE: the reply itself, plus his second question on error-message passthrough (Oliv only ever sees the generic string -- confirmed again here, the response body carries nothing but 'Server Error: Experian Credit Pull Failed').
+- 2026-08-20T19:53Z [claude-code] FULL-DAY NUMBERS for 2026-08-19 (all 13,432 northpond_loan_fl get-offers transactions scanned, supersedes the window-only figures above):
+- 27 hard errors (HTTP 500) = 0.20% of requests. NOT ~1-2/day. The 11:34-13:32 window Abhishek was looking at ran ~2.7x hotter than the daily average, so do not extrapolate from it -- quote 27/day.
+- 12,569 clean. 836 (6.22%) returned HTTP 200 with creditGrade=NULL.
+- DIRECT PROOF, not just timing inference: 26 of the 27 carried the generic 'Server Error: Experian Credit Pull Failed', but ONE leaked the underlying Experian response verbatim -- errorCode '401', message 'Access token is invalid' (app_uuid=c0d28cb3-52cb-4e4d-be43-048f4b84d381, request_uuid=9cf9adce-1152-43ac-8bba-fbd0b30bc562). That is the DEV-1478 root cause caught in prod on 2026-08-19, and it is character-for-character ERROR-1280's title signature -- so ERROR-1280 is confirmed same-root-cause, merge it.
+- Experian call duration: errors n=26 p50 0.124s max 0.559s; successes n=12,569 p50 0.887s. ZERO errors slower than 2.5s all day, i.e. no timeout-shaped failures at all. Every hard failure on 2026-08-19 was the auth path.
+- Errors spread across 14 of 24 hours, no single burst -- steady low-rate leak, consistent with per-worker token invalidation rather than an incident.
+- The 836 nulls break down: 440 missing BOTH clarityReport and creditReport features, 184 clarityReport only, 81 creditReport only, and 131 with NO missing-feature list at all (unexplained sub-case, worth its own look under DEV-1490 / [[wm-ufw7kj]]).
+Raw evidence retained on dpx at /tmp/ab_np/day (13,432 files) and scripts /tmp/ab_day.py, /tmp/ab_scan3.py -- /tmp is not durable, re-derive from s3://efp-raw/gateway/northpond/northpond_loan_fl/<date>/v2/endpoint_transactions/ if needed later.
