@@ -2,7 +2,7 @@
 id: wm-hbujve
 type: task
 title: Ask Nate for the remaining 2026-08-04 Oliv files (payment_configuration copy-forward, transaction_boards needs real data)
-status: next
+status: done
 priority: normal
 size: ~15m
 due: 2026-08-21
