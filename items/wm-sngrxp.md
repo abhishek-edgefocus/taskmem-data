@@ -7,7 +7,7 @@ priority: medium
 size: 15m
 tags: [linear, northpond]
 created: 2026-08-19T11:53:20Z
-updated: 2026-08-19T13:00:04Z
+updated: 2026-08-20T11:45:24Z
 source: claude-code
 ---
 
@@ -42,3 +42,6 @@ New projects should get a lead/priority/target date/definition-of-done per
 
 OpenRoad side of this sweep (DEV-1499 aside) deliberately not started —
 abhishek wants NorthPond settled first.
+
+## Log
+- 2026-08-20T11:45Z [claude-code] 2026-08-20 17:15 IST: Abhishek says the Linear project/ticket organisation is mostly sorted. He asked to be reminded to take a FINAL look at ~18:15 IST today, before his call.
