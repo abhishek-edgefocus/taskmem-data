@@ -2,7 +2,7 @@
 id: wm-g8p2m2
 type: task
 title: Land PR #6277 (Nelnet feeds end to end) before Oliv's Monday cutover
-status: next
+status: done
 priority: p1
 size: s
 due: 2026-08-16
