@@ -2,14 +2,14 @@
 id: wm-ay9uu3
 type: task
 title: Map FULLY_PAID_DATE for OpenRoad (DEV-1539)
-status: next
+status: active
 size: s
 people: [Abhijeet]
 tags: [openroad, platform-data-owners]
 links: [relates:wm-cgftbn, parent:wm-su6q4d]
 refs: [DEV-1539=https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad]
 created: 2026-08-12T13:30:20Z
-updated: 2026-08-20T10:58:07Z
+updated: 2026-08-20T19:40:15Z
 source: claude-code
 label: OpenRoad fully-paid date
 ---
