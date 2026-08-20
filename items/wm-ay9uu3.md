@@ -9,7 +9,7 @@ tags: [openroad, platform-data-owners]
 links: [relates:wm-cgftbn, parent:wm-su6q4d]
 refs: [DEV-1539=https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad]
 created: 2026-08-12T13:30:20Z
-updated: 2026-08-20T19:40:53Z
+updated: 2026-08-20T19:47:35Z
 source: claude-code
 label: OpenRoad fully-paid date
 ---
@@ -67,3 +67,10 @@ Tests: 6 behavioural tests (TestFullyPaidDate) that execute the real join + mapp
 Two gotchas for the next OpenRoad workspace: my workspace has no .venv, so ~/repos/efp/.venv/bin/python works but ONLY with PYTHONPATH=<ws>/efp:<ws>/efp/lib; and the snowflake session helper reads .env from cwd, so copy ~/repos/efp/.env into the workspace and set SNOWFLAKE_DATABASE explicitly.
 
 Also worth knowing: the earlier staleness caveat on this item is stale itself. silver.openroad_stmt_positions is current to 2026-08-18 — it is silver.positions that is stuck at 2026-07-06 ([[wm-85nuv4]]). The tape was fine to size from.
+- 2026-08-20T19:47Z [claude-code] PR raised as DRAFT: https://github.com/edgefocus/efp/pull/6413 (branch abhishek/dev-1539-fully-paid-date, +198/-1, 2 files) at his explicit instruction. Body is ~/claude-ws/dev-1539/notes/PR_BODY.md on dpx; validation SQL at ~/claude-ws/dev-1539/notes/verify_dev.sql, legacy comparison script at notes/compare_legacy.py, mutation harness at notes/mutate.sh.
+
+Open loose ends before it leaves draft:
+1. No screenshots attached — the body carries the numbers as markdown tables. Needs the DEV_ABHISHEK Snowflake shots (query + result in frame) for the before/after table and the per-loan date table.
+2. The 4923612 legacy difference (-35d) is flagged in the body but not yet registered anywhere. Decide with the reviewer whether to match legacy exactly or register it as a verified difference in the openroad set ([[wm-skvqac]]).
+
+DAG is genuinely unchanged — no new asset and no new source table; _FULLY_PAID_DATE_JOIN reads silver.openroad_stmt_positions, already a StreamSource of openroad_positions. So the DAG section is the literal 'unchanged' line, not a missing screenshot.
