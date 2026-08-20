@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac, parent:wm-jr5bup, blocks:wm-xe6w4q]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-20T12:43:23Z
+updated: 2026-08-20T13:58:43Z
 source: claude-code
 effort: half-day
 ---
@@ -234,3 +234,37 @@ NOTE: a first attempt at loading definitions.py resolved the 'orchestration' pac
 (another agent's live checkout) because that venv has the repo installed editable. Fixed by exporting
 PYTHONPATH=<my workspace>:<my workspace>/lib. Nothing was written from that checkout, but any agent
 running Dagster from ~/claude-ws must pin PYTHONPATH or it will silently execute another agent's code.
+- 2026-08-20T13:58Z [claude-code] DEV REHEARSAL NOW COMPLETE — the gap the previous rehearsal hit is closed, and the openroad_offers
+backfill is far cheaper than assumed (2026-08-20).
+
+FIXED THE BLOCKER: created the 5 missing OPENROAD_* streams in DEV_ABHISHEK.SILVER, mirroring the
+terraform (plain CREATE STREAM ... ON TABLE, mode=DEFAULT type=DELTA — matching prod exactly).
+All 5 base tables already existed in dev; only the streams were absent because they are
+Terraform-managed and dev was never provisioned. Dev-only DDL, reversible via DROP STREAM.
+  DEV_ABHISHEK.SILVER openroad streams: 0 -> 5
+  Verified against PROD.SILVER's 5 (OPENROAD_OFFERS_STREAM, _STMT_POSITIONS_, _STMT_PAYMENTS_,
+  _STMT_PURCHASE_TAPES_, _STMT_TRANSACTIONS_STREAM).
+
+THE REHEARSAL — openroad_offers, as_of_date=all, DEV_ABHISHEK, guarded to abort on PROD:
+  SUCCESS in 1.8 MINUTES
+  rows_inserted 5,758,444 / rows_deleted 5,758,444 across 1,170 as-of dates
+  warehouse COMPUTE_WH_XS_PROD (the transform default)
+  before/after VANTAGE4 on the 15 prod-empty dates: 29,241 both times -> IDEMPOTENT, as expected
+  since dev already held the scores.
+
+WHAT THIS SETTLES:
+1. RUNTIME IS A NON-ISSUE. I had advised sizing up the warehouse for ~6M rows; that was wrong.
+   The full rebuild is ~2 minutes on XS. Prod is comparable scale (6,043,026 rows / 1,197 dates
+   vs dev's 5,758,444 / 1,170), so expect the same order of magnitude. No warehouse change needed.
+2. THE OPERATION EXECUTES CLEANLY END TO END at full scale — the one thing that had never been
+   tested anywhere. Combined with the read-only outcome proof on [[wm-bpmxnb]] (1,139 -> 0 failing
+   rows), both the outcome AND the operation are now evidenced.
+3. IT IS IDEMPOTENT — re-running produces identical output, so a prod re-run is safe if interrupted.
+
+WHAT IT STILL DOES NOT PROVE: dev's offers already carried scores, so the rehearsal could not
+reproduce prod's 0 -> ~29,241 transition on those dates. That transition is evidenced separately
+and read-only (prod would produce 703 scored rows for 2023-06-30 where it currently holds 0).
+
+PROD READINESS: the openroad_offers backfill is now low-risk — ~2 min, XS warehouse, idempotent,
+rehearsed at scale. Remaining blockers are unchanged: a REVIEWER on PR #6393, and that PR being
+DEPLOYED (not merely merged) before statements_openroad is re-run.
