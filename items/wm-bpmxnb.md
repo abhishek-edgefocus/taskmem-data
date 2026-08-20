@@ -9,7 +9,7 @@ tags: [openroad]
 links: [parent:wm-su6q4d]
 refs: [DEV-1396=https://linear.app/edge-focus/issue/DEV-1396/ingest-openroad-model-requestsmodel-responses-statement-files-for-real]
 created: 2026-07-14
-updated: 2026-08-20T11:32:29Z
+updated: 2026-08-20T12:12:37Z
 source: dpx-tasks #6
 label: OpenRoad model_requests ingest
 ---
@@ -119,3 +119,46 @@ ORDER OF OPERATIONS (Abhishek validates in DEV_ABHISHEK before prod as a standin
      ~6.0M rows / 1,197 dates; consider a warehouse above COMPUTE_WH_XS_PROD.
   3. Then re-run statements_openroad. With PR #6393 merged too, the whole job should go green:
      transfers 35->0 errors, predictions 1,139->0.
+- 2026-08-20T12:12Z [claude-code] DEV-VS-PROD PRE-FLIGHT — DEV_ABHISHEK IS ALREADY IN THE FIXED STATE, WHICH IS WHY DEV TESTING NEVER CAUGHT THIS.
+Measured 2026-08-20 on the 15 offer dates behind the 16 failing loans (2023-06-30..2023-10-24):
+
+                                        PROD      DEV_ABHISHEK
+  silver.openroad_offers rows          52,915        52,915     <- identical
+  ...with VANTAGE4                          0        29,241     <- the entire difference
+  bronze.api_events model_requests      2,928         2,928     <- identical
+  ...carrying a TU score                1,546         1,546     <- identical
+
+Source data is byte-identical in both environments; only the persisted silver table differs.
+Abhishek's dev copy was rebuilt after the DEV-1331 wiring landed (2026-08-01), prod's history
+never was. So dev IS the 'after' picture and prod is the 'before'.
+
+CONSEQUENCE WORTH REMEMBERING: this class of bug is structurally invisible in DEV_ABHISHEK.
+Abhishek's standing habit is to validate in dev before prod ([[validate-in-dev-abhishek-first]]),
+and that habit could not have caught this one — dev was already repaired. It is also why the
+predictions transform passed when run against dev and failed in prod with identical code.
+When the suspected defect is 'prod table is stale relative to the code', dev proves nothing;
+compare PROD against a freshly-computed result instead.
+
+Expected prod outcome after the backfill: ~55% of offer rows on those dates carry a score,
+matching dev's 29,241/52,915.
+
+DECISION: skip a full dev rebuild rehearsal. It would spend ~6M rows reproducing a state dev
+already holds, and the pre-flight above already establishes the outcome.
+
+PROVENANCE FOR CLOSING DEV-1396 (Abhishek asked when the ingestion was actually completed):
+- openroad model_requests first landed in PROD.BRONZE.API_EVENTS 2025-12-28 08:35:49 PST,
+  backfilled to as_of 2023-05-11, still loading daily. That is ~6 MONTHS BEFORE DEV-1396 was
+  created (2026-07-08) — the ticket was filed for work already running.
+- There is NO openroad-specific ingestion PR to link. The parquet model_requests/model_responses
+  ingestion is generic, prefix-driven code (originating in PR #4250); platforms were switched on
+  by operational backfill runs, one at a time: sofi 2025-11-02, happymoney 12-22,
+  upgrade/prosper/openroad/anchored 12-28, northpond 2026-01-02, innovate 01-23, lc 01-24,
+  foursight 02-25, marlette 03-26, revolut 06-19.
+- The NorthPond precedent Abhishek was recalling is DEV-1290 / PR #5579 ('Northpond positions —
+  fund-aware account_id + credit_score/fico parity'), which is the same credit-score-is-NULL
+  problem but solved as a silver mapping fix, NOT an ingestion. NorthPond's own model_requests
+  ingestion was the same operational rollout, 2026-01-02.
+- The PR that actually delivered DEV-1396's second half is #5974 (DEV-1331), merged 2026-08-01.
+  That is the one to link when closing.
+DO NOT let the openroad_offers backfill die with the closed ticket — no ticket currently owns it;
+it belongs on [[wm-85nuv4]] / the OpenRoad revival thread.
