@@ -5,6 +5,7 @@ title: NorthPond follow-up: to-be-purchased partition rewrite + outage-aware gap
 status: next
 priority: normal
 tags: [northpond, edgex, data-quality]
+links: [relates:wm-39q8fh]
 created: 2026-08-20T19:27:42Z
 updated: 2026-08-20T19:27:52Z
 source: claude-code
