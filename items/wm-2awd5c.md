@@ -2,9 +2,13 @@
 id: wm-2awd5c
 type: followup
 title: Relay review comments to Kabeer on PR #6402 (DEV-1642) and #6403 (ERROR-1692)
-status: open
+status: next
+priority: p2
+size: xs
+people: [Kabeer]
+tags: [marlette, review]
 created: 2026-08-20T13:14:00Z
-updated: 2026-08-20T13:14:00Z
+updated: 2026-08-20T13:14:04Z
 source: claude-code
 ---
 
