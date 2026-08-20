@@ -10,7 +10,7 @@ tags: [northpond, platform-data-owners]
 links: [relates:wm-j523sq, parent:wm-3sxcre]
 refs: [DEV-1516=https://linear.app/edge-focus/issue/DEV-1516/add-fully-paid-date-mapping-for-northpond]
 created: 2026-07-29T18:10:01Z
-updated: 2026-08-20T11:53:16Z
+updated: 2026-08-20T12:20:54Z
 source: claude-code
 ---
 
@@ -45,3 +45,12 @@ Left in DEV_ABHISHEK.PUBLIC for review: NP_POS_DEV1516_BASE and NP_POS_DEV1516_N
 Correction to the earlier log entry: the flapping affects 7 loans, not 8, under the MAPPED status. The raw-LOANSTATUS='PaidOff' query returns 8 because it includes OLV12562566, an override loan whose ChargedOff rows map to fully_paid from its first row — so it does not flap once the status mapping is applied. PR body states 7.
 
 PR body lives at ~/claude-ws/dev-1516/notes/PR_BODY.md on dpx; proof queries at ~/claude-ws/dev-1516/notes/proof.sql. Screenshots NOT yet attached — the body carries the results as markdown tables and says screenshots are being attached, so that is an open loose end on the PR. Also no Dagster run URL: validation was a direct CREATE TABLE AS of the transform's generated SQL into DEV_ABHISHEK, not a Dagster materialize.
+- 2026-08-20T12:20Z [claude-code] Dagster-verified in DEV_ABHISHEK (2026-08-20), which closes the 'no Dagster run URL' gap on PR #6401.
+
+Setup: did NOT reuse ~/repos or ~/repos-2 (both hold other agents' dev-1481 branches, and repos-2 backs the long-running :13054 server). Started a per-workspace server instead, matching how oliv-exp (:13077) and openroad-gold (:13078) already run — mine is :13079 from ~/claude-ws/dev-1516/efp, DAGSTER_HOME=~/claude-ws/dev-1516/dagster_home. Confirmed 13054/13077/13078 unaffected.
+
+Two gotchas for next time: the dagster CLI needs PYTHONPATH=<ws>/efp:<ws>/efp/lib or it dies with 'No module named efp' (the lib/ package is not installed into the venv), and a plain materialize is a no-op because the DEV watermarks are already caught up ('0 deleted, 0 inserted, Dates processed: none'). Force a rebuild with --config-json '{"ops":{"northpond_positions":{"config":{"as_of_date":"YYYY-MM-DD"}}}}'.
+
+Run 9e89e5a5-7bac-43dc-baba-bc1fbec4fc61, RUN_SUCCESS in 11m19s, 1,164 deleted / 1,164 inserted for as_of 2026-08-17.
+
+Result in DEV_ABHISHEK.SILVER.POSITIONS: on the rebuilt date 76/76 fully_paid rows dated, 0 leaked, 0 in the future; the untouched neighbouring dates 2026-08-15 and 08-16 still show 76 fully_paid and 0 dated, which is a clean before/after within one table. Flappers all take the first payoff (OLV12562742 -> 2025-06-18), both override loans and both Nelnet loans dated. 76 rather than prod's 77 because dev source data stops at 2026-08-17.
