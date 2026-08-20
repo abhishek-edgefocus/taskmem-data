@@ -3,7 +3,7 @@ id: wm-xe6w4q
 type: task
 title: Enable CMOP + BEP predictions for OpenRoad
 status: next
-priority: p2
+priority: low
 size: l
 people: [Abhijeet]
 tags: [openroad, predictions]
