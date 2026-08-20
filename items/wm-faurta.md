@@ -5,12 +5,11 @@ title: Check EDGEX E3/E4 origination mix with Eric - dashboard shows ~60/40, exp
 status: next
 priority: p2
 size: xs
-due: 2026-08-21
 people: [Eric]
 tags: [northpond, edgex]
 links: [parent:wm-d7m3xz]
 created: 2026-08-19T21:47:21Z
-updated: 2026-08-20T17:26:39Z
+updated: 2026-08-20T17:28:25Z
 source: claude-code
 ---
 
