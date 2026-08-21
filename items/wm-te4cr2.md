@@ -1,7 +1,7 @@
 ---
 id: wm-te4cr2
 type: task
-title: ERROR-1626: northpond_exp_predictions fails every run — .efp_toplevel missing from the Dagster image
+title: northpond_exp_predictions fails every run — .efp_toplevel missing from orchestration/Dockerfile (Sentry EFP-ERRORS-1JB; NOT ERROR-1626)
 status: next
 priority: p1
 size: s
