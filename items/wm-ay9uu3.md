@@ -9,7 +9,7 @@ tags: [openroad, platform-data-owners]
 links: [relates:wm-cgftbn, parent:wm-su6q4d]
 refs: [DEV-1539=https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad]
 created: 2026-08-12T13:30:20Z
-updated: 2026-08-20T20:51:11Z
+updated: 2026-08-21T17:31:36Z
 source: claude-code
 label: OpenRoad fully-paid date
 ---
@@ -97,3 +97,4 @@ DEV_ABHISHEK verification, all 25 OpenRoad dates:
 PR #6413 body updated with the second run, the run URLs and the three zero-row assertions. The old body claimed 2026-07-22 read 0 dated, which the second rebuild made false — that table is corrected, not just extended.
 
 CI footnote: the first 'Run Tests' failure was the self-hosted runner losing communication, not the change. PyTest never executed. Re-ran the same commit untouched: all 4 checks green.
+- 2026-08-21T17:31Z [claude-code] 2026-08-21 23:00 IST: DEV-1539 is DUE TODAY (Linear dueDate 2026-08-21, status still Todo). PR #6413 is green but still draft; its session was BLOCKED on a permission prompt mid-validation. Abhishek's stated priority order tonight: 1) reply to Scott's PR review question, 2) DEV-1539, 3) enable openroad_statement_sensor, 4) NorthPond Experian credit-pull failures (DEV-1478).
