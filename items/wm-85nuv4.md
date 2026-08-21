@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac, parent:wm-jr5bup, blocks:wm-xe6w4q]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-21T11:48:53Z
+updated: 2026-08-21T13:10:42Z
 source: claude-code
 effort: half-day
 ---
@@ -361,3 +361,34 @@ PR retitled to match: 'ERROR-1711: Register openroad_auto_refi in CHANNELS and s
 usage from it'. Still OPEN, mergeStateStatus BLOCKED on review only. A REVIEWER remains the single
 bottleneck — no analysis work is outstanding on this PR.
 - 2026-08-21T11:48Z [pr-manager] PR #6393 merged 2026-08-21 11:11. Merge alone does not fix prod: needs (1) the prod Dagster image deploy, (2) the independent silver.openroad_offers backfill (as_of_date all, ingest_api_output), then re-run statements_openroad and enable openroad_statement_sensor. ERROR-1711 stays open until the offers backfill lands.
+- 2026-08-21T13:10Z [claude-code] PR #6393 MERGED AND DEPLOYED 2026-08-21 — blocker 1 is cleared in prod. Blocker 2 (the offers
+backfill) is now the only thing left before statements_openroad can go green.
+
+MERGE + DEPLOY CONFIRMED:
+  PR #6393 state=MERGED, mergedAt 2026-08-21T11:11:21Z, merge commit db7676ea7a931545b0d1cb7743923895fceb5e96.
+  Prod Dagster code location 'definitions.py' updatedTimestamp 2026-08-21T11:40:44Z, loadStatus=LOADED
+  — i.e. it reloaded 29 minutes AFTER the merge, so the CHANNELS fix is live in the running image.
+  (Inferred from the reload timestamp, not from reading the image contents; the first
+  openroad_transfers run in prod is what will confirm it empirically — expect 35 errors -> 0.)
+
+PROD STILL NOT BACKFILLED, measured 2026-08-21 13:09 UTC — silver.openroad_offers VANTAGE4 by year:
+  2023  3,021 of   606,366     (235 dates)
+  2024      0 of 1,734,909     (366 dates)   <- still zero
+  2025      0 of 1,864,432     (365 dates)   <- still zero
+  2026 73,929 of 1,864,375     (233 dates)
+Unchanged in shape from 2026-08-19; 2026 has grown (66,348 -> 73,929) purely from daily incremental
+runs, which is exactly the pattern predicted: new dates get scores, history never revisits.
+
+NEXT ACTION IS ABHISHEK'S (per [[no-agent-prod-runs]] — agents hand over the Launchpad link and run
+config, he launches prod jobs himself):
+  Asset: openroad_offers  (job ingest_api_output — NOT statements_openroad)
+  Config: as_of_date: all, warehouse: COMPUTE_WH_XS_PROD
+  MUST be scoped to openroad_offers alone. Launching the whole ingest_api_output job with
+  as_of_date=all would rebuild all 14 platforms' offers, including upgrade's ~735M model_requests rows.
+  Expected: ~2 minutes on XS (dev rehearsal did 5,758,444 rows / 1,170 dates in 1.8 min); prod is
+  6,043,026 rows / 1,197 dates, same order of magnitude. Idempotent — safe to re-run if interrupted.
+  Then re-run statements_openroad (as_of_date=all), then enable openroad_statement_sensor.
+
+WAREHOUSE ADVICE RETRACTED: I earlier recommended sizing up above COMPUTE_WH_XS_PROD for the ~6M-row
+rebuild. The dev rehearsal showed that was unnecessary — XS does the full history in under 2 minutes.
+Use the default.
