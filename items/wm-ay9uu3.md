@@ -9,7 +9,7 @@ tags: [openroad, platform-data-owners]
 links: [relates:wm-cgftbn, parent:wm-su6q4d, relates:wm-j5p44v, blocked-by:wm-j5p44v]
 refs: [DEV-1539=https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad]
 created: 2026-08-12T13:30:20Z
-updated: 2026-08-21T22:03:43Z
+updated: 2026-08-21T22:09:53Z
 source: claude-code
 label: OpenRoad fully-paid date
 ---
@@ -155,3 +155,14 @@ THE DIFF IS FINAL. The PR can be marked ready for review.
 WORTH A LINE IN THE PR (it will look like a bug to whoever runs the first PROD rebuild after merge): on that first rebuild the newest day or two of terminal-fill rows come out NULL and self-correct on the next run. Not a defect, just the Phase 2 frontier advancing one day per run.
 
 Remaining merge gate: legacy-datastore comparison over the full history, then merge, then the final PROD openroad_positions rebuild with as_of_date=all.
+- 2026-08-21T22:09Z [claude-code] RETRACTION VERIFIED — the 28-row gap-fill defect is NOT a defect, and my re-draft was based on a stale premise. Session 1295c2ba root-caused it and retracted; I checked their claim independently rather than accept it, and it holds.
+
+DEV_ABHISHEK now: 5767 fully_paid rows, 0 undated; 28 terminal gap-fill rows, 0 undated; 14 loans with exactly 1 distinct date each. All 14 dates match the ground truth I derived earlier from BOTH the legacy open_positions daily balances and the raw efp-raw tape, including 4923612 -> 2025-05-27. (13 distinct dates across 14 loans because 4923612 and 5865766 share 2025-05-27.)
+
+MECHANISM: not a bug. The gap-fill continuity pass copies from silver.positions itself, so it can only carry a value already present there. DEV was a PROD clone with the column NULL everywhere (PR unmerged), so the dated frontier advanced one day per run — 3 runs to cover the 2-day terminal tail. Every other platform shows 0 undated terminal rows because their frontier caught up long ago. The PR's code comment about gap-fill carrying the value forward is correct as written.
+
+Bounded, not scary: only 28 of 5767 fully_paid rows are gap-fills. The long historical fully-paid stretches are REAL tape rows (the loan keeps reporting after payoff), so this only ever affects the trailing day or two, never a multi-year fill.
+
+Added to the PR body as an IMPORTANT operational note, because the first PROD rebuild after merge WILL show the newest day or two as NULL and it will look like a bug to whoever runs it.
+
+PR STATE WARNING — two sessions are driving #6413. I set it to draft at ~21:57 on the then-current defect; session 1295c2ba set it back to ready. I have stopped toggling it and left it as they set it (ready). Whoever picks this up next: coordinate before changing draft state again. My reason for draft is now void; the only remaining evidence gap is the legacy-datastore comparison over the full history (and screenshots), which 1295c2ba has offered to run.
