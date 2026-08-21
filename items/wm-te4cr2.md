@@ -8,7 +8,7 @@ size: s
 tags: [northpond, dagster, errors]
 links: [relates:wm-3rsskm, parent:wm-btu784, blocks:wm-3rsskm]
 created: 2026-08-10T20:05:48Z
-updated: 2026-08-18T14:23:27Z
+updated: 2026-08-21T21:48:23Z
 source: claude-code
 ---
 
@@ -84,3 +84,4 @@ SIDE OBSERVATION (not this ticket): configs/default_passwords.json has a real
 - DOWNSTREAM IMPACT QUANTIFIED: PROD.SILVER.PREDICTED_CASHFLOWS for northpond holds exactly ONE slice - channel northpond_loan_fl / at_orig, all rows sourced from the issuance path (s3://efp-raw/statements/northpond/issuance/...), 25,740 rows / 715 loans, MAX_LOADED 2026-08-17. ZERO rows from the /predictions/ path, i.e. the exp slice has still never written a single row. Confirms the asset has never succeeded.
 - northpond_api_predictions SUCCEEDS on every run, so the api at_orig slice is current and 713/715 loans in silver.positions have predictions. The 2 without were purchased 2026-04-16. So this is NOT a total predictions outage - it is the exp slice missing plus a permanently red job.
 - Note for [[wm-vye9hn]]: silver.ef_scores rows for northpond carry PLATFORM = NULL (200,926 NULL-platform rows, covering all 715 northpond efp_ids). Filtering ef_scores by platform='northpond' returns 0 - do not read that as the scores being absent.
+- 2026-08-21T21:48Z [claude-code] CORRECTION 2026-08-22: this item's TITLE cites the wrong Linear ticket. ERROR-1626 is 'statements_northpond failed — Steps failed: [northpond_transfers]' (Low, Done 2026-08-19 13:28) — Abhishek fixed that, and it is unrelated to this defect. The defect described in this body is tracked only by Sentry EFP-ERRORS-1JB; ERROR-1698 (the other candidate, listing northpond_exp_predictions) is also Done as of 2026-08-18. NO open Linear ticket covers it. VERIFIED STILL BROKEN 2026-08-22 against master via the GitHub contents API: orchestration/Dockerfile builder stage copies pyproject.toml, uv.lock, README.md, configs, edgefocus, lib/efp, orchestration — and still does NOT copy .efp_toplevel. The precedent at lib/efp/json_endpoints/platforms/api/northpond/experian/Dockerfile:41-42 does copy it. So the one-line fix is still outstanding.
