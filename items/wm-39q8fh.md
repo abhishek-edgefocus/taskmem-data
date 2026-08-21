@@ -2,7 +2,7 @@
 id: wm-39q8fh
 type: task
 title: NorthPond FUND attribution races Oliv's issuance_v2 arrival — newest as_of_date is always stale
-status: next
+status: done
 priority: high
 tags: [northpond, edgex, dashboards, data-quality]
 links: [relates:wm-cqgb5n, relates:wm-d7m3xz]
