@@ -2,7 +2,7 @@
 id: wm-j5p44v
 type: task
 title: OpenRoad pre-tape history: run the bronze backfill, don't derive or seed it
-status: next
+status: done
 priority: high
 tags: [openroad, backfill, bronze]
 links: [blocked-by:wm-85nuv4]
