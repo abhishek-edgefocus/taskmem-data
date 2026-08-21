@@ -6,10 +6,10 @@ status: blocked
 size: s
 people: [Abhijeet]
 tags: [openroad, platform-data-owners]
-links: [relates:wm-cgftbn, parent:wm-su6q4d, relates:wm-j5p44v]
+links: [relates:wm-cgftbn, parent:wm-su6q4d, relates:wm-j5p44v, blocked-by:wm-j5p44v]
 refs: [DEV-1539=https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad]
 created: 2026-08-12T13:30:20Z
-updated: 2026-08-21T17:49:21Z
+updated: 2026-08-21T17:49:25Z
 source: claude-code
 label: OpenRoad fully-paid date
 ---
