@@ -10,7 +10,7 @@ tags: [northpond, edgex, backfill]
 links: [follows:wm-qtjmcv, follows:wm-7qqeke, parent:wm-4sxy5d, blocks:wm-9dfnnt]
 refs: [PR-6209=https://github.com/edgefocus/efp/pull/6209]
 created: 2026-08-12T13:29:24Z
-updated: 2026-08-14T19:57:13Z
+updated: 2026-08-21T21:50:41Z
 source: claude-code
 label: northpond fund backfill
 ---
@@ -35,3 +35,6 @@ The second one is the time-sensitive half. The 29 loans are not yet in `silver.n
 - PR #6208 (rename) — https://github.com/edgefocus/efp/pull/6208
 - PR #6209 (EDGEX date split) — https://github.com/edgefocus/efp/pull/6209
 - DEV-1509 — https://linear.app/edge-focus/issue/DEV-1509/rename-experimental-northpond-fund
+
+## Log
+- 2026-08-21T21:50Z [claude-code] DONE — verified against PROD 2026-08-22 (read-only queries via dpx). (1) silver.northpond_stmt_positions by FUND: efhyf 183,185 rows and northpond_balancesheet 159,585 rows, latest as_of 2026-08-21 for both — ZERO rows still saying 'experimental' (was 156,155 on 2026-08-12). (2) silver.northpond_stmt_purchase_tapes by FUND: efhyf 372 rows with purchase_date 2025-02-05..2025-06-17, edgex20261NN 265 rows with purchase_date 2026-08-11..2026-08-21 — the split lands exactly on NORTHPOND_EDGEX_PURCHASE_START=2026-08-01 and the 29 first-ever Oliv purchases dated 2026-08-11 now read edgex20261NN, not efhyf. (3) silver.transfers POOL_ID ILIKE '%experimental%': 0 rows — the transfers leg the body flagged as easy to forget is clean too. Nothing left to backfill.
