@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac, parent:wm-jr5bup, blocks:wm-xe6w4q]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-21T13:55:42Z
+updated: 2026-08-21T17:28:56Z
 source: claude-code
 effort: half-day
 ---
@@ -439,3 +439,54 @@ TWO THINGS NOT YET DONE — do not close this item on the run alone:
 MINOR DISCREPANCY WORTH A LOOK, NOT A BLOCKER: predictions covers 34 ids but silver.positions has 35
 loans, so one loan has no prediction row. Unexplained; predictions max as_of_date is 2024-12-12,
 consistent with purchase tapes stopping then. Flagging rather than chasing.
+- 2026-08-21T17:28Z [claude-code] *** RESOLVED IN PROD 2026-08-21 — statements_openroad IS GREEN AND THE 46-DAY GAP IS CLOSED. ***
+
+Abhishek ran both steps in prod. Both succeeded.
+
+STEP 1 — openroad_offers backfill, run 36bc64b2-ee4c-437c-a344-92f4e7f38a3a
+  SUCCESS in 13.1 min (not the ~2 min dev predicted — prod warehouse contention; XS still fine).
+  assetSelection correctly scoped to [openroad_offers] alone, as_of_date=all, COMPUTE_WH_XS_PROD.
+  silver.openroad_offers VANTAGE4 non-null, before -> after:
+    2023   3,021 ->   314,013  of   606,366
+    2024       0 ->   343,596  of 1,734,909
+    2025       0 ->   200,469  of 1,864,432
+    2026  73,929 ->   390,735  of 1,864,679
+    TOTAL ~76,950 -> ~1,248,813  (16x). The 2024/2025 zeroes are gone.
+
+STEP 2 — statements_openroad, run 0790581c-46ec-4f49-9e7e-0f1d0c5a6cae
+  SUCCESS in 12.1 min. ALL 15 ASSETS GREEN, including the two that had never passed:
+    openroad_transfers        (was 35 validation errors)   -> SUCCESS
+    openroad_api_predictions  (was 1,139 validation errors) -> SUCCESS
+  positions_daily and the 5 realized-cashflow assets ran for the FIRST TIME EVER — they had always
+  been skipped, sitting behind the transfers failure.
+  This is the first completion of statements_openroad on the automated path; the only prior success
+  in its entire history was the hand-launched run of 2026-07-07.
+
+VERIFIED OUTCOMES IN PROD (read-only, after both runs):
+  silver.positions openroad   8 dates / 280 rows (max 2026-07-06)
+                           -> 52 dates / 1,820 rows (max 2026-08-19)
+                           == bronze.statement_rows exactly (52 dates / 1,820 rows). GAP FULLY CLOSED.
+  CREDIT_SCORE on silver.positions: was 280/280 NULL -> now 1,768 of 1,820 populated (97%).
+                           The DEV-1396/DEV-1331 credit-score gap is resolved as a side effect of the
+                           offers backfill, exactly as predicted on [[wm-bpmxnb]].
+  silver.predictions openroad: 2,435 rows / 34 ids, GENERATION_TS 2026-08-21 06:43 PT (regenerated).
+  predictions <-> positions join: was 0 of 35 ids -> now 34. The APP_ID-vs-LOAN_ID key mismatch that
+                           had made predictions unusable is gone.
+  gold.positions_daily openroad: 52 rows through 2026-08-19 (previously not being produced).
+
+STILL OPEN, and none of it blocks the above:
+1. openroad_statement_sensor IS STILL STOPPED (status=STOPPED, runningCount=0, 0 ticks ever,
+   minIntervalSeconds=30, target statements_openroad). Until it is switched on, bronze keeps
+   advancing daily and silver refreezes — the exact failure mode this whole thread was about.
+   THIS IS THE ONE REMAINING ACTION and it is Abhishek's to take ([[no-agent-prod-runs]]).
+2. GOLD.POSITIONS_COMPARISON_DAILY has NOT refreshed — openroad still reads 141/142 zero-common,
+   last written 2026-08-11. NOT a failure of this fix: the comparison job has not run for ANY
+   platform since 2026-08-06..08-11. Separate stall, see [[wm-4s2sad]]. The honest completion test
+   for this thread (COMMON_COUNT going non-zero) cannot be evaluated until that job runs again.
+3. silver.predicted_cashflows openroad still max as_of_date 2024-12-12 with the NaN fee/net-cash-flow
+   rows. openroad_api_predictions writes silver.predictions, NOT predicted_cashflows — that is
+   populated by a separate process and needs its own re-materialisation. Relevant to [[wm-xe6w4q]].
+4. The deep-history backfill is untouched: bronze.statement_files openroad still holds only the
+   forward-from-go-live files, so silver.positions is CURRENT but only ~52 dates deep vs ~1,119 days
+   of loan tapes in S3. That is the file-registry backfill on [[wm-prm54n]], still required before
+   datastore deprecation means anything.
