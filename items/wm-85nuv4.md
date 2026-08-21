@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac, parent:wm-jr5bup, blocks:wm-xe6w4q]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-21T17:28:56Z
+updated: 2026-08-21T17:53:44Z
 source: claude-code
 effort: half-day
 ---
@@ -490,3 +490,22 @@ STILL OPEN, and none of it blocks the above:
    forward-from-go-live files, so silver.positions is CURRENT but only ~52 dates deep vs ~1,119 days
    of loan tapes in S3. That is the file-registry backfill on [[wm-prm54n]], still required before
    datastore deprecation means anything.
+- 2026-08-21T17:53Z [claude-code] SENSOR ENABLED — THREAD COMPLETE 2026-08-21 17:45 UTC.
+Abhishek switched openroad_statement_sensor to Running. Verified via prod GraphQL:
+  status RUNNING, runningCount 1, and it is TICKING — 2 ticks within 30s of each other
+  (17:44:54 and 17:45:24 UTC), against a lifetime total of ZERO before today.
+Both ticks SKIPPED, correctly:
+  'No openroad data in this materialization (platforms: happymoney,northpond,sofi,upgrade)'
+  'No new materialization events found for asset key AssetKey([statement_rows])'
+That is the right answer — silver is already level with bronze at 2026-08-19, so there is nothing
+to consume. The sensor is evaluating and filtering properly and will launch statements_openroad
+when the next openroad bronze data lands.
+
+The defect this item was opened for is fixed: silver was frozen at 2026-07-06 because this sensor
+had never been switched on. It is on, ticking, and the whole 15-asset chain behind it is green.
+Marking done.
+
+ONE THING NOT YET PROVEN, deliberately carried to [[wm-jr5bup]]: the sensor has only SKIPPED so far.
+It has never actually LAUNCHED a run. Every green statements_openroad run to date was hand-launched.
+The first unattended tick that fires on real openroad data is the last untested step — check it
+tomorrow (2026-08-22).
