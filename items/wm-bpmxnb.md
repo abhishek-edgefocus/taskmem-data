@@ -9,7 +9,7 @@ tags: [openroad]
 links: [parent:wm-su6q4d]
 refs: [DEV-1396=https://linear.app/edge-focus/issue/DEV-1396/ingest-openroad-model-requestsmodel-responses-statement-files-for-real]
 created: 2026-07-14
-updated: 2026-08-20T12:12:37Z
+updated: 2026-08-21T13:29:40Z
 source: dpx-tasks #6
 label: OpenRoad model_requests ingest
 ---
@@ -162,3 +162,33 @@ PROVENANCE FOR CLOSING DEV-1396 (Abhishek asked when the ingestion was actually 
   That is the one to link when closing.
 DO NOT let the openroad_offers backfill die with the closed ticket — no ticket currently owns it;
 it belongs on [[wm-85nuv4]] / the OpenRoad revival thread.
+- 2026-08-21T13:29Z [claude-code] *** THE OFFERS BACKFILL RAN IN PROD AND WORKED — 2026-08-21. Blocker 2 is CLEARED. ***
+Abhishek launched it himself (asset-scoped materialization, per [[no-agent-prod-runs]]).
+Dagster run 36bc64b2-ee4c-437c-a344-92f4e7f38a3a, __ASSET_JOB, assetSelection=[openroad_offers],
+config as_of_date=all / warehouse=COMPUTE_WH_XS_PROD. STATUS SUCCESS.
+Correctly scoped to the single asset — the whole ingest_api_output job would have rebuilt all 14
+platforms' offers including upgrade's ~735M model_requests rows.
+
+PROD silver.openroad_offers VANTAGE4 non-null, before -> after:
+  2023     3,021 -> 314,013   of   606,366
+  2024         0 -> 343,596   of 1,734,909
+  2025         0 -> 200,469   of 1,864,432
+  2026    73,929 -> 390,735   of 1,864,679
+  total   ~77k   -> ~1,248,813
+The 2024/2025 zeros — the signature of the staleness — are gone.
+
+PREDICTIONS BLOCKER CONFIRMED CLEARED (same read-only check that previously reproduced Dagster's
+error count exactly):
+  loans 35 | loans scored 0 -> 35 of 35 | failing rows 1,139 -> 0 | total rows 2,507
+So openroad_api_predictions should now pass in prod. The 1,139 figure had matched the Dagster
+failure count exactly on both earlier manual runs, which is what makes 0 meaningful here.
+
+RUNTIME — PROD WAS 7x SLOWER THAN THE DEV REHEARSAL, worth recording for future backfills:
+  dev  1.8 min  (5,758,444 rows / 1,170 dates)
+  prod 13.1 min (startTime 1787318071.79 -> endTime 1787318856.79 = 785s), same XS warehouse
+Still cheap in absolute terms, and it succeeded — but do not quote the dev figure as a prod estimate.
+Likely warehouse contention or larger prod volume; not investigated.
+
+DEV-1396 can now be closed/repurposed for real: its stated outcome (real TU score present in
+silver.openroad_offers) is finally TRUE in prod, which it was not when I drafted the closing comment.
+Link PR #5974 (DEV-1331) as the code delivery and this run as the data delivery.
