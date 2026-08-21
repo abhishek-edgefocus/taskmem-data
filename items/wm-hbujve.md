@@ -2,13 +2,13 @@
 id: wm-hbujve
 type: task
 title: Ask Nate for the remaining 2026-08-04 Oliv files (payment_configuration copy-forward, transaction_boards needs real data)
-status: done
+status: next
 priority: normal
 size: ~15m
 due: 2026-08-21
 tags: [northpond, oliv, nate, statements]
 created: 2026-08-19T19:37:08Z
-updated: 2026-08-21T14:50:48Z
+updated: 2026-08-21T14:51:06Z
 source: claude-code
 next: Recheck after 2026-08-21 16:00 UTC (21:30 IST): missing_rows should drop 4->2 and ERROR-1529/1530 should close themselves.
 ---
