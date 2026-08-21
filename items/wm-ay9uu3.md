@@ -9,7 +9,7 @@ tags: [openroad, platform-data-owners]
 links: [relates:wm-cgftbn, parent:wm-su6q4d, relates:wm-j5p44v, blocked-by:wm-j5p44v]
 refs: [DEV-1539=https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad]
 created: 2026-08-12T13:30:20Z
-updated: 2026-08-21T20:09:02Z
+updated: 2026-08-21T20:51:32Z
 source: claude-code
 label: OpenRoad fully-paid date
 ---
@@ -111,3 +111,4 @@ PR #6413 retitled "(blocked on bronze loan-tape backfill)", body rewritten with 
 
 Note the DEV_ABHISHEK openroad rows are currently stale/mixed: 2026-07-20 was rebuilt with the seeded logic (14/14 matching ground truth) and 2026-07-22 still carries the older last-payment logic. Neither reflects the branch as it now stands. Do not read DEV as evidence for this PR until it is rebuilt over the backfilled tape.
 - 2026-08-21T20:09Z [claude-code] 2026-08-21 MIN CHECK PASSED on restored history. Over 1127 days (2023-07-20..2026-08-19) ZERO loans leave fully_paid after entering it (0 exit rows, 0 loans) — so PR #6413's MIN operator is justified by measurement, not by the 52-day window. Derived payoff dates for all 14: 4923612 -> 2025-05-27, EXACTLY the legacy datastore date, so the 35-day-early defect from the old closing-payment fallback is resolved by data. 13 of 14 predate 2026-06-29; earliest 2024-09-04 (21.8 months before the old tape start), confirming the 'up to 22 months early' figure in the PR body. Review gate is met: the diff is final and the PR can be marked ready. Before doing so, update the code comment '14 enter it and none exit across the tape on file' to cite 1127 daily tapes rather than the 52-day window. Merge still gated on: silver.positions rebuild + DEV_ABHISHEK validation + datastore comparison.
+- 2026-08-21T20:51Z [claude-code] 2026-08-21 UNBLOCKED — bronze backfill and silver rebuild both done ([[wm-j5p44v]]). silver.positions openroad now covers 1128 days back to 2023-07-20; FULLY_PAID_DATE is still NULL on all 34079 rows because PR #6413 is unmerged. Remaining merge gate: (1) refresh DEV_ABHISHEK — it is STALE at 24 days / 2026-06-29..2026-07-22, so validating the branch there today would reproduce the exact bug; needs a re-clone from PROD first (edgefocus/data_warehouse/clone_snowflake_prod_db.py). (2) validate branch in DEV_ABHISHEK + Snowflake screenshots. (3) legacy-datastore comparison over full history — silver is now a strict superset of legacy (1128 dates from 2023-07-20 vs legacy 1123 from 2023-07-24; legacy's _Orl_-only INCLUDE_PATTERN never matched the four pre-rename LoanTape_Edge_ files). (4) merge. (5) final openroad_positions rebuild with as_of_date=all to populate FULLY_PAID_DATE. Review gate is already met (MIN verified over 1127 days), so the PR can be marked ready now.
