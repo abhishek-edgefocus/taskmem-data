@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac, parent:wm-jr5bup, blocks:wm-xe6w4q]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-21T13:10:42Z
+updated: 2026-08-21T13:29:40Z
 source: claude-code
 effort: half-day
 ---
@@ -392,3 +392,17 @@ config, he launches prod jobs himself):
 WAREHOUSE ADVICE RETRACTED: I earlier recommended sizing up above COMPUTE_WH_XS_PROD for the ~6M-row
 rebuild. The dev rehearsal showed that was unnecessary — XS does the full history in under 2 minutes.
 Use the default.
+- 2026-08-21T13:29Z [claude-code] BOTH PROD BLOCKERS NOW CLEARED 2026-08-21 — only the job re-run and the sensor remain.
+1. PR #6393 merged 11:11:21Z and DEPLOYED (prod code location reloaded 11:40:44Z, 29 min later).
+2. openroad_offers backfilled in prod — run 36bc64b2-ee4c-437c-a344-92f4e7f38a3a SUCCESS, 13.1 min.
+   VANTAGE4 2024/2025 went 0 -> 343,596 / 200,469. Predictions failing rows 1,139 -> 0, 35/35 loans
+   scored. Full numbers on [[wm-bpmxnb]].
+
+NEXT, and it is Abhishek's to launch: re-run statements_openroad (as_of_date=all) in prod.
+EXPECTED: openroad_transfers 35 validation errors -> 0 (this is also the empirical confirmation that
+the deployed image really carries the CHANNELS fix — the 11:40 reload timestamp is strong evidence
+but not proof), openroad_api_predictions 1,139 -> 0, and openroad_positions plus the gold/cashflow
+tail running in prod for the first time ever. Dev did exactly this at 15/15 (run b649b636).
+THEN: enable openroad_statement_sensor, or silver refreezes the moment new bronze lands. The silver
+gap is currently 46 days (silver stops 2026-07-06, bronze runs to 2026-08-19).
+Watch the first sensor tick — [[wm-hjbt5a]] records other platform sensors failing every tick.
