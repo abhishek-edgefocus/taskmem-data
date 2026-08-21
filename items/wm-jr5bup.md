@@ -9,7 +9,7 @@ tags: [openroad, datastores, dagster]
 links: [parent:wm-su6q4d, relates:wm-hjbt5a]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-08-14T14:56:46Z
-updated: 2026-08-20T18:50:08Z
+updated: 2026-08-21T17:53:44Z
 source: claude-code
 label: OpenRoad revive + deprecate
 ---
@@ -76,3 +76,29 @@ Still outside the sequence and genuinely unblocked: salvaging the untracked comp
 ([[wm-hecgua]] — the only copy is in a stale checkout), the FULLY_PAID_DATE mapping
 ([[wm-ay9uu3]]) and the model_requests ingestion ([[wm-bpmxnb]]).
 - 2026-08-20T18:50Z [claude-code] 2026-08-21 00:18 IST: PR #6393 (openroad_auto_refi CHANNELS constant) posted for review in #platform-data-owners. Dev chain proved end-to-end 15/15 RUN_SUCCESS; offers backfill rehearsed (1.8 min, 5.76M rows, idempotent) but NOT yet run in prod.
+- 2026-08-21T17:53Z [claude-code] STEP 1 OF 4 IS DONE 2026-08-21 — the dead silver chain is revived. Steps 2-4 remain.
+
+WHAT LANDED TODAY (full evidence on [[wm-85nuv4]] and [[wm-bpmxnb]]):
+  - PR #6393 merged + deployed (CHANNELS constant) -> openroad_transfers 35 errors -> 0.
+  - openroad_offers backfilled in prod (as_of_date=all, 13.1 min) -> VANTAGE4 ~77K -> ~1.25M rows,
+    which cleared openroad_api_predictions 1,139 errors -> 0.
+  - statements_openroad SUCCESS, all 15 assets, first ever completion on the automated path.
+  - silver.positions openroad 8 dates/280 rows -> 52 dates/1,820 rows, exactly matching bronze.
+  - CREDIT_SCORE 0/280 populated -> 1,768/1,820. predictions<->positions join 0 -> 34 ids.
+  - openroad_statement_sensor switched ON and ticking (was STOPPED, 0 ticks ever).
+
+NEXT STEPS, in order:
+1. TOMORROW (2026-08-22): confirm the sensor's first REAL tick launches statements_openroad on new
+   openroad bronze data and that the run succeeds unattended. So far it has only skipped. This is the
+   only part of the revival never tested.
+2. Step 2 of this chain — the datastore deprecation ([[wm-prm54n]]) — is still blocked on the
+   file-registry backfill. Today's work made silver CURRENT (52 dates) but not DEEP: bronze still
+   holds only ~52 of ~1,119 available loan-tape days. Deprecation is meaningless until that runs.
+3. Step 3 openroad_verified.py ([[wm-skvqac]]) and step 4 CMOP/BEP ([[wm-xe6w4q]]) are now unblocked
+   by the chain being alive, though CMOP/BEP additionally needs silver.predicted_cashflows
+   re-materialised (still max as_of_date 2024-12-12 with the NaN fee rows — a separate process from
+   openroad_api_predictions).
+
+ALSO OPEN, not owned by any item: GOLD.POSITIONS_COMPARISON_DAILY has not run for ANY platform since
+2026-08-06..08-11, so the openroad board still reads 141/142 zero-common and the honest completion
+test for this revival cannot be evaluated yet. Tracked at [[wm-4s2sad]].
