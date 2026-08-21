@@ -2,7 +2,7 @@
 id: wm-cqgb5n
 type: task
 title: Backfill northpond silver so prod stops holding two fund names at once
-status: next
+status: done
 priority: p1
 size: m
 people: [Abhijeet]
