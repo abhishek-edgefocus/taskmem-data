@@ -6,8 +6,9 @@ status: next
 priority: normal
 size: s
 tags: [northpond]
+links: [parent:wm-3sxcre]
 created: 2026-08-21T21:56:59Z
-updated: 2026-08-21T21:57:03Z
+updated: 2026-08-21T21:57:11Z
 source: claude-code
 ---
 
