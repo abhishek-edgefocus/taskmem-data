@@ -9,7 +9,7 @@ tags: [openroad, platform-data-owners]
 links: [relates:wm-cgftbn, parent:wm-su6q4d, relates:wm-j5p44v, blocked-by:wm-j5p44v]
 refs: [DEV-1539=https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad]
 created: 2026-08-12T13:30:20Z
-updated: 2026-08-21T21:57:12Z
+updated: 2026-08-21T22:03:43Z
 source: claude-code
 label: OpenRoad fully-paid date
 ---
@@ -142,3 +142,16 @@ Also confirmed PROD silver.positions openroad = 34079 rows / 2023-07-20..2026-08
 Title corrected: dropped '(blocked on bronze loan-tape backfill)' — that blocker is cleared — and the body's top callout now states the gap-fill defect, records that the backfill is done, and notes the 4923612 date now resolves to 2025-05-27 from data rather than from any special-casing.
 
 Merge gate now: root-cause the gap-fill NULLs, fix, re-validate in DEV, screenshots, datastore comparison, merge, then openroad_positions --date all to populate the column.
+- 2026-08-21T22:03Z [claude-code] 2026-08-21 CORRECTION TO MY OWN PRIOR LOG — the '28 undated fully_paid rows' is NOT a defect. I called it one prematurely; retracting that.
+
+ROOT CAUSE: autofill_gaps Phase 2 (both passes) sources rows FROM {target_table} — silver.positions — not from the temp table (positions_corrections.py:894-916). DEV_ABHISHEK's target was a fresh PROD clone where FULLY_PAID_DATE is NULL everywhere (PR unmerged in PROD), so each rebuild could only advance the dated frontier by ONE DAY: run 1 dated the real rows (through 2026-08-19); run 2 dated the 08-20 fill (copied from the now-dated 08-19); run 3 dated the 08-21 fill. Proven by three successive --date all runs in DEV.
+
+So the PR's code comment ('Terminal gap-fill then carries the value onto the frozen rows') is CORRECT — it just needs its source row already dated, which on a first run against a NULL target it is not. This also explains why every other platform showed zero undated: their column has been populated in PROD for months so their frontier caught up long ago.
+
+FINAL DEV VALIDATION — ALL CLEAN: 14 loans, exactly 1 distinct date each, matching the dates derived independently from bronze. 4923612 -> 2025-05-27 (= legacy). DATED_BUT_NOT_FULLY_PAID 0, FULLY_PAID_BUT_UNDATED 0, DATE_IN_FUTURE 0, BEFORE_ORIGINATION 0. Other platforms untouched; openroad the only new one (5767 dated rows / 14 loans).
+
+THE DIFF IS FINAL. The PR can be marked ready for review.
+
+WORTH A LINE IN THE PR (it will look like a bug to whoever runs the first PROD rebuild after merge): on that first rebuild the newest day or two of terminal-fill rows come out NULL and self-correct on the next run. Not a defect, just the Phase 2 frontier advancing one day per run.
+
+Remaining merge gate: legacy-datastore comparison over the full history, then merge, then the final PROD openroad_positions rebuild with as_of_date=all.
