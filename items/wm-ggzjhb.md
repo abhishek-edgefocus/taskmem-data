@@ -6,7 +6,7 @@ status: inbox
 tags: [taskmem-bug, correction]
 links: [relates:wm-ay9uu3]
 created: 2026-08-21T16:18:08Z
-updated: 2026-08-21T16:18:08Z
+updated: 2026-08-21T19:42:01Z
 source: claude-code
 label: OpenRoad 4923612
 ---
@@ -32,3 +32,6 @@ PR #6413 body updated with a WARNING callout stating the defect and "do not merg
 - host: ip-192-168-0-102.ap-south-1.compute.internal
 - when: 2026-08-21T16:18:08Z
 - corrected item: wm-ay9uu3
+
+## Log
+- 2026-08-21T19:42Z [claude-code] 2026-08-21 SUPERSEDED — the proposed fix in this correction (seed the 13 payoff dates as explicit constants) is no longer needed and was NOT taken. PR #6413 was revised to drop the LAST_PAYMENT_EFFECTIVE_DATE left-censoring branch entirely; it now derives FULLY_PAID_DATE as MIN(AS_OF_DATE where derived status = fully_paid) over the full un-date-filtered silver.openroad_stmt_positions. That is correct once the bronze loan-tape backfill lands (see [[wm-j5p44v]]) because the true payoff is then OBSERVED, not inferred — including for 4923612. PR is in draft with an explicit do-not-merge callout and a 3-item gate. OPEN QUESTION worth checking against the restored history: the MIN operator is justified in the PR by 'no OpenRoad loan has ever left fully_paid', an observation drawn from only 52 days of tape. Over 1,127 days that claim becomes testable — count loans whose derived status goes fully_paid -> not-fully_paid on a later as_of_date. Non-zero means MIN is the wrong operator.
