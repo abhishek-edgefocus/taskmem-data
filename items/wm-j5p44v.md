@@ -7,7 +7,7 @@ priority: high
 tags: [openroad, backfill, bronze]
 links: [blocked-by:wm-85nuv4]
 created: 2026-08-21T17:33:45Z
-updated: 2026-08-21T17:33:54Z
+updated: 2026-08-21T19:30:23Z
 source: claude-code
 estimate: half-day
 ---
@@ -59,3 +59,6 @@ HOW: statement_file_ingestion Dagster asset, mode=backfill, platform=openroad,
 backfill_environment=prod (orchestration/assets/statement_file_assets.py:149).
 CLI equivalent: ingest_statement_files.py backfill --platform openroad --env prod
 (supports --dry-run, --filter, --limit). He launches prod runs himself.
+
+## Log
+- 2026-08-21T19:30Z [claude-code] 2026-08-21 DRY RUN PASSED — Dagster run 983c6a8b-6e16-4be1-99d6-8c0fde63d027 (ingest_statement_files, manual, all dry_run:true), SUCCESS 5/5 in 34.7min. statement_files: 1834 would-insert / 320 would-update / 138 skipped = 2292 files, matching the S3 prefix count exactly. CORRECTION to this item's earlier numbers: bronze.statement_files already held 458 rows under statements/openroad/, not 137 — 321 sat as status='unknown' PLATFORM=NULL (SQS-registered before the rule existed); the earlier query filtered PLATFORM='openroad' and missed them. Substance unchanged: none of that history is in statement_rows. Files that become pending after the real run = 1834+320 = 2154, as predicted. Only 1 file stays 'unknown' (a zero-byte *_Edge_Orl*.csv literal-glob upload from 2026-08-11) — so the parsing rule DOES match the whole series including the four pre-rename LoanTape_Edge_ files of 2023-07-20..23. TIMING CORRECTION: not 'minutes'. statement_rows burned 19m39s with 0 files because _run_removed_file_cleanup (ingest_statement_rows.py:516) takes no platform arg — the platforms:[openroad] filter scopes only ingestion, so ~20min is fixed cost every run. Budget ~1h for the real run; ~2 scheduled */30 ticks will skip (skip_if_running), delaying other platforms' SQS pickup by up to an hour. Next: rerun same config with the five dry_run flipped to false.
