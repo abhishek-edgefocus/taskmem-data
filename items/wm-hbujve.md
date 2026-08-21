@@ -10,7 +10,7 @@ tags: [northpond, oliv, nate, statements]
 created: 2026-08-19T19:37:08Z
 updated: 2026-08-21T14:50:48Z
 source: claude-code
-next: Nothing to do manually. After tonight's 16:00 UTC run, confirm ERROR-1529 + ERROR-1530 flipped to Done and the Grafana panel dropped northpond. Then close.
+next: Recheck after 2026-08-21 16:00 UTC (21:30 IST): missing_rows should drop 4->2 and ERROR-1529/1530 should close themselves.
 ---
 
 Follow-up to the 2026-08-04 Oliv file gap. On 2026-08-13 Abhishek asked Nate
