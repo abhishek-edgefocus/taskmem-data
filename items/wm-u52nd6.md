@@ -9,7 +9,7 @@ tags: [northpond, oncall, api-health]
 links: [parent:wm-3y3ckv, relates:wm-9kvv8c, parent:wm-d3qnqe]
 refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-07-29T13:43:02Z
-updated: 2026-08-20T21:25:21Z
+updated: 2026-08-21T17:26:26Z
 source: claude-code
 label: Experian 401 OAuth fix DEV-1478
 ---
@@ -63,3 +63,4 @@ NOT DONE / NEXT: nothing exercised against real Experian UAT -- the fix is unit-
 STAYS IN DRAFT UNTIL the evidence gap closes, per [[pr-draft-until-ready]]: the PR states plainly that nothing has been exercised against Experian UAT and that the fix is unit-tested only. The proof that actually closes this is a post-deploy re-run of the full-day gateway scan showing the 27/day 500s drop to ~0. Scan is reproducible from s3://efp-raw/gateway/northpond/northpond_loan_fl/<date>/v2/endpoint_transactions/ -- same method as the 2026-08-19 baseline logged on [[wm-rrvgdr]].
 
 NO SCREENSHOTS attached -- there is no Snowflake table to query here so the style guide's usual proof genre does not apply; evidence is inline tables instead. If Abhishek wants an image, the Sentry EFP-ERRORS-AW 90-day graph is the one that shows 'long-standing and ongoing' at a glance.
+- 2026-08-21T17:26Z [claude-code] 2026-08-21: DOPS-695 / PR #6425 (Samuel) proposes treating 'Missing: credit profile, Clarity report' as a no-hit decline. It is not a no-hit - it is THIS ticket. Verified on northpond_loan_fl/production/gateway over 24h: 11,283 Experian POSTs, 11,263x200, 16x400, 4x401; the 20 non-200s are exactly the 20 responses with no creditProfile (16 body ['errors'], 4 with headerRecordError/endTotalsError). DOPS-695's own sample times map 1:1 - 13:18:13Z 401, 14:08:03Z 400, 14:18:36Z 401, 14:51:00Z 401. Mechanism: handler.py:159 is_success = status_code == 200, and _check_incomplete_experian_pull only builds 'Missing:' when pull_success is False, so that string is reachable ONLY on a non-200; a real no-hit is a 200 and takes the missing_features -> creditGrade=null path that already exists. Sentry EFP-ERRORS-AW is the same issue (460 occurrences since 2025-12-19; Seer root-cause: 401). NEW: 400s are now the majority (16 of 20) and PR #6416 only covers 401/403 - the 400 population needs its own look.
