@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac, parent:wm-jr5bup, blocks:wm-xe6w4q]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-20T21:13:25Z
+updated: 2026-08-21T11:48:53Z
 source: claude-code
 effort: half-day
 ---
@@ -360,3 +360,4 @@ Better pattern, but inconsistent with its siblings, and it grew the PR from 1 fi
 PR retitled to match: 'ERROR-1711: Register openroad_auto_refi in CHANNELS and source every OpenRoad
 usage from it'. Still OPEN, mergeStateStatus BLOCKED on review only. A REVIEWER remains the single
 bottleneck — no analysis work is outstanding on this PR.
+- 2026-08-21T11:48Z [pr-manager] PR #6393 merged 2026-08-21 11:11. Merge alone does not fix prod: needs (1) the prod Dagster image deploy, (2) the independent silver.openroad_offers backfill (as_of_date all, ingest_api_output), then re-run statements_openroad and enable openroad_statement_sensor. ERROR-1711 stays open until the offers backfill lands.
