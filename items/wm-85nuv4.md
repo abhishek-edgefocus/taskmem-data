@@ -8,7 +8,7 @@ size: m
 tags: [openroad, datastores]
 links: [relates:wm-prm54n, blocks:wm-prm54n, blocks:wm-skvqac, parent:wm-jr5bup, blocks:wm-xe6w4q]
 created: 2026-08-12T13:03:24Z
-updated: 2026-08-21T13:29:40Z
+updated: 2026-08-21T13:55:42Z
 source: claude-code
 effort: half-day
 ---
@@ -406,3 +406,36 @@ tail running in prod for the first time ever. Dev did exactly this at 15/15 (run
 THEN: enable openroad_statement_sensor, or silver refreezes the moment new bronze lands. The silver
 gap is currently 46 days (silver stops 2026-07-06, bronze runs to 2026-08-19).
 Watch the first sensor tick — [[wm-hjbt5a]] records other platform sensors failing every tick.
+- 2026-08-21T13:55Z [claude-code] *** THE OPENROAD SILVER CHAIN IS ALIVE IN PROD — 2026-08-21. The core defect this item was opened for
+is FIXED. ***
+statements_openroad run 0790581c-46ec-4f49-9e7e-0f1d0c5a6cae: STATUS SUCCESS, 15/15 assets, 12.1 min.
+First time the OpenRoad chain has ever completed in prod, and the first time openroad_positions and
+the gold/cashflow tail have run there at all.
+
+THE GAP IS CLOSED — silver now matches bronze exactly:
+  PROD.SILVER.POSITIONS openroad   8 dates / 280 rows  ->  52 dates / 1,820 rows, 2026-06-29..2026-08-19
+  PROD.BRONZE.STATEMENT_ROWS       52 dates / 1,820 rows, 2026-06-29..2026-08-19
+Zero unconsumed dates. The 46-day stall that opened on 2026-07-07 is gone.
+
+OTHER LONG-STANDING DEFECTS THIS RUN ALSO CLEARED (all previously recorded as open on this item):
+  silver.transfers openroad: EFP_ID was NULL on 35/35 and FROM_FUND NULL on 35/35 since the 07-29
+    audit. Now 35/35 rows with EFP_ID set and TO_FUND set.
+  silver.predictions openroad: was 2,507 rows still APP_ID-keyed (openroad_4675720...) with 0 of 35
+    ids joining to silver.positions. Now 2,435 rows / 34 ids, GENERATION_TS 2026-08-21 06:43 PT, and
+    34 join to positions. The APP_ID/EFP_ID keying mismatch from DEV-1393 is resolved in prod data.
+  gold.positions_daily openroad: now populated, 52 rows through 2026-08-19.
+
+TWO THINGS NOT YET DONE — do not close this item on the run alone:
+1. openroad_statement_sensor is STILL STOPPED. Nothing has changed about the root cause: the job ran
+   because Abhishek launched it by hand, exactly as on 2026-07-07. Silver will refreeze the moment
+   tomorrow's bronze lands unless the sensor is enabled. THIS IS THE ACTUAL FIX FOR THIS ITEM.
+   Watch the first tick — [[wm-hjbt5a]] records other platform sensors failing on every tick.
+2. GOLD.POSITIONS_COMPARISON_DAILY has NOT refreshed: still 142 rows, last run 2026-08-11 06:03 PT,
+   ZERO_COMMON 141/142. That is pre-fix state — the comparison job runs on its own daily schedule and
+   has not executed since the backfill. The honest completion test recorded on [[wm-jr5bup]] is
+   COMMON_COUNT going non-zero, so that is still PENDING and will be answered by the next scheduled
+   comparison run (~06:03 PT). Do not claim the board is fixed until it re-runs.
+
+MINOR DISCREPANCY WORTH A LOOK, NOT A BLOCKER: predictions covers 34 ids but silver.positions has 35
+loans, so one loan has no prediction row. Unexplained; predictions max as_of_date is 2024-12-12,
+consistent with purchase tapes stopping then. Flagging rather than chasing.
