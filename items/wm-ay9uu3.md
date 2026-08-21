@@ -9,7 +9,7 @@ tags: [openroad, platform-data-owners]
 links: [relates:wm-cgftbn, parent:wm-su6q4d, relates:wm-j5p44v, blocked-by:wm-j5p44v]
 refs: [DEV-1539=https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad]
 created: 2026-08-12T13:30:20Z
-updated: 2026-08-21T17:49:25Z
+updated: 2026-08-21T17:49:42Z
 source: claude-code
 label: OpenRoad fully-paid date
 ---
@@ -99,3 +99,14 @@ PR #6413 body updated with the second run, the run URLs and the three zero-row a
 CI footnote: the first 'Run Tests' failure was the self-hosted runner losing communication, not the change. PyTest never executed. Re-ran the same commit untouched: all 4 checks green.
 - 2026-08-21T17:31Z [claude-code] 2026-08-21 23:00 IST: DEV-1539 is DUE TODAY (Linear dueDate 2026-08-21, status still Todo). PR #6413 is green but still draft; its session was BLOCKED on a permission prompt mid-validation. Abhishek's stated priority order tonight: 1) reply to Scott's PR review question, 2) DEV-1539, 3) enable openroad_statement_sensor, 4) NorthPond Experian credit-pull failures (DEV-1478).
 - 2026-08-21T17:33Z [claude-code] 2026-08-21 read-only investigation: the 13 censored payoffs do not need seeding OR the closing-payment fallback. The pre-tape history is NOT missing — 1,127 daily LoanTape files sit in s3://efp-raw/statements/openroad/ back to 2023-07-20, unbroken; bronze holds only 52 of them because the openroad_loan_tape parsing rule merged 2026-06-29 (PR #5640) and the one-off S3 backfill was never run. openroad_stmt_positions needs none of the columns added after 2023-09 and FUND is a constant, so the whole series parses with zero code change. Once loaded, generate_derived_status observes each payoff on the day the balance goes to zero. See [[wm-j5p44v]]. Recommend holding PR #6413 until after the backfill.
+- 2026-08-21T17:49Z [claude-code] Seed work STOPPED and reverted on his instruction. A parallel session (wm-j5p44v) found the premise was wrong: there is no OpenRoad history gap. s3://efp-raw holds all 1,127 daily loan-tape files back to 2023-07-20 with zero missing days; PROD bronze holds only 52 because 2026-06-29 is the merge date of PR #5640's openroad_loan_tape parsing rule, and the one-off S3 backfill was never run. The sibling purchase tape on the same platform WAS backfilled, and anchored (same file family) was backfilled in #5428/#5576.
+
+So the left-censoring problem I designed around was self-inflicted — it was missing bronze data, not missing source data. Both of my attempted fixes (the LAST_PAYMENT_EFFECTIVE_DATE inference, then the 13-loan verified seed) were working around a gap inside the transform. Both are removed.
+
+Branch abhishek/dev-1539-fully-paid-date is now the plain derivation and nothing else: MIN(AS_OF_DATE where derived status = fully_paid) over the un-date-filtered silver.openroad_stmt_positions, gated in COLUMN_MAPPING on the row's own status. Same shape as innovate. +33 in positions.py, +139 in tests. Commit 8fbf6ad6c, force-pushed.
+
+Tests cut from 10 to 5, all behavioural (real join + mapping SQL through duckdb): transition dating + carry-forward, row-level gate, whole-history-not-processing-window, MIN on flip-back, per-loan. 73 openroad tests pass; 4038 pass across edgefocus; ruff/mypy clean; dagster definitions validate.
+
+PR #6413 retitled "(blocked on bronze loan-tape backfill)", body rewritten with an IMPORTANT callout, the raw-vs-bronze coverage table, and the three things needed before it leaves draft: backfill runs, re-validate in DEV against the restored tape with screenshots, re-run the legacy comparison over the full history. Kept as draft, branch NOT deleted.
+
+Note the DEV_ABHISHEK openroad rows are currently stale/mixed: 2026-07-20 was rebuilt with the seeded logic (14/14 matching ground truth) and 2026-07-22 still carries the older last-payment logic. Neither reflects the branch as it now stands. Do not read DEV as evidence for this PR until it is rebuilt over the backfilled tape.
