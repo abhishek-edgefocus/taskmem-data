@@ -9,7 +9,7 @@ tags: [openroad, datastores, dagster]
 links: [parent:wm-su6q4d, relates:wm-hjbt5a]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-08-14T14:56:46Z
-updated: 2026-08-21T17:53:44Z
+updated: 2026-08-21T20:52:55Z
 source: claude-code
 label: OpenRoad revive + deprecate
 ---
@@ -102,3 +102,4 @@ NEXT STEPS, in order:
 ALSO OPEN, not owned by any item: GOLD.POSITIONS_COMPARISON_DAILY has not run for ANY platform since
 2026-08-06..08-11, so the openroad board still reads 141/142 zero-common and the honest completion
 test for this revival cannot be evaluated yet. Tracked at [[wm-4s2sad]].
+- 2026-08-21T20:52Z [claude-code] 2026-08-22: Abhishek confirmed openroad_statement_sensor is ENABLED in prod. That closes the operational root cause behind wm-85nuv4 — the chain was previously advancing only on manual runs (statements_openroad had exactly one run ever, 2026-07-07, plus yesterday's 0790581c). Silver should now track bronze without hand-launched runs; watch the first few ticks per wm-hjbt5a (three other platform jobs fail on every sensor run). ERROR-1711 is now safe to close.
