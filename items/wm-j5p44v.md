@@ -5,8 +5,9 @@ title: OpenRoad pre-tape history: run the bronze backfill, don't derive or seed 
 status: next
 priority: high
 tags: [openroad, backfill, bronze]
+links: [blocked-by:wm-85nuv4]
 created: 2026-08-21T17:33:45Z
-updated: 2026-08-21T17:33:45Z
+updated: 2026-08-21T17:33:54Z
 source: claude-code
 estimate: half-day
 ---
