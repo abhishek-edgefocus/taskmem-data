@@ -9,7 +9,7 @@ tags: [openroad, platform-data-owners]
 links: [relates:wm-cgftbn, parent:wm-su6q4d, relates:wm-j5p44v, blocked-by:wm-j5p44v]
 refs: [DEV-1539=https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad]
 created: 2026-08-12T13:30:20Z
-updated: 2026-08-21T21:53:33Z
+updated: 2026-08-21T21:57:12Z
 source: claude-code
 label: OpenRoad fully-paid date
 ---
@@ -129,3 +129,16 @@ WHY IT MATTERS: the newest row per loan is always a gap-fill and consumers read 
 NOT ROOT-CAUSED. FULLY_PAID_DATE IS in STANDARD_POSITIONS_COLUMNS (145 cols, type DATE) and is NOT in the gap-fill 'excluded' set (positions_corrections.py:660-672), so carry-forward should work on the face of it. Next: instrument autofill_gaps() for openroad, or diff how generate_positions_temp_table is invoked in openroad/positions.py vs marlette/innovate.
 
 ENV NOTE: DEV_ABHISHEK streams were dropped by the clone and not recreated, so the transform's post-insert consume_target_stream fails on DEV_ABHISHEK.SILVER.POSITIONS_STREAM. Data is written BEFORE that step, so the run 'fails' while still producing valid rows. Recreate the streams (terraform) before treating a DEV run as clean.
+- 2026-08-21T21:57Z [claude-code] 2026-08-21 22:0x — PR #6413 put BACK TO DRAFT. It had been marked ready (isDraft=false) on the strength of the 20:51 'review gate is met' note, but the 21:53 DEV validation then found the terminal gap-fill defect and that never reached the PR. So it was sitting review-ready, with CI green and no human reviewer yet, while carrying a known un-root-caused defect. Reverted per the draft-until-evidence-complete rule.
+
+Independently confirmed the gap-fill finding is real and openroad-specific, in PROD, one query over all 12 platforms (fully_paid rows / dated / gapfill rows / gapfill undated):
+  anchored 13395/13395/43/0 · figure 10928/10928/0/0 · innovate 49173/49173/16194/0
+  marlette 7623846/7623846/3492024/0 · northpond 19783/19783/0/0 · prosper 1791719/1791719/5297/0
+  sofi 580696/580696/0/0
+Every platform that MAPS the column has ZERO undated gap-fill rows, including marlette with 3.49M of them. The platforms showing 0 dated (happymoney, lc, upgrade, upstart, openroad) simply have not mapped the column. So carry-forward demonstrably works everywhere else and something is specific to openroad's invocation.
+
+Also confirmed PROD silver.positions openroad = 34079 rows / 2023-07-20..2026-08-20 / 0 dated, consistent with the backfill being done and #6413 unmerged.
+
+Title corrected: dropped '(blocked on bronze loan-tape backfill)' — that blocker is cleared — and the body's top callout now states the gap-fill defect, records that the backfill is done, and notes the 4923612 date now resolves to 2025-05-27 from data rather than from any special-casing.
+
+Merge gate now: root-cause the gap-fill NULLs, fix, re-validate in DEV, screenshots, datastore comparison, merge, then openroad_positions --date all to populate the column.
