@@ -7,7 +7,7 @@ priority: normal
 tags: [northpond, edgex, data-quality]
 links: [relates:wm-39q8fh]
 created: 2026-08-20T19:27:42Z
-updated: 2026-08-20T19:27:52Z
+updated: 2026-08-22T07:54:38Z
 source: claude-code
 estimate: half-day
 ---
@@ -72,3 +72,6 @@ unattributable. Watch for that case appearing before spending more on it.
    test the outage. Needs a test for the day-4 case.
 
 Related: wm-39q8fh (the shipped fix, PR #6394).
+
+## Log
+- 2026-08-22T07:54Z [claude-code] Dropped 2026-08-22 on Abhishek's call. Two pieces were parked here: (1) the to_be_purchased partition rewrite on branch abhishek/northpond-partition-intent — already judged not worth reviving, since it defends a state (CURRENT_INVESTOR flipping while the loan is on no tape) with zero observed occurrences; (2) the STALE_DAYS=3 outage cliff, where a 4-day issuance gap would silently drop the whole pending population AND silence the gap check. Abhishek's judgement: a 3-4 day issuance outage is not realistic — the one real gap (2026-08-04) was a single day, and PR #6394 handles the same-day race that actually happens. Closing rather than carrying it. If issuance ever goes missing for multiple consecutive days, reopen this and build an alarm on file absence itself, independent of STALE_DAYS.
