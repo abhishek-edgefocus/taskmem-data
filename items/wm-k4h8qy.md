@@ -2,9 +2,10 @@
 id: wm-k4h8qy
 type: task
 title: DEV-1510: NorthPond approved/originated tracking blank on API Gateway Monitoring
-status: open
+status: next
+priority: p2
 created: 2026-08-22T08:15:32Z
-updated: 2026-08-22T08:15:32Z
+updated: 2026-08-22T08:15:38Z
 source: claude-code
 ---
 
