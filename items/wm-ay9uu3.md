@@ -2,7 +2,7 @@
 id: wm-ay9uu3
 type: task
 title: Map FULLY_PAID_DATE for OpenRoad (DEV-1539)
-status: next
+status: done
 size: s
 people: [Abhijeet]
 tags: [openroad, platform-data-owners]
