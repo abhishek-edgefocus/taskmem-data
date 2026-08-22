@@ -10,7 +10,7 @@ tags: [northpond]
 links: [follows:wm-c5jytx, relates:wm-vye9hn, relates:wm-btu784, parent:wm-btu784]
 refs: [DEV-1445=https://linear.app/edge-focus/issue/DEV-1445/retarget-northpond-at-orig-cashflows-to-olivs-anl]
 created: 2026-07-28T17:38:16Z
-updated: 2026-08-14T19:57:14Z
+updated: 2026-08-22T09:57:48Z
 source: claude-code
 label: Nate 1.36 ANL gross-vs-net
 ---
@@ -50,3 +50,13 @@ so switching the denominator is a column change, not a redesign.
 
 ## Log
 - 2026-07-28T17:38Z [claude-code] Created 2026-07-28 during a full reconciliation. Confirmed still unasked by Slack search over the Oliv group DM: no message from or to Nate mentions net-of-recoveries, gross, or 1.36. Carried out of [[wm-c5jytx]] at close so it does not die with that item.
+- 2026-08-22T09:57Z [claude-code] 2026-08-22 [claude-code, from the DEV-1446 dashboard build]: prod evidence that narrows the question, though it does not close it — only Nate can do that.
+
+On edgex20261NN, 265 loans carry both models (silver.positions.ANL joined to silver.northpond_stmt_issuance_v2 on APPLICATION_ID = APPLICATION_UUID):
+- Oliv CGL / Oliv ANL = 1.36, and it is 1.36 to two decimals on EVERY loan and every intended_investor bucket (415 edgex-intended, 146 oliv-intended). That is not a modelled recovery rate, it is a constant multiplier.
+- Our own gold.predicted_cashflows_mob lifetime CGL / CNL for the same fund = 1.10.
+- Our ANL (11.06% WA) sits almost exactly on our lifetime CNL (11.62%), not on anything annualised.
+
+Reading: if our "ANL" is numerically a cumulative net loss, and Oliv's ANL sits within 10bps of ours, then Oliv's ANL is most likely cumulative too — and the 1.36 is their gross-to-net assumption, not an annualisation. That would make the CGL gap (EF 12.77% vs Oliv 14.91%, -213bps) the real disagreement: recoveries, not loss level.
+
+Still needs Nate to confirm. The question to ask him is now sharper: "is the 1.36 your recovery assumption (CGL to CNL), or is it a WAL-based annualisation?"
