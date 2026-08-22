@@ -9,7 +9,7 @@ tags: [openroad, platform-data-owners]
 links: [relates:wm-cgftbn, parent:wm-su6q4d, relates:wm-j5p44v, blocked-by:wm-j5p44v]
 refs: [DEV-1539=https://linear.app/edge-focus/issue/DEV-1539/add-fully-paid-date-mapping-for-openroad]
 created: 2026-08-12T13:30:20Z
-updated: 2026-08-21T22:09:53Z
+updated: 2026-08-22T07:44:34Z
 source: claude-code
 label: OpenRoad fully-paid date
 ---
@@ -166,3 +166,4 @@ Bounded, not scary: only 28 of 5767 fully_paid rows are gap-fills. The long hist
 Added to the PR body as an IMPORTANT operational note, because the first PROD rebuild after merge WILL show the newest day or two as NULL and it will look like a bug to whoever runs it.
 
 PR STATE WARNING — two sessions are driving #6413. I set it to draft at ~21:57 on the then-current defect; session 1295c2ba set it back to ready. I have stopped toggling it and left it as they set it (ready). Whoever picks this up next: coordinate before changing draft state again. My reason for draft is now void; the only remaining evidence gap is the legacy-datastore comparison over the full history (and screenshots), which 1295c2ba has offered to run.
+- 2026-08-22T07:44Z [claude-code] 2026-08-22 MERGED + LIVE IN PROD. PR #6413 merged and deployed; PROD run e89173b1-e180-4e86-aac5-cb1fba82d315 (openroad_positions, as_of_date=all) SUCCESS: 34079 deleted, 34114 inserted, 1200 dates. PROD silver.positions openroad FULLY_PAID_DATE now populated on 5739 rows / 14 loans, one distinct date per loan, identical to the DEV validation: 5143881 2024-09-04, 5186687 2024-10-10, 4994794 2024-11-29, 5177007 2025-02-14, 4972236 2025-02-19, 4923612 2025-05-27, 5865766 2025-05-27, 4998579 2025-06-18, 5274564 2025-07-02, 5246752 2025-08-22, 5215393 2026-01-16, 5199151 2026-03-26, 4875674 2026-04-24, 4976517 2026-07-20. 4923612 matches the legacy datastore exactly, closing the 35-day defect from the earlier closing-payment approach. Assertions: dated-but-not-fully-paid 0, in-future 0, before-origination 0. Other platforms untouched. REMAINING (cosmetic): 28 terminal-fill rows at 2026-08-20/21 are still undated — the known Phase 2 one-day-per-run frontier. Two more as_of_date=all runs clear it, or the scheduled statements_openroad ticks walk it forward on their own. Every real row is correct today. DEV-1539 is done.
