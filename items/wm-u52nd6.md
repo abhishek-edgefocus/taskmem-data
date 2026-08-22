@@ -9,7 +9,7 @@ tags: [northpond, oncall, api-health]
 links: [parent:wm-3y3ckv, relates:wm-9kvv8c, parent:wm-d3qnqe]
 refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-07-29T13:43:02Z
-updated: 2026-08-22T07:22:22Z
+updated: 2026-08-22T07:43:05Z
 source: claude-code
 label: Experian 401 OAuth fix DEV-1478
 ---
@@ -93,3 +93,12 @@ CURRENT STATE / PICK UP HERE:
 - dpx ~/claude-ws/dev-1478/efp working tree holds both fixes UNCOMMITTED (modified experian_handler_test.py + the rename staged via git mv). Nothing pushed.
 - PR #6416 still carries commit 6989356e2, which is RED in CI. It is draft, so nothing is blocked on it, but it must not be taken as green.
 - Next steps when dpx returns: (1) run PYTHONPATH=lib pytest . --ignore=edgefocus/ --ignore=orchestration/ to completion, (2) amend/commit the two fixes, (3) push --force-with-lease, (4) watch gh pr checks 6416 through to green.
+- 2026-08-22T07:43Z [claude-code] CI GREEN on #6416, 2026-08-22 07:4xZ. Commit a08af60f3 (amended + force-pushed with lease). 'Run Tests' pass in 8m44s (https://github.com/edgefocus/efp/actions/runs/32559795908/job/96999532534), 'Select tests' pass, integration skipped. Both failures from the previous push are resolved: the mypy var-annotated error and the handler_test basename collision (file is now lib/efp/experian_data/experian_handler_test.py).
+
+Full legacy suite confirmed locally before pushing, using the CI invocation: 2,928 passed / 26 skipped, exit 0. Also ruff format + ruff check clean repo-wide (2,632 files) and mypy clean over all of lib/efp (1,293 files).
+
+dpx went unreachable mid-verification and came back 07:24:43Z; the uncommitted fixes survived in ~/claude-ws/dev-1478/efp. Lesson applied: long verification runs on dpx now go out under nohup with a sentinel file, so an ssh drop cannot kill them.
+
+PR body corrected twice over on claims that the CI failures exposed as overstated -- it now cites the full-suite figure rather than the earlier 595 from a two-directory run, and says mypy is clean over all of lib/efp rather than 'on the changed file'.
+
+STILL DRAFT ON PURPOSE. Green CI is not the gate; the gate is deploy-side evidence that the 401s actually stop. Thanks to #6425 carrying the status code that count is now directly measurable rather than inferred from response timing. Re-run the gateway scan on a post-deploy date and compare against the 2026-08-19 baseline on [[wm-rrvgdr]].
