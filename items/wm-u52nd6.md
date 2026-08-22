@@ -9,7 +9,7 @@ tags: [northpond, oncall, api-health]
 links: [parent:wm-3y3ckv, relates:wm-9kvv8c, parent:wm-d3qnqe]
 refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-07-29T13:43:02Z
-updated: 2026-08-21T21:54:17Z
+updated: 2026-08-22T07:22:22Z
 source: claude-code
 label: Experian 401 OAuth fix DEV-1478
 ---
@@ -80,3 +80,16 @@ DESIGN CHANGES vs the first version: retry now fires on 401 ONLY (403 dropped --
 VALIDATION: 595 tests pass across lib/efp/experian_data/ + lib/efp/json_endpoints/ (includes #6425's new cases); 3 of the 9 new handler tests confirmed to FAIL against master 2525b863f; ruff format/check clean, mypy clean. Still unit-tested only -- no Experian UAT exercise.
 
 NOW EASIER: with #6425 carrying the status, the post-deploy 401 count is directly measurable instead of inferred -- that is the proof that takes this out of draft.
+- 2026-08-22T07:22Z [claude-code] CI WAS RED ON #6416; TWO FAILURES FOUND, FIXES ARE UNCOMMITTED AND STRANDED ON dpx (2026-08-21 ~22:3xZ).
+
+FAILURE 1 (what CI reported): 'Run Tests' job failed at the 'Run MyPy on legacy codebase (lib/efp)' step -- lib/efp/experian_data/handler_test.py:25: Need type annotation for '_CREDIT_REPORT_BODY' [var-annotated]. Cause: {'creditProfile': [{'riskModel': []}]} has an empty inner list so mypy cannot infer the dict type. My mistake was running mypy on handler.py ONLY; CI runs it over the whole lib/efp tree (1293 files). Fix applied: annotate _CREDIT_REPORT_BODY and _REJECTED_BODY as Dict[str, Any].
+
+FAILURE 2 (hidden behind failure 1, and the worse one): because mypy failed, CI never reached the pytest steps. Running the legacy suite the way CI does exposed a basename collision I introduced -- lib/efp/tu_data/credit_pull/handler_test.py already exists, neither directory has __init__.py, so pytest imports both as top-level module 'handler_test' and errors with 'import file mismatch'. This ABORTS COLLECTION FOR THE ENTIRE LEGACY SUITE, not just my file, on a module I never touched. Fix applied: git mv lib/efp/experian_data/handler_test.py -> experian_handler_test.py (verified unique across the repo). Both files then collect together, 14 passed.
+LESSON WORTH KEEPING: for this repo, a new test file must have a repo-unique basename, and 'tests pass' must mean the CI invocation (PYTHONPATH=lib pytest . --ignore=edgefocus/ --ignore=orchestration/), not a per-directory run.
+
+VERIFIED AFTER FIXES: ruff format --check . clean (2632 files), ruff check . clean, mypy over all of lib/efp clean (1293 files). The full legacy pytest run did NOT complete -- ssh dropped mid-run and dpx then became unreachable (connect timeouts on port 22, repeated). So the legacy suite is still UNCONFIRMED on this branch.
+
+CURRENT STATE / PICK UP HERE:
+- dpx ~/claude-ws/dev-1478/efp working tree holds both fixes UNCOMMITTED (modified experian_handler_test.py + the rename staged via git mv). Nothing pushed.
+- PR #6416 still carries commit 6989356e2, which is RED in CI. It is draft, so nothing is blocked on it, but it must not be taken as green.
+- Next steps when dpx returns: (1) run PYTHONPATH=lib pytest . --ignore=edgefocus/ --ignore=orchestration/ to completion, (2) amend/commit the two fixes, (3) push --force-with-lease, (4) watch gh pr checks 6416 through to green.
