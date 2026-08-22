@@ -2,7 +2,7 @@
 id: wm-c4w87n
 type: task
 title: NorthPond follow-up: to-be-purchased partition rewrite + outage-aware gap alarm (branch abhishek/northpond-partition-intent)
-status: next
+status: dropped
 priority: normal
 tags: [northpond, edgex, data-quality]
 links: [relates:wm-39q8fh]
