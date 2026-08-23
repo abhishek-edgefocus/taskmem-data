@@ -2,7 +2,8 @@
 id: wm-6nf5z7
 type: followup
 title: AGS logo: develop the Ascent direction once the brief is known
-status: open
+status: blocked
+tags: [design, personal]
 created: 2026-08-23T21:44:29Z
 updated: 2026-08-23T21:44:29Z
 source: claude-code
