@@ -5,6 +5,7 @@ title: Retarget or close PR #6131 — stale draft still based on the merged oliv
 status: inbox
 size: s
 tags: [northpond, oliv, predictions]
+links: [relates:wm-3rsskm]
 refs: [PR-6131=https://github.com/edgefocus/efp/pull/6131]
 created: 2026-08-24T12:29:00Z
 updated: 2026-08-24T12:29:32Z
