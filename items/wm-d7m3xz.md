@@ -73,3 +73,4 @@ CURRENT STATE OF THE THREE SUB-THREADS, as of this sweep:
 3. Prediction chain — this is the one that has NOT moved and is now the live edge of this item. Still tracked on wm-btu784 and wm-3rsskm.
 
 So the umbrella's centre of gravity has shifted entirely to sub-thread 3; whoever picks this up next should start there, not at Nelnet.
+- 2026-08-24T15:00Z [claude-code] Rewrote the ## Next steps section (the Log is untouched). All three prior steps were stale and the first one — 'get PR #6277 reviewed today' — was being surfaced verbatim in every SessionStart digest, so the memory was actively pointing Abhishek at a closed PR and an expired deadline several times a day. Replaced with the three live prediction-chain steps and an explicit 'landed, no action' line so the closed sub-threads stay visible rather than looking forgotten.
