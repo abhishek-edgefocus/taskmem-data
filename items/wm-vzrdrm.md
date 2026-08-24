@@ -8,7 +8,7 @@ size: s
 tags: [openroad, datastores, data-quality]
 links: [relates:wm-4s2sad, parent:wm-jr5bup]
 created: 2026-08-24T12:27:48Z
-updated: 2026-08-24T12:47:54Z
+updated: 2026-08-24T13:26:28Z
 source: claude-code
 ---
 
@@ -87,3 +87,7 @@ Fixed with ALTER TABLE DEV_ABHISHEK.GOLD.POSITIONS_COMPARISON_DAILY ADD COLUMN F
 FLOAT; the schema diff against PROD is now empty. Re-ran the 2-date smoke test clean:
 COMMON_COUNT 35, EXTRA_IN_DATASTORE 0, real mismatch percentages where March previously held
 nothing (APPLICATION_ID 97.14, POOL_ID 100, EF_SCORE 97.14).
+- 2026-08-24T13:26Z [claude-code] BACKFILL COMPLETE 2026-08-24 13:05 PT. Wrote 142 rows; DEV_ABHISHEK.GOLD.POSITIONS_COMPARISON_DAILY now has openroad on all 142 dates 2026-03-21..2026-08-09 with COMMON_COUNT=35, EXTRA_IN_DATASTORE=0 and EXTRA_IN_SNOWFLAKE=0 on every single date. The board reads DEV_ABHISHEK by default, so it is populated there now. PROD still holds the wrong zeros before 2026-08-10 and still cannot be fixed from here (PROD_READONLY).
+
+The repaired board immediately earned its keep - it exposed the ITD cash-flow divergence that a
+single-day comparison could not see ([[wm-sn2x5s]], p1, blocks datastore deprecation).
