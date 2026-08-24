@@ -7,7 +7,7 @@ priority: p1
 tags: [openroad, data-quality, datastores]
 links: [relates:wm-jr5bup, relates:wm-skvqac]
 created: 2026-08-24T13:10:59Z
-updated: 2026-08-24T16:47:49Z
+updated: 2026-08-24T19:04:56Z
 source: claude-code
 ---
 
@@ -124,3 +124,30 @@ the last known ITD across a no-activity gap).
 
 The 6 small dates (1-2 loans, 2.86-5.71%) are the pre-existing settlement-timing noise that was
 visible from 2026-05-01 onward and is unrelated to the batch staleness.
+- 2026-08-24T19:04Z [claude-code] SCOPE DECISION + FIX 2026-08-25. Abhishek scoped this to OpenRoad only: no shared-file changes, no cross-platform backfill signed off. My recommendation had been to fix the bound in transactions_itd; he overrode it and the platform-scoped route turned out to be cleaner than either of us expected.
+
+THE FIX IS ONE PARAMETER, NOT NEW LOGIC. positions_utils already supports itd_join_mode='asof',
+already documents this exact failure mode in its docstring, and figure/positions.py already opts
+into it (its tape outlives its transactions by 42 days). OpenRoad now passes the same flag from
+generate_temp_table. asof takes the most recent ITD row on or before the position date: inside a
+dense grid it selects the same row as exact so it is a no-op, outside it carries the last known
+cumulative value forward, and it never fabricates a value where no prior ITD row exists. It is
+bounded by the position calendar, so it cannot invent rows past the end of the book. Verified the
+flag reaches BOTH attach sites - the join in generate_positions_sql and _resync_itd_columns for
+autofilled rows - so it is not half-applied.
+
+Branch abhishek/openroad-itd-asof, commit 573ee77d, one file, +14/-1. ruff, mypy and the 19
+openroad positions tests green. No PR opened yet.
+
+NEAR MISS WORTH RECORDING. The first attempt copied positions.py from a workspace based on
+main@5c0005322 onto a branch cut from origin/master@99c70e725, which silently REVERTED the
+FULLY_PAID_DATE work (DEV-1539, [[wm-ay9uu3]]) that had landed in between - 33 deletions in a
+change that should have been purely additive. Caught it only by reading the diffstat before
+pushing. Rule: when moving a change between workspaces, re-apply the patch onto the target base,
+never copy the file, and read --stat before pushing - a deletion count above your own edit is the
+tell.
+
+STILL OPEN AND DELIBERATELY NOT ACTED ON: silver.transactions_itd remains incomplete, and the same
+exposure covers ~1.15M loan-date rows across 8 of 13 platforms with 6 trailing gaps open right
+now. Written up for Abhijeet at ~/itd-trailing-gap-note.md on the Mac. foursight's 73 dates look
+like a wider problem than a trailing edge and need their own look.
