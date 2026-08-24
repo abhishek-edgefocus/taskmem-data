@@ -46,3 +46,6 @@ not surface it for review. Take it out of draft first, then request.
 - Eshan's offer — https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1787259360976439
 - Thread parent — https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1787256050911219
 - PR #6416 — https://github.com/edgefocus/efp/pull/6416
+
+## Log
+- 2026-08-24T12:29Z [claude-code] Captured by the 2026-08-24 sync sweep from the #platform-data-owners thread of 2026-08-21. Eshan's offer was explicit and time-bound ('later today'); three days on, gh reports zero reviewRequests on #6416 and #6131. Filed as needs-reply because a named person is waiting on Abhishek, not because the work is large.
