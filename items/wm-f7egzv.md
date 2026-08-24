@@ -10,7 +10,7 @@ people: [Eshan]
 tags: [northpond, needs-reply]
 links: [relates:wm-u52nd6]
 created: 2026-08-24T12:28:37Z
-updated: 2026-08-24T12:29:31Z
+updated: 2026-08-24T12:29:57Z
 source: claude-code
 label: Eshan reviewer assignment
 ---
@@ -39,8 +39,9 @@ not surface it for review. Take it out of draft first, then request.
 1. Take PR #6416 out of draft (see [[wm-u52nd6]] — CI is fully green).
 2. Request `eshan-edgefocus` as reviewer on #6416, and ping the existing
    #platform-data-owners thread so he sees it landed.
-3. Decide whether PR #6131 goes to him too, or is closed — see [[wm-hx-6131]] placeholder
-   note in the sweep report; that PR needs a retarget before it is reviewable.
+3. PR #6131 is NOT ready to hand him — it still needs a base retarget before it is
+   reviewable at all. That is tracked separately on [[wm-gp7g82]]; do not assign him that
+   one until the retarget is done.
 
 ## Links
 - Eshan's offer — https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5/p1787259360976439
