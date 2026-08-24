@@ -10,7 +10,7 @@ people: [Nate, Trishit]
 tags: [northpond, edgex]
 links: [relates:wm-jewha5, relates:wm-n7usn7, relates:wm-tvjjgw, parent:wm-4sxy5d]
 created: 2026-07-31T14:19:39Z
-updated: 2026-08-14T14:55:28Z
+updated: 2026-08-24T12:27:23Z
 source: claude-code
 ---
 
@@ -54,3 +54,14 @@ Re-run the same one-liner before assuming anything landed. When it does, do this
 (2) THE LOANS ARE NOT IN POSITIONS YET, AND THAT IS EXPECTED, NOT A BUG: 0 of the 29 loan ids (OLV12563552, OLV12563575, OLV12563554, OLV12563556, OLV12563557, ...) appear in silver.northpond_stmt_positions at any as_of. Nate explained the mechanism in DM the same night: 'No all of our loans are in either the NN or FCC files' / '(once onboarded)' / 'There can be a few day delay to get into the NN file but once there it's always there'. So the validation is not finished until they show up — worth re-checking in a few days.
 (3) ONE ASK OF NATE WENT UNANSWERED. In C0BJ1M304BU Abhishek asked, before the live drop, 'is it possible for me to also take a look at today's issuance file which includes these loans?'. Nate's next message was 'confirming that we've uploaded live files' — the issuance file was never provided. Cross-checking the 29 purchases against the issuance file is still the cleanest validation available and it needs a re-ask.
 (4) RESOLVED IN THAT THREAD, so no longer open: dti_ratio blank in v0 (Trishit 2026-08-12 00:11 'I don't think we use DTI in the model' then 'We don't use it anywhere'), and Nate committed to bring v0's DTI logic in line with v1 anyway. The dpd -> days_past_due rename question is moot for v0: the landed v0 header matches the 21-col legacy schema exactly.
+- 2026-08-24T12:27Z [claude-code] PROD + S3 RE-VERIFIED 2026-08-24 by the sync sweep. The picture has changed completely since the 2026-08-12 entry: this is no longer a first-landing to validate, it is a steady daily feed.
+
+CADENCE IS NOW ESTABLISHED EMPIRICALLY — 9 consecutive BUSINESS DAYS with zero misses: purchase_file_v0_2026081{1,2,3,4} then {17,18,19,20,21}.csv, each landing ~13:37-13:39 UTC. No files on 08-15/16 or 08-22/23 (both weekends), so the pattern is WEEKDAY, not DAILY. Nothing for today 2026-08-24 yet, but the sweep ran at 12:16 UTC and the file is not due until ~13:38 UTC — this is not a gap.
+
+INGESTION IS CLEAN: PROD.BRONZE.STATEMENT_FILES northpond/purchase_tape shows exactly 1 file per business day, all 9 STATUS=rows_added. No failures, no duplicates.
+
+FUND ATTRIBUTION IS FIXED — this closes the concern raised in the 2026-08-12 entry. All 9 as_of_dates in PROD.SILVER.NORTHPOND_STMT_PURCHASE_TAPES now read FUND=edgex20261NN, including the original 2026-08-11 batch that was written as efhyf before PR #6209 merged. The rebuild tracked on wm-cqgb5n did its job; no stale efhyf rows remain. Row counts by as_of: 08-11 29, 08-12 50, 08-13 17, 08-14 17, 08-17 16, 08-18 25, 08-19 46, 08-20 31, 08-21 34 — 265 loans cumulative, one row per loan throughout.
+
+THE POSITIONS QUESTION FROM ENTRY (2) IS EFFECTIVELY ANSWERED. That entry flagged that 0 of the first 29 loans had reached silver.positions and said to re-check in a few days. The 265 cumulative purchased loans match exactly the 265 edgex20261NN loans wm-39q8fh verified in silver.positions at as_of 2026-08-21. Stated honestly: that is a count-level match across two tables, not the loan-level join — I attempted the direct join today and it failed on a column-name mismatch (NORTHPOND_STMT_POSITIONS has no LOAN_ID), and the retry timed out before returning. The counts agreeing exactly at 265 is strong evidence the feed is flowing end to end, but a loan-level join is what would make it airtight.
+
+WHAT IS ACTUALLY STILL OPEN on this item: only entry (3) — Abhishek asked Nate for the issuance file covering the 29 purchased loans and Nate never provided it; the group DM C0BJ1M304BU has had no messages at all since 2026-08-08, so that ask was never re-sent. Checklist points 1-5 in the body now all pass. Point 6 (legacy datastore starvation) is tracked separately on wm-tvjjgw. This item looks closable once Abhishek decides whether he still wants the issuance cross-check.
