@@ -8,7 +8,7 @@ size: m
 tags: [northpond, datastores, oncall]
 links: [related:wm-gxykru, relates:wm-4sxy5d, parent:wm-4sxy5d]
 created: 2026-07-28T13:40:28Z
-updated: 2026-08-14T19:57:14Z
+updated: 2026-08-24T13:30:39Z
 source: claude-code
 ---
 
@@ -71,3 +71,14 @@ Context: Abhishek sent the v0 sign-off 2026-08-08 03:15 IST ('the v0 file looks 
 Relevant here because the legacy StatementPurchaseTape datastore is pinned to the Pool N xlsx feed from efp-derived/trades/northpond_ff. Once Oliv's live purchase files start arriving as v0 CSV on 2026-08-11, the legacy purchase tape stops seeing new purchases (freezes silently, no error) and the EDGEX investor ABS datasets drift from prod.
 - 2026-08-12T13:33Z [claude-code] SMALL PROD FINDING 2026-08-12 while verifying the purchase-file routing for [[wm-jewha5]]: exactly one file under the legacy path is unparsed — s3://efp-raw/statements/northpond/purchase_file_legacy/2026/07/purchase_file_legacy_20260723.csv, STATUS='unknown' in PROD.BRONZE.STATEMENT_FILES, so no ParsingRule matches the purchase_file_legacy/ prefix. It is the only key under that prefix and it is a month old. Worth deciding as part of this item's mirror-retirement question rather than separately: if the efp-derived/trades/northpond_ff -> statements/northpond/purchase_tape/ mirror is going away anyway, this file may simply not need a rule.
 - 2026-08-12T14:11Z [claude-code] CONFIRMED MATERIALISED 2026-08-12. Legacy statement_purchase_tape datastore is frozen at data date 2025-06-16 (last written 2026-06-18); its feed s3://efp-derived/trades/northpond_ff/ still ends at 'Pool 6 ... 06172025.xlsx'. Meanwhile real purchase files have now landed twice at the new path: purchase_file/v0/2026/08/purchase_file_v0_20260811.csv (4739 B, 2026-08-11 22:38) and purchase_file_v0_20260812.csv (7923 B, 2026-08-12 13:37). So the predicted silent divergence started 2026-08-11 and is now two days deep — the legacy reader is xlsx-pinned and cannot see either file. Option (a) in this item (point legacy StatementPurchaseTape at the new CSV) is no longer hypothetical. Note this is a SEPARATE staleness from the one in [[wm-9axevw]], where a missing issuance_20260804.csv has frozen positions/cfframe/transfers and ~20 other northpond datastores at 2026-08-03 since 2026-08-04.
+- 2026-08-24T13:30Z [claude-code] DIRECT EVIDENCE FOR THIS ITEM, measured in prod 2026-08-24 while verifying wm-9dfnnt. The starvation this item predicts is no longer hypothetical — it is observable today, and the split is total rather than partial.
+
+The two NorthPond servicing tapes have cleanly separated populations:
+  - PROD.SILVER.NORTHPOND_STMT_POSITIONS (legacy FCC): 715 distinct loans, highest id OLV12563276, still updating (last as_of 2026-08-24).
+  - PROD.SILVER.NORTHPOND_STMT_NELNET_POSITIONS: 8,891 rows, last as_of 2026-08-24.
+
+Every one of the 265 EDGEX 2026-1NN loans purchased between 2026-08-11 and 2026-08-21 is on the NELNET tape (265/265 matched on LOAN_EXTERNAL_REFERENCE_ID) and NONE of them is on the FCC tape (0/265 on LOANNUMBER). The ids make the mechanism obvious: the purchased loans run from OLV12563552 upward, and the FCC tape stops at OLV12563276 — it is not lagging on these loans, it never receives them at all.
+
+WHY THIS MATTERS FOR EDGEX ABS: anything still reading the legacy StatementPurchaseTape / FCC path sees a NorthPond book that looks alive and current (the FCC tape is still updating daily, so there is no staleness signal to trip on) while containing exactly zero of the EDGEX deal's loans. That is the silent-starve failure mode this item was created for, and the silence is the dangerous part — a consumer of the legacy path gets fresh-looking data with the deal missing from it, not an obvious outage.
+
+Note this is a stronger statement than the count evidence on wm-9dfnnt: it is a loan-level join, not agreement between two totals.
