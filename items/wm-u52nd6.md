@@ -9,7 +9,7 @@ tags: [northpond, oncall, api-health]
 links: [parent:wm-3y3ckv, relates:wm-9kvv8c, parent:wm-d3qnqe]
 refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-07-29T13:43:02Z
-updated: 2026-08-24T15:50:46Z
+updated: 2026-08-24T16:02:43Z
 source: claude-code
 label: Experian 401 OAuth fix DEV-1478
 ---
@@ -135,3 +135,20 @@ TWO CORRECTIONS TO THE INVESTIGATION PREMISE:
 The 21x 500s are unrelated: two tight Experian-side clusters (2026-05-08 00:52-01:12, 2026-08-18 19:20-21:18), not deploy-adjacent.
 
 Grafana note: the dashboard efp-production-traffic/production-traffic-endpoint-lb is on grafana.sterling.edgefocuspartners.com, which rejects the ~/.grafana.env creds (those are for grafana.edgefocuspartners.com, which has no such dashboard). Went to the underlying source instead - it is an ALB target-group view; all of the above came from CloudWatch directly.
+- 2026-08-24T16:02Z [claude-code] READY FOR REVIEW 2026-08-24. PR #6416 out of draft, CI green on 9abdf213b ('Run Tests' pass 7m26s, https://github.com/edgefocus/efp/actions/runs/32747337962/job/97495901987). Title: 'DEV-1478: Re-authenticate and retry once when Experian rejects the NorthPond token'. 2 files, +366/-29.
+
+ACTED ON THE EXTERNAL REVIEW (~/pr-6416-review.md). Four of five findings verified and applied:
+- BLOCKING BUG FIXED: a failed re-authentication inside the retry raised out of get_raw_credit_info. Verified the chain myself -- credit_pulled_channel.py:199 wraps ANY exception into ExperianCreditPullErrorException, northpond_loan_fl_channel.py:628 catches it and returns NorthPondResponse_Error (soft envelope, no 500, no Sentry). So the change silenced exactly the credential-revocation case. Now caught: log + report the original 401. New test test_a_failed_reauthentication_reports_the_original_rejection, confirmed failing without the guard.
+- Removed the retry-layer paragraph: verified _experian_pull_runner is typed Optional[ExperianCreditPull] at credit_pulled_channel.py:50, so 'the runner' IS this handler class and #6425's follow-up note was already satisfied. The paragraph invented a disagreement.
+- Removed the thread-safety hedge: verified devops/endpoint/aws_cdk/deploy/stack.py:151 runs 'gunicorn -w{WORKERS}' with no -k and no --threads (sync worker), northpond_loan_fl workers=2 max_capacity=2. My earlier grep missed this only because I truncated output at head -20.
+- Softened both 403 comments to claim only that 403 has never been observed on this endpoint (previously asserted an unsourced vendor semantic).
+
+REJECTED THE REVIEW'S HEADLINE FINDING, with evidence. It claimed the root cause is token-expiry boundary lapse -- 'all 57 401s at token age 1799.24-1800.71s'. I re-ran their CloudWatch query: aggregates match (4,008 mints vs their 4,005; 57 401s; expires_in=1800 on all mints) but the correlation does not -- token age at 401 came out min 7.41s, median 475.06s, max 1800.12s, with only 1 of 57 in [1790,1810]. Both computations are unsound anyway: the log group has only 2 streams (one per container) with multiple gunicorn workers writing to each and NO pid/worker field in the log line -- median gap between consecutive mints within one stream is ~500s where a single worker on an 1800s TTL would show ~1800s. A 401 cannot be attributed to the mint that served it from what is logged today. Root cause therefore still OPEN; moved to a separate session per Abhishek.
+
+PR NARRATIVE now claims no outcome: all 'drops to zero' and cross-process-retirement language stripped from both the PR body and the commit message. Framing is 'the recovery path was incorrect, this makes it correct', with an explicit note that the mechanism is unestablished and that the post-deploy rate cannot be modelled from current logging. The new warning line 'discarding the cached token and retrying once' is named as the thing that will actually count rejections.
+
+VALIDATION before push: ruff format 2,632 files clean, ruff check clean, mypy clean over 1,293 files, pytest 2,929 passed / 26 skipped.
+
+NOT DONE, deliberately: no Experian UAT exercise (unit-tested only, stated in the PR); review's optional suggestion to replace private-name monkeypatching with the URL-routing post stub from credible_loan_fl_tare_test.py not taken -- would also cover __get_access_token's expires_in parsing, worth doing if a human reviewer asks.
+
+NEXT: Abhishek to request reviewers (see [[wm-f7egzv]] -- Eshan offered).
