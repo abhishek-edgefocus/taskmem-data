@@ -3,8 +3,11 @@ id: wm-vzrdrm
 type: task
 title: Backfill positions_comparison_daily for openroad 2026-03-21..2026-08-09 (board is blank, not stale)
 status: open
+priority: p1
+size: s
+tags: [openroad, datastores, data-quality]
 created: 2026-08-24T12:27:48Z
-updated: 2026-08-24T12:27:48Z
+updated: 2026-08-24T12:28:10Z
 source: claude-code
 ---
 
