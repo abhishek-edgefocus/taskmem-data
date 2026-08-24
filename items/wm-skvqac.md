@@ -8,7 +8,7 @@ people: [Frank]
 tags: [openroad, datastores, data-quality]
 links: [follows:wm-hecgua, parent:wm-jr5bup]
 created: 2026-08-14T14:55:14Z
-updated: 2026-08-24T13:26:18Z
+updated: 2026-08-24T15:00:12Z
 source: claude-code
 effort: <1h
 label: openroad_verified.py
@@ -86,3 +86,6 @@ on the OpenRoad board once this ships. northpond_verified.py's docstring claims 
 ('does NOT affect the Grafana comparison board'); that claim is stale - the skip landed 2026-07-28
 in PR #6040, and northpond's own registered columns read NULL in PROD gold today. Not fixed here
 (other platform's file, not this ticket).
+- 2026-08-24T15:00Z [claude-code] PR IS NOW UP — state moved past the 13:26Z entry. PR #6454 'DEV-1638: Register OpenRoad verified positions differences' was created 2026-08-24 14:48Z, so commit 78b28d923 is no longer sitting unpushed on dpx. Currently isDraft=true; CI partially reported ('Select tests' SUCCESS, 'Run Tests' still running, integration skipped) at time of check.
+
+Since Abhishek named this his #1 for today, the thing to watch is that it does not repeat the #6416 pattern — a green PR parked in draft with no reviewer requested. Once 'Run Tests' goes green the next actions are: take it out of draft, and request a reviewer (see wm-f7egzv — Eshan offered on 08-21 and still has not been assigned anything).
