@@ -3,8 +3,10 @@ id: wm-sn2x5s
 type: task
 title: OpenRoad ITD cash flows diverge from the datastore from 2026-05-01 (silver massively under-counts)
 status: open
+priority: p1
+tags: [openroad, data-quality, datastores]
 created: 2026-08-24T13:10:59Z
-updated: 2026-08-24T13:10:59Z
+updated: 2026-08-24T13:11:05Z
 source: claude-code
 ---
 
