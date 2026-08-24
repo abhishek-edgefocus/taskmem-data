@@ -8,7 +8,7 @@ people: [Frank]
 tags: [openroad, datastores, data-quality]
 links: [follows:wm-hecgua, parent:wm-jr5bup]
 created: 2026-08-14T14:55:14Z
-updated: 2026-08-14T14:56:56Z
+updated: 2026-08-24T12:33:03Z
 source: claude-code
 effort: <1h
 label: openroad_verified.py
@@ -50,3 +50,6 @@ built.
 - The validation PR — https://github.com/edgefocus/efp/pull/5807
 - Sibling doc that this one is modelled on: [[wm-6zdqhy]]
 - Salvage half: [[wm-hecgua]]
+
+## Log
+- 2026-08-24T12:33Z [claude-code] 2026-08-24: UNBLOCKED. This item was waiting on two things — the OpenRoad silver chain being alive, and the backfill. Both landed 08-21/08-22: openroad_statement_sensor is RUNNING, statements_openroad is 15/15 green, and the bronze backfill took silver.openroad_stmt_positions from 52 days to 1,127 days (2023-07-20 -> 2026-08-19). Abhishek named this his #1 for today (DEV-1638, verified differences).
