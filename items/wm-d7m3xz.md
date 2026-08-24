@@ -10,7 +10,7 @@ tags: [northpond, edgex, oliv]
 links: [parent:wm-j523sq]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-08-14T19:56:08Z
-updated: 2026-08-24T12:28:18Z
+updated: 2026-08-24T15:00:38Z
 source: claude-code
 label: EDGEX deal readiness
 ---
@@ -44,9 +44,18 @@ Each sub-thread renders its own ordered checklist; this level is a portfolio, no
 do not read its step numbers as an order.
 
 ## Next steps
-- Nelnet: get PR #6277 reviewed today — Monday's cutover is the only hard deadline in here.
-- Fund attribution: rebuild silver.northpond_stmt_purchase_tapes before the 29 loans land.
-- Predictions: ship the one-line Dockerfile fix that is holding up the other two steps.
+Rewritten 2026-08-24: the previous three steps were all overtaken by events (PR #6277 was
+closed rather than merged, the cutover date passed, and the fund rebuild is done). See the
+2026-08-24 log entry for the evidence. Sub-threads 1 and 2 are now closed out; everything
+live is in sub-thread 3.
+- Predictions: ship the one-line Dockerfile fix (.efp_toplevel missing from
+  orchestration/Dockerfile) that has northpond_exp_predictions failing every run — [[wm-te4cr2]].
+- Predictions: build + promote the oliv_exp_statement_model artifact, then re-run
+  northpond_api_predictions to drop the stale exp api rows — [[wm-3rsskm]].
+- Predictions: force silver.ef_scores to re-derive the 33 stale Oliv loans after the ANL
+  retarget — [[wm-vye9hn]].
+- Landed, no action: Nelnet cutover (PRs #6323 + #6324 merged) and fund attribution (all 265
+  EDGEX loans read FUND=edgex20261NN, loan-level verified — [[wm-9dfnnt]]).
 
 ## Links
 - Sub-thread — Nelnet servicer feed: [[wm-gj5tkx]]
