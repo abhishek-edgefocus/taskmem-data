@@ -9,7 +9,7 @@ tags: [northpond, oncall, api-health]
 links: [parent:wm-3y3ckv, relates:wm-9kvv8c, parent:wm-d3qnqe]
 refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-07-29T13:43:02Z
-updated: 2026-08-24T16:02:43Z
+updated: 2026-08-24T16:49:18Z
 source: claude-code
 label: Experian 401 OAuth fix DEV-1478
 ---
@@ -152,3 +152,18 @@ VALIDATION before push: ruff format 2,632 files clean, ruff check clean, mypy cl
 NOT DONE, deliberately: no Experian UAT exercise (unit-tested only, stated in the PR); review's optional suggestion to replace private-name monkeypatching with the URL-routing post stub from credible_loan_fl_tare_test.py not taken -- would also cover __get_access_token's expires_in parsing, worth doing if a human reviewer asks.
 
 NEXT: Abhishek to request reviewers (see [[wm-f7egzv]] -- Eshan offered).
+- 2026-08-24T16:49Z [claude-code] ROOT CAUSE FIX FOLDED IN AND SHIPPED 2026-08-24. PR #6416 open, ready for review, CI green on 55b4e08c4 (Run Tests pass 8m30s, Select tests pass, Seer Code Review pass, integration skipped). Title now 'DEV-1478: Stop crediting the Experian token with its own round trip, and recover from rejections'.
+
+THE CAUSE, measured by a separate session and now fixed here: __get_access_token set _token_expires_at = time.time() + expires_in AFTER the OAuth response was parsed. Experian counts expires_in from when IT issued the token, so the deadline was credited with the round trip the token had already spent -- every token believed to live ~0.65s longer than it did. Requests landing in that sliver used an already-retired token and got 401. Evidence: dead windows are 0.28% of wall clock, 23 of 23 sampled 401s fall inside one, 0 of 102 400s do.
+
+THE FIX: requested_at = time.time() captured BEFORE the OAuth post; _token_expires_at = requested_at + expires_in - _TOKEN_ISSUE_SKEW_SECONDS (5s, covering clock difference vs Experian and issue-side latency).
+
+NOTE FOR REVIEWERS, stated in the PR so nobody has to ask: the 60s _TOKEN_EXPIRY_MARGIN_SECONDS refresh margin already in this PR would ALSO have kept requests out of the dead window on its own. It is kept because it does a different job (protects a request already in flight), but the stored deadline is now correct in itself rather than relying on a read-side margin to absorb an error it does not model. Combined cost ~3.7% more OAuth calls against the 1800s TTL.
+
+NEW TEST test_the_token_deadline_excludes_the_oauth_round_trip drives the REAL __get_access_token through a URL-routing stubbed token endpoint with a simulated 0.30s round trip, asserting the deadline sits within token_request_time + expires_in - skew. Confirmed failing when only the anchoring line is reverted. It also covers expires_in parsing, which the external review had flagged as untested -- so that review point is now closed too.
+
+This supersedes the earlier 'root cause not established' framing: the PR body now leads with the cause and the evidence, and states that closing the window should remove the failure mode rather than reduce it, with the retry warning line as the signal that would reveal a second mechanism.
+
+VALIDATION before push: ruff format 2,632 files clean, ruff check clean, mypy clean over 1,293 files, pytest 2,930 passed / 26 skipped. 11 handler tests, 5 of them confirmed failing against master 2525b863f.
+
+DONE HERE. Remaining on this item is human-side: request reviewers ([[wm-f7egzv]], Eshan offered), then merge and watch the warning line after deploy.
