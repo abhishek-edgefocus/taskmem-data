@@ -8,7 +8,7 @@ size: s
 tags: [data-quality]
 links: [relates:wm-srzcyx, relates:wm-rzfews, relates:wm-wcawuj, relates:wm-hjbt5a, relates:wm-85nuv4]
 created: 2026-07-29T16:38:34Z
-updated: 2026-08-14T19:55:18Z
+updated: 2026-08-24T12:27:25Z
 source: claude-code
 ---
 
@@ -54,3 +54,10 @@ So the freshness alert this item proposed in step 3 is still the right idea, but
 caught either of these — both boards are fresh and both are meaningless. The check that matters is
 COMMON_COUNT, not UPDATED_AT. Anchored is the one case not explained by a stopped sensor and is
 worth a separate look.
+- 2026-08-24T12:27Z [claude-code] MECHANISM CONFIRMED 2026-08-24, extending the 2026-08-15 scope correction. The job writes FORWARD ONLY over a short rolling window, so a row computed during an outage stays wrong forever unless someone backfills it.
+
+Evidence from openroad in PROD.GOLD.POSITIONS_COMPARISON_DAILY: silver was rebuilt 2026-08-22 00:42 PT and now covers every as-of date. The 2026-08-22 15:56 comparison run rewrote only as_of 2026-08-10..08-19 (COMMON_COUNT 0 -> 35); dates 2026-03-21..2026-08-09 still carry EXTRA_IN_DATASTORE=35 / COMMON_COUNT=0 / all mismatch pct NULL, stamped with their original 08-06..08-11 UPDATED_AT. Fixing the upstream sensor therefore does NOT heal the board's history.
+
+This sharpens step 3 of this item: the check that matters is COMMON_COUNT, and the missing capability is a re-run over a date range. Same fix applies to any platform whose sensor was down (innovate, upstart, lc, anchored).
+
+Also measured today, whole table: min AS_OF_DATE is 2026-03-21 for all 11 platforms — there is no pre-March history in this table in either PROD or DEV_ABHISHEK, which matters for anything titled full-history. And DEV_ABHISHEK.GOLD.POSITIONS_COMPARISON_DAILY is dead: openroad max as_of 2026-08-09, last write 2026-08-11.
