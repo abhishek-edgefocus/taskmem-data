@@ -6,6 +6,7 @@ status: next
 priority: p2
 size: xs
 tags: [mcp, tooling]
+links: [relates:wm-gxykru]
 created: 2026-08-24T18:19:21Z
 updated: 2026-08-24T18:19:25Z
 source: claude-code
