@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [ERROR-1231=https://linear.app/edge-focus/issue/ERROR-1231/northpond-issued-missing-gateway-responses-15-issued-northpond-loans]
 created: 2026-07-14
-updated: 2026-08-24T12:59:05Z
+updated: 2026-08-24T13:06:27Z
 source: dpx-tasks #7
 label: NorthPond 15 missing loans
 ---
@@ -29,3 +29,4 @@ FIX (prod run, Abhishek only): bin/northpond/grafana.py --date 2026-07-01,2026-0
 
 SECONDARY: a duplicate Linear ticket ERROR-1721 was minted 2026-08-21 from a second Sentry issue EFP-ERRORS-1P8 carrying the same message (its title embeds the loan-id list, so it fingerprints separately). Dedupe against ERROR-1231.
 DESIGN BUG worth a separate ticket: issued.py skips unreconciled loans forever and re-alerts every day; it has no retry/backfill path and no bound, so any gateway-loader gap becomes a permanent daily alert.
+- 2026-08-24T13:06Z [claude-code] Addendum 2026-08-24: openroad independently confirmed on the same footing as sofi. S3 s3://efp-raw/gateway/openroad/openroad_auto_refi/ holds 486 model_responses objects on 2026-07-02 and 241 on 2026-07-04, while openroad.model_responses MySQL has ZERO rows on both days. (An earlier sofi check in this session returned all-zero counts but was a bad invocation - 'aws s3 ls --exclude' is not a valid filter; the corrected run gave 7421/7656/6486/4461/4395 objects for 07-01..07-05. Use grep on a plain --recursive listing, not --exclude.) Diagnosis and fix unchanged.
