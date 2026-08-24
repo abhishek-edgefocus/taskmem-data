@@ -10,7 +10,7 @@ people: [Eshan, Kabeer]
 tags: [northpond, edgex]
 links: [relates:wm-gj5tkx, parent:wm-d7m3xz]
 created: 2026-08-17T09:54:13Z
-updated: 2026-08-17T14:00:40Z
+updated: 2026-08-24T12:28:18Z
 source: claude-code
 ---
 
@@ -46,3 +46,12 @@ Draft prepared 2026-08-17; Abhishek posts it, not the agent (no agent-initiated 
 READS: (a) the intent tag is set at APPLICATION creation, earlier than issuance, and drives randomized allocation; (b) the issuance file reflects it but only carries ISSUED loans, so issuance->purchase (measured 1-4 days) is the CEILING for issuance-based visibility; (c) THERE IS AN EARLIER FEED ON OFFER — the application funnel, flag set immediately — but an application is not a position (no funding, no principal), so it buys pipeline/forecast visibility, not to-be-purchased rows; (d) drop-off causes are named but NOT quantified — he never gave a rate, that is the one gap left.
 FUND-ATTRIBUTION CONSEQUENCE of 4.b.i: the stop-order fallback is Purchaser I, which is a DIFFERENT FUND in our model — confirmed on master, northpond/constants.py documents 'INV105 (EDGEX Purchaser I) from INV103 (EDGEX Grantor Trust)' and constants.py has EDGEX_PURCHASER = 'edgex_purchaser' separate from edgex20261NN. So a loan flagged intended=edgex20261NN can legitimately settle into edgex_purchaser; a TBP row's fund must be provisional, not authoritative.
 MEASURED AGAINST THE FILES 2026-08-17 (4 populated dates 08-13..08-16): the 165 'not yet converted' are NOT fall-outs — all 165 carry current_investor='oliv', i.e. the ordinary pre-sale holding state (matches Nate's rule 3 'Else Oliv'). Cross-tab on 08-16 is perfectly clean: intended edgex20261NN -> current {oliv:165, edgex20261NN:113}; efhyf->efhyf 372; northpond->northpond 343; oliv->oliv 174. ZERO loans changed intended_investor across 08-13..08-16 (1,116 loans present on both ends), and NO intended=edgex loan sits at current=edgex_purchaser — so Nate's fallback path is a stated possibility, not yet observed. Intent tag looks stable, but on only 4 days of data.
+- 2026-08-24T12:28Z [claude-code] SWEEP 2026-08-24 — THE ANSWER IS WRITTEN AND STILL UNSENT, NOW 7 DAYS PAST DUE. Nothing about the research changed; what changed is that it has now aged a week with Eshan still waiting.
+
+INDEPENDENTLY RE-CONFIRMED THE CADENCE CLAIM TODAY, and it holds with four more business days of evidence than the 2026-08-17 measurement had. Full S3 listing of statements/northpond/purchase_file/: real v0 files on 2026-08-11,12,13,14,17,18,19,20,21 — nine consecutive business days, each landing 13:37-13:39 UTC, and NOTHING on 08-15/16 or 08-22/23. So the body's 'WEEKDAYS ONLY, ~13:38 UTC' line is safe to state to Eshan as observed fact rather than an early read off four files. Prod agrees: all nine ingested STATUS=rows_added, one file per day, no gaps.
+
+The rest of the drafted answer is unaffected — the issuance file remains the lead indicator (1-4 day lead, per-file medians 4/3/2/2), and the caveat that issuance carries no investor/fund tag still stands, so it predicts THAT a loan is coming and not WHICH fund.
+
+WORTH SAYING WHEN HE REPLIES, because it is new since 08-17 and Eshan's question was about regular flow: the feed is no longer a trickle — 265 loans purchased across those nine days (29/50/17/17/16/25/46/31/34), all attributed to edgex20261NN.
+
+This is a reply, not research. The blocking step is posting it in the PR #6306 thread.
