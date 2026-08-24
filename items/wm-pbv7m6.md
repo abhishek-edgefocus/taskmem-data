@@ -6,9 +6,9 @@ status: open
 priority: normal
 size: <1h
 tags: [positions, autofill, data-quality, openroad, prosper]
-links: [relates:wm-duhj7d]
+links: [relates:wm-duhj7d, relates:wm-su6q4d]
 created: 2026-08-24T12:33:49Z
-updated: 2026-08-24T12:34:10Z
+updated: 2026-08-24T12:34:15Z
 source: claude-code
 ---
 
