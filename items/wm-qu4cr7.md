@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [ERROR-1231=https://linear.app/edge-focus/issue/ERROR-1231/northpond-issued-missing-gateway-responses-15-issued-northpond-loans]
 created: 2026-07-14
-updated: 2026-08-24T15:07:40Z
+updated: 2026-08-24T18:23:29Z
 source: dpx-tasks #7
 label: NorthPond 15 missing loans
 ---
@@ -43,3 +43,18 @@ Step 2 MUST pass --date. issued.py stamps date_first_seen = the issuance-file da
 
 WHERE IT RUNS: execution/cron/dumbledore/ubuntu/existing.cron:236 '*/5 * * * * cd /efp/scripts && python bin/northpond/grafana.py --verbose' and line ~226 '0 1 * * * python3 /efp/scripts/bin/northpond/issued.py', both as ubuntu@dumbledore.edgefocus.net. Jenkins 'Cron Scripts - Dumbledore' is a DEPLOY job only (run_tests.sh + rsync to /efp/scripts + deploy-crontab.sh) - it cannot run an ad-hoc backfill, and the repo JenkinsClient is read-only by design.
 NOT HOST-BOUND: both scripts only touch S3 efp-raw and the shared MariaDB grafana-mariadb.c7attyszx6bg.us-east-2.rds.amazonaws.com (user default-writer from configs/default_passwords.json). Both are reachable from dpx - this session read those tables from dpx. /efp/scripts is just the deployed checkout. To run from dpx: repo .venv is missing termcolor (efp.terminal imports it); and grafana.py's add_perf_data() may fail on dpx if StatementLoanPositions needs datastore/EFS access, but it runs AFTER both process_model() calls so the model_requests/model_responses writes would already be committed. UNVERIFIED: whether the default-writer grant permits writes from dpx's IP (only reads were tested). dumbledore.edgefocus.net resolves to 172.31.33.180 and tcp/22 is open from dpx, so access is a key/account question not a network one - untested, the ssh attempt was blocked in-session.
+- 2026-08-24T18:23Z [claude-code] CORRECTION 2026-08-24 — read the actual Linear thread (Linear MCP finally authorized). Abhishek was right to challenge my framing. The ticket's ORIGINAL subject is a different problem from what I investigated, and he already fixed it.
+
+WHAT ERROR-1231 WAS ACTUALLY ABOUT (the original 15, June 2026):
+ - Description field is EMPTY; title is just the alert text. Nothing about Grafana anywhere - his instinct was correct.
+ - The 15 uuids (2d012331-bf1b-4b3a-9007-9cda4e117a2b, 459b73d6-..., 595719fc-..., 67a78726-..., 6bdb1da3-..., 7a44ab9d-..., 8652a7b2-..., 8f849274-..., 8fd5a27f-..., ac5deb65-..., b53a330f-..., ccc6acf6-..., cf3aee81-..., e257adfe-..., ee2ba0c8-...) share ZERO overlap with the 25 currently firing.
+ - Root cause (found by Abhishek 2026-07-01, NOT the loader): application_uuid was CORRUPTED in model_responses, so the reconcile join failed. The fix in PR edgefocus/efp#5068 'preserve application_uuid through NorthPondExpOfferModel' (2026-04-20) never reached the prod model container - Jenkins 'Endpoint - NorthPond / Production - Model and Gateway Task' build #61 deploys the model from git tag model_northpond_exp, and that tag still pointed at a 2026-03-23 commit. Gateway ran master HEAD while the model stayed pinned to the stale tag. Kabeer 2026-07-01: 'this looks like a miss from my end, i ran the deployment without retagging'.
+ - RESOLVED by Abhishek: new tag model_northpond_exp_20260701_191417_UTC, Jenkins build #62 green (2026-07-01 19:39 UTC); then 2026-07-15 'Recovered the real application_uuid for all corrupted model_responses. The 15 loans are now ingested and reconcile passes.'
+ - This also corrects Kabeer's PR #5390 premise ('EFP made no offer on them') - the real cause was a corrupted join key, not a missing offer.
+
+WHY IT IS STILL OPEN: the alert is STATELESS and the Sentry subject is stable, so a NEW cohort re-opens the SAME Linear ticket. State history: Done 2026-07-01, Done again 2026-07-15, bounced back to Backlog 2026-07-16T08:27Z and Backlog ever since. Eshan flagged 2026-07-20 'it has moved back from Done'. So the 25 loans I diagnosed (gateway->MySQL loader gap 07-01..07-04) are the CURRENT cause of the reopen, not the ticket's original subject. Both are true; I wrongly described the ticket as being about the loader gap.
+
+SUSPICIOUS TIMING worth checking: the model/gateway redeploy (build #62) completed 2026-07-01 19:39 UTC, and the MySQL model_requests/model_responses rows stop partway through 07-01 and are absent 07-02..07-04. S3 gateway logs are complete throughout. Possible the redeploy is what broke the loader - unproven, but the coincidence is tight.
+
+OPEN: Sanjali Agrawal commented 2026-08-24T06:05Z '@abhishek any updates on this?' - Abhishek owes a reply today. Ticket is Backlog, priority High, assignee Abhishek Doshi, team Errors, label 'Data Ingestion'.
+STILL OPEN TECHNICALLY: 22 of the current 25 confirmed present in S3 gateway model_responses for 07-01..07-04 (reader validated by control, 553/553 on 07-05); 3 remain unexplained - worth testing whether those 3 are the corrupted-application_uuid pattern recurring rather than the load gap.
