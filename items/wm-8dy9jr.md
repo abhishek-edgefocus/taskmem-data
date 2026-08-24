@@ -9,7 +9,7 @@ people: [Nate, Trishit]
 tags: [northpond, edgex, compliance]
 links: [relates:wm-gj5tkx, relates:wm-nwvcg9, parent:wm-gj5tkx]
 created: 2026-08-12T15:29:33Z
-updated: 2026-08-14T19:57:14Z
+updated: 2026-08-24T13:47:35Z
 source: claude-code
 ---
 
@@ -66,3 +66,4 @@ WHAT IS STILL UNDECIDED AND IS NOW THE WHOLE ITEM: whether the already-landed fi
 from efp-raw or moved to efp-pii. That is Abhishek's call, no action has been taken, and the
 source-side fix does nothing about them. Worth settling this week rather than after the cutover,
 because once the feed goes quiet the pile stops being visible and stays where it is.
+- 2026-08-24T13:47Z [focus-agent] EXPOSURE STILL LIVE 2026-08-24 (counted directly in S3 from dpx, read-only) — the 08-17 cutover did NOT stop it. Both files now land every day: the clean olivfinancial_loan_YYYYMMDD.csv AND the raw VELOCITY_SERVICING_DF2_* file. Latest raw file is VELOCITY_SERVICING_DF2_20260824_20260824_030211 at 2026-08-24 12:37, 610131 bytes. The count in the body (13 files, later corrected to 15) is stale again: there are now 25 raw VELOCITY_SERVICING_DF2_* files in s3://efp-raw/statements/northpond/nelnet/daily_loan/, still carrying plaintext SSN, DOB, address, phone, email and bank routing numbers in the NON-PII bucket, and the files are still growing (390163 bytes on 08-14 -> 610131 today). So this item is not the cleanup-only job the 08-14 log described. Two things now, not one: (1) tell Nate the raw DF2 feed is still arriving alongside the clean export and ask him to switch it off at source, and (2) the still-undecided purge-vs-move-to-efp-pii call on what has already landed. Priority left unchanged, flagged to Abhishek for his call.
