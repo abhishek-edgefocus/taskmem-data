@@ -7,7 +7,7 @@ priority: p1
 tags: [openroad, data-quality, datastores]
 links: [relates:wm-jr5bup, relates:wm-skvqac]
 created: 2026-08-24T13:10:59Z
-updated: 2026-08-24T14:59:58Z
+updated: 2026-08-24T16:47:49Z
 source: claude-code
 ---
 
@@ -91,3 +91,36 @@ data. Counting decreases in PROD.SILVER.TRANSACTIONS_ITD since 2026-01-01: marle
 legitimate payment reversals or corrections rather than this bug - do NOT report them as corruption
 without checking. But the same incremental-staleness mechanism applies to every platform, and a
 monotonicity assertion would be a cheap standing check.
+- 2026-08-24T16:47Z [claude-code] RERUN VERIFIED 2026-08-24. Abhishek launched statements_openroad (run 09ba8fe9-24a4-46ef-bbf0-c4744017e0d0), all 15 assets SUCCESS - openroad_transactions_itd 2,833s, openroad_positions 195s, plus the four realized-cashflow assets. Recompared 58 dates 2026-06-20..2026-08-16 against the legacy parquet.
+
+THE ORIGINAL DEFECT IS FIXED. The 97% wall is gone from 48 of the 52 affected dates.
+  - stale pre-backfill ITD rows in the window: 46 dates -> 0
+  - impossible ITD decreases for openroad since 2026-06-01: 15 -> 0
+  - openroad_5011302 at 2026-07-15: 268.43 -> 7,218.63, an exact match to the datastore
+  - nothing else moved: PRINCIPAL, STATUS, ACCRUED_INTEREST and EXPOSURE all still 0.00% on every
+    date, EXTRA_IN_DATASTORE 0, COMMON_COUNT 35 throughout, and every registered column unchanged
+    (POOL_ID 100, ZIP_CODE 100, CREDIT_SCORE 48.57, REMAINING_TERM 45.71, AS_OF_MONTH 57.14).
+
+BUT THE LEGS ARE NOT 100% CLEAN, and what is left is a SECOND, DIFFERENT BUG - not residue of this
+one. 10 of 58 dates still show a payment-leg mismatch:
+  2026-06-27..06-30  97.14% on all three payment legs, 8.57/11.43% on the recovery legs
+  2026-07-03..07-06  2.86% (1 loan)
+  2026-07-17..07-18  5.71% (2 loans)
+
+THE 4 BIG ONES ARE A TRAILING-GAP HOLE IN transactions_itd. It is NOT a source gap:
+silver.openroad_stmt_positions has all 35 loans on each of 2026-06-27..06-30, and my rerun range
+(2026-06-27:2026-08-24) explicitly covered them. transactions_itd still emitted NO rows for those
+four dates, so positions joins nothing and reads ITD = 0 for all 35 loans while the datastore shows
+~484k. Mechanism, from the transaction calendar: openroad transactions land on 06-22, 06-24, 06-26,
+then not again until 07-01. ITD rows exist through 06-26 and resume 07-01. The transform does not
+carry the cumulative value forward across an as-of range that trails the most recent transaction.
+
+THIS IS LIVE, NOT JUST HISTORICAL. Exactly 7 as-of dates in the last year have zero ITD on
+silver.positions: 2026-06-27, 06-28, 06-29, 06-30 - and 2026-08-22, 08-23, 08-24. The last
+transaction is dated 2026-08-21, so the three most recent days of OpenRoad positions carry zero
+realized cash right now, and any new day will too until the next transaction lands. Re-running the
+same job will not fix it; it needs a carry-forward fix in the ITD transform (or positions holding
+the last known ITD across a no-activity gap).
+
+The 6 small dates (1-2 loans, 2.86-5.71%) are the pre-existing settlement-timing noise that was
+visible from 2026-05-01 onward and is unrelated to the batch staleness.
