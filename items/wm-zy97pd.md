@@ -1,14 +1,14 @@
 ---
 id: wm-zy97pd
 type: task
-title: 55 northpond balancesheet loans never hit the decisioning API (no model_request at all) — May/Jun 2026 100% unscored
+title: 55 northpond balancesheet loans got a v2 model_request but no model_response — May/Jun 2026 100% unscored
 status: next
 priority: normal
 size: s
 tags: [northpond]
 links: [parent:wm-3sxcre]
 created: 2026-08-21T21:56:59Z
-updated: 2026-08-21T21:57:11Z
+updated: 2026-08-24T21:05:18Z
 source: claude-code
 ---
 
