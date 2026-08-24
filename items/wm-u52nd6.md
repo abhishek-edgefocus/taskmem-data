@@ -9,7 +9,7 @@ tags: [northpond, oncall, api-health]
 links: [parent:wm-3y3ckv, relates:wm-9kvv8c, parent:wm-d3qnqe]
 refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-07-29T13:43:02Z
-updated: 2026-08-24T16:49:18Z
+updated: 2026-08-24T17:00:22Z
 source: claude-code
 label: Experian 401 OAuth fix DEV-1478
 ---
@@ -167,3 +167,18 @@ This supersedes the earlier 'root cause not established' framing: the PR body no
 VALIDATION before push: ruff format 2,632 files clean, ruff check clean, mypy clean over 1,293 files, pytest 2,930 passed / 26 skipped. 11 handler tests, 5 of them confirmed failing against master 2525b863f.
 
 DONE HERE. Remaining on this item is human-side: request reviewers ([[wm-f7egzv]], Eshan offered), then merge and watch the warning line after deploy.
+- 2026-08-24T17:00Z [claude-code] 2026-08-24 VOLUME TREND CHECKED (Abhishek asked whether the issue has recently reduced). IT HAS NOT. The apparent drop is the weekend trough plus a part-day.
+
+NOTHING IS DEPLOYED: container c21cd7738c5c (started 2026-08-18 14:18Z, release 622bb331e) is still the live one as of 2026-08-24 16:57Z. No redeploy since 08-18, so neither #6416 (draft) nor #6425 (merged 08-21 21:41Z) is in production. Any change in the error curve cannot be either of them.
+
+RATE IS UNCHANGED: baseline 2026-05-25..08-17 = 126,033 pulls / 40x401 = 0.0317%. Recent 08-18..now = 67,125 pulls / 26x401 = 0.0387%. Expected 21.3 at baseline rate, observed 26, Poisson z=+1.02 -> not significant. The 401 rate has been flat for three months; 401 VOLUME is just rate x pull volume.
+
+WHAT THE "DECREASE" ACTUALLY IS: 08-18 Tue 13,789 pulls / 43 non-200 (the peak, and it carried the 14 anomalous 500s) -> 08-22 Sat 6,422 -> 08-23 Sun 5,165 -> 08-24 Mon 5,164 BUT that is only to 16:57Z, i.e. 71% of the day; full-day equivalent ~7,300, which is in line with last Monday's 7,653. Same-weekday comparison shows no decline at all.
+
+DIRECTION IS UP, NOT DOWN. Weekly pulls: 11,255 (w/c 07-27) -> 31,566 -> 43,490 -> 69,614 (w/c 08-17). Weekly 401s: 7 -> 12 -> 9 -> 29. Weekly non-200s: 37 -> 67 -> 111 -> 167.
+
+EXPECTATION AFTER THE FIX -- and this is the part worth setting straight before anyone reads the error graph as a success metric:
+- 401s from this mechanism go to ~0. The dead window is 0.65s; _TOKEN_EXPIRY_MARGIN_SECONDS=60 is a ~92x safety factor. 23 of 23 attributable 401s over Aug 17-22 were this class.
+- BUT 401s are only ~17% of non-200s. At last full week's volume (9,945 pulls/day) the visible error count goes from ~24/day to ~20/day. The 400s (~20/day, 80% of the surface) are untouched by #6416 -- #6425 moved them off the HTTP 500 path but they are still failed pulls.
+- So the correct post-deploy proof is the 401 COUNT specifically (now directly measurable thanks to #6425 carrying the status code), NOT total error volume, and it must be normalised per-pull and compared same-weekday. A raw before/after on the error graph will be dominated by the volume ramp and the weekly cycle.
+- Residual 401 risk after the fix is a different class: the 2026-07-12/13 "account is in invalid state" burst (279 requests) was a credential/account problem. Neither the margin nor the retry prevents that one -- re-auth would fail too.
