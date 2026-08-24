@@ -8,7 +8,7 @@ size: s
 tags: [openroad, datastores, data-quality]
 links: [relates:wm-4s2sad, parent:wm-jr5bup]
 created: 2026-08-24T12:27:48Z
-updated: 2026-08-24T12:39:35Z
+updated: 2026-08-24T12:47:54Z
 source: claude-code
 ---
 
@@ -74,3 +74,16 @@ Feasibility confirmed: datastore index 1901 has all 142 dates in range (openroad
 BONUS the title implies: the datastore has openroad back to 2023-07-24 and silver back to
 2023-07-20, so genuine full history (~1120 dates) is computable into DEV_ABHISHEK — the table
 starting at 2026-03-21 is just where someone started, not a data limit. See [[wm-2994t7]] item 3.
+- 2026-08-24T12:47Z [claude-code] RUN STARTED 2026-08-24 12:46 PT on dpx, isolated workspace ~/claude-ws/openroad-cmp/efp (fresh clone of main @ 5c0005322, own .venv via uv sync, .env copied from ~/repos/efp). Full range 2026-03-21..2026-08-09, 142 dates, ~11.5s/date measured, so ~27 min. Log: /tmp/or_backfill.log on dpx.
+
+SCHEMA DRIFT HIT ON THE FIRST TRY, worth knowing before anyone else writes this table from dev:
+DEV_ABHISHEK.GOLD.POSITIONS_COMPARISON_DAILY was missing the FULLY_PAID_DATE FLOAT column that
+PROD has (added by the DEV-1539 mapping work, [[wm-ay9uu3]]). Every other column matched. The
+insert died with 'invalid identifier FULLY_PAID_DATE' — and because write_to_snowflake does
+DELETE-then-INSERT, the DELETE had already committed, so the two smoke-test dates were dropped
+and not replaced. No data loss in the end (both are inside the repair range and get regenerated),
+but the failure mode is worth remembering: a failed write of this table LOSES the old rows.
+Fixed with ALTER TABLE DEV_ABHISHEK.GOLD.POSITIONS_COMPARISON_DAILY ADD COLUMN FULLY_PAID_DATE
+FLOAT; the schema diff against PROD is now empty. Re-ran the 2-date smoke test clean:
+COMMON_COUNT 35, EXTRA_IN_DATASTORE 0, real mismatch percentages where March previously held
+nothing (APPLICATION_ID 97.14, POOL_ID 100, EF_SCORE 97.14).
