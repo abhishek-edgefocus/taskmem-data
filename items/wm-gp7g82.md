@@ -2,10 +2,14 @@
 id: wm-gp7g82
 type: task
 title: Retarget or close PR #6131 — stale draft still based on the merged oliv_exp_statement_model branch
-status: open
+status: inbox
+size: s
+tags: [northpond, oliv, predictions]
+refs: [PR-6131=https://github.com/edgefocus/efp/pull/6131]
 created: 2026-08-24T12:29:00Z
-updated: 2026-08-24T12:29:00Z
+updated: 2026-08-24T12:29:32Z
 source: claude-code
+label: PR 6131 retarget or close
 ---
 
 Abhishek's own PR #6131 ("Source the exp per-loan fields from silver.positions where
