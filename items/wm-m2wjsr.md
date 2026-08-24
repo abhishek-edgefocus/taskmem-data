@@ -2,7 +2,7 @@
 id: wm-m2wjsr
 type: task
 title: Backfill the null status_at_purchase rows in silver.positions for northpond (DEV-1522)
-status: next
+status: done
 priority: p2
 size: s
 people: [Abhijeet]
@@ -10,7 +10,7 @@ tags: [northpond, data-quality]
 links: [parent:wm-3sxcre]
 refs: [DEV-1522=https://linear.app/edge-focus/issue/DEV-1522/fix-northpond-status-at-purchase, PR-6207=https://github.com/edgefocus/efp/pull/6207]
 created: 2026-08-11T08:49:02Z
-updated: 2026-08-21T14:05:17Z
+updated: 2026-08-24T12:27:02Z
 source: claude-code
 label: northpond status_at_purchase nulls
 ---
