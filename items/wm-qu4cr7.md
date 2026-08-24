@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [ERROR-1231=https://linear.app/edge-focus/issue/ERROR-1231/northpond-issued-missing-gateway-responses-15-issued-northpond-loans]
 created: 2026-07-14
-updated: 2026-08-24T20:09:05Z
+updated: 2026-08-24T20:57:05Z
 source: dpx-tasks #7
 label: NorthPond 15 missing loans
 ---
@@ -67,3 +67,19 @@ USEFUL CONSEQUENCE: the Billing dashboard (Snowflake, complete) and the invoice 
 SEPARATE DISCREPANCY worth a look: the dashboard's header still advertises a 'Credit Reports: total_apps x $0.30' line item, but PR #5832 (OPS-36, nakula-efp, merged 2026-07-20) 'Remove NorthPond credit pull fees from monthly bill' removed that fee from generate_monthly_fee.py. So the dashboard computes a line item that is no longer billed - dashboard and script have drifted apart on the fee schedule, independent of this ticket.
 
 CONFIRMED AFFECTED (re-verified datasources): 'NorthPond FL 2.0' (uid qWXsxeWDk) is genuinely MySQL - 36 panel targets on mysql datasource Uih1s0PSk, 4 on mysql whibt6c7z, only 1 panel on Snowflake. That dashboard does have the 3-day hole.
+- 2026-08-24T20:57Z [claude-code] DIAGNOSIS COMPLETE 2026-08-25. The 25 loans split into TWO distinct causes. Verified in Snowflake PROD.BRONZE.API_EVENTS with controls on every query.
+
+METHOD NOTE (two false results corrected along the way): (1) gateway model_requests/model_responses objects are plain .parquet, NOT .zst+pickle - an earlier scan returned a bogus '0 of 25'. (2) model_requests store the uuid at payload:applicationInformation:applicationUuid while model_responses store it FLAT at payload:application_uuid - a query using only the nested path can never match responses. Correct expression is COALESCE(payload:application_uuid::VARCHAR, payload:applicationInformation:applicationUuid::VARCHAR). Control: 781/781 both event types on 2026-07-03.
+
+COHORT A - 22 loans (requests 2026-07-01 evening through 07-04): correct, matching model_responses exist in S3 and Snowflake. They were simply never loaded into MySQL. The grafana.py backfill DOES fix these.
+
+COHORT B - 3 loans, the ones that were unexplained: 81fe8e12-15c5-46f1-b519-a259e6f97458 (request 2026-07-01 15:50:11 UTC), f430a050-1fe8-49d3-ab32-158320355416 (14:37:12 UTC), f7856925-4f47-4b25-a61f-3a8e3f2b23c0 (14:57:21 UTC). All three applied BEFORE the model redeploy at 19:39 UTC on 2026-07-01. Their responses DO exist but carry a WRONG application_uuid - they are the tail of the ORIGINAL ERROR-1231 bug (NorthPondExpOfferModel minting a fresh uuid instead of passing the applicant's through), which Abhishek fixed by retagging + Jenkins build #62 at 19:39 UTC 07-01. The 07-15 uuid recovery covered the 15 known loans but MISSED these 3.
+=> The grafana.py backfill will NOT fix Cohort B: it will load their response rows under the wrong uuid and the reconcile still fails. They need the same uuid recovery, joined on gateway_ns.
+
+JOIN KEY FOR THE RECOVERY: the S3 filename's 19-digit gateway_ns links request<->response. CONTROL 2026-07-05 (post-fix): 553 joined on ns, 553 uuid matches (100%). 2026-06-30 (pre-fix): 712 joined, 0 matches. Recovered mapping for the 3 (real_app_uuid -> uuid_in_response): 81fe8e12->9fb07a54-0f63-400e-954d-32c67069f017 (offer ea2cb7de-8d6a-575f-8cdf-187a7e66b7b9); f430a050->6f06b681-a212-4156-9bdf-2280c9fc13e0 (offer 7b59ced5-9609-5b57-bc71-d4c08a37841b); f7856925->e5061433-5097-4ac1-b2bc-16d368493650 (offer bd79936a-de2c-504d-abcc-f88204e5300e).
+
+BUSINESS FINDING: all 3 responses carry decision=false. EFP DECLINED these three applications and NorthPond funded the loans anyway. That is the genuine 'funded without an EF offer' case Kabeer originally described - worth surfacing to the business separately from the data fix.
+
+EXACT CUTOVER: on 2026-07-01 the no-response count by hour drops to 0 from hour 20:00 UTC onward (hour 19 was 33 of 46), pinning the fix to the 19:39 UTC deploy.
+
+NEW, SEPARATE GAP: the 07-15 recovery was applied to MySQL only. Snowflake bronze.api_events STILL holds the corrupted uuids for the whole pre-fix period - every northpond request from 2026-06-01 to 2026-07-01 19:35 UTC has no joinable response, about 11,595 applications (11,015 in June + 580 on 07-01). Anything joining request->response in the warehouse for that period is broken. Not checked before 2026-06-01, so the true count may be larger. Does NOT affect the Billing dashboard (it counts model_requests only).
