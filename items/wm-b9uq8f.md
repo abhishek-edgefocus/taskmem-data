@@ -2,10 +2,13 @@
 id: wm-b9uq8f
 type: task
 title: Set a MonitoringSchedule on northpond_purchase_tape_v0_csv now the cadence is known
-status: open
+status: inbox
+size: s
+tags: [northpond, edgex, monitoring]
 created: 2026-08-24T12:29:19Z
-updated: 2026-08-24T12:29:19Z
+updated: 2026-08-24T12:29:32Z
 source: claude-code
+label: purchase tape monitoring schedule
 ---
 
 A decision recorded on [[wm-9dfnnt]] on 2026-08-11 deliberately deferred this, and its
