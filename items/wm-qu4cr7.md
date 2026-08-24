@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [ERROR-1231=https://linear.app/edge-focus/issue/ERROR-1231/northpond-issued-missing-gateway-responses-15-issued-northpond-loans]
 created: 2026-07-14
-updated: 2026-08-24T13:06:27Z
+updated: 2026-08-24T15:07:40Z
 source: dpx-tasks #7
 label: NorthPond 15 missing loans
 ---
@@ -30,3 +30,16 @@ FIX (prod run, Abhishek only): bin/northpond/grafana.py --date 2026-07-01,2026-0
 SECONDARY: a duplicate Linear ticket ERROR-1721 was minted 2026-08-21 from a second Sentry issue EFP-ERRORS-1P8 carrying the same message (its title embeds the loan-id list, so it fingerprints separately). Dedupe against ERROR-1231.
 DESIGN BUG worth a separate ticket: issued.py skips unreconciled loans forever and re-alerts every day; it has no retry/backfill path and no bound, so any gateway-loader gap becomes a permanent daily alert.
 - 2026-08-24T13:06Z [claude-code] Addendum 2026-08-24: openroad independently confirmed on the same footing as sofi. S3 s3://efp-raw/gateway/openroad/openroad_auto_refi/ holds 486 model_responses objects on 2026-07-02 and 241 on 2026-07-04, while openroad.model_responses MySQL has ZERO rows on both days. (An earlier sofi check in this session returned all-zero counts but was a bad invocation - 'aws s3 ls --exclude' is not a valid filter; the corrected run gave 7421/7656/6486/4461/4395 objects for 07-01..07-05. Use grep on a plain --recursive listing, not --exclude.) Diagnosis and fix unchanged.
+- 2026-08-24T15:07Z [claude-code] BILLING IMPACT found 2026-08-24 - this is not just dashboard noise. bin/northpond/generate_monthly_fee.py (dumbledore cron '0 11 3 * *') builds NorthPond's monthly invoice from these exact tables and POSTs it to a Zapier webhook -> QuickBooks, plus Slack #north-pond. Two lines, both hit by the July gap:
+ (1) $2 per Direct application, from model_requests.date_utc in month. Missing rows: 07-01 498 (761 S3 objects vs 263 in MySQL), 07-02 589, 07-03 781, 07-04 541 = 2,409 applications absent. Direct share on healthy neighbouring days is 1.7-3.5%, so ~40-85 Direct apps = ~$80-170 under-billed.
+ (2) 0.5% of amount_financed on funded non-Direct loans, from issued JOIN model_requests filtered on issued.date_first_seen in month. The 25 skipped loans = $56,500 -> $282.50 under-billed.
+ Combined July 2026 shortfall ~$360-450. The July invoice was generated and sent on 2026-08-03.
+DO NOT re-run generate_monthly_fee.py for July - it would push a SECOND invoice to QuickBooks. The correction has to be a manual credit/adjustment, and is a conversation with whoever owns NorthPond billing, not a script.
+
+CORRECTED FIX SEQUENCE (2 steps, order matters):
+ 1. bin/northpond/grafana.py --date 2026-07-01,2026-07-02,2026-07-03,2026-07-04
+ 2. bin/northpond/issued.py --date 2026-07-01,2026-07-02,2026-07-03,2026-07-04,2026-07-05,2026-07-06,2026-07-07
+Step 2 MUST pass --date. issued.py stamps date_first_seen = the issuance-file date it is processing; run bare (default --start yesterday --end today) it would stamp today's date and drop the 25 loans into the AUGUST billing period instead of July. Verified first-appearance dates by walking the July issuance files: 07-01 x1 ($1,000), 07-02 x6 ($9,000), 07-03 x9 ($25,000), 07-04 x4 ($8,000), 07-05 x2 ($6,000), 07-06 x1 ($1,500), 07-07 x2 ($6,000); all 25 matched.
+
+WHERE IT RUNS: execution/cron/dumbledore/ubuntu/existing.cron:236 '*/5 * * * * cd /efp/scripts && python bin/northpond/grafana.py --verbose' and line ~226 '0 1 * * * python3 /efp/scripts/bin/northpond/issued.py', both as ubuntu@dumbledore.edgefocus.net. Jenkins 'Cron Scripts - Dumbledore' is a DEPLOY job only (run_tests.sh + rsync to /efp/scripts + deploy-crontab.sh) - it cannot run an ad-hoc backfill, and the repo JenkinsClient is read-only by design.
+NOT HOST-BOUND: both scripts only touch S3 efp-raw and the shared MariaDB grafana-mariadb.c7attyszx6bg.us-east-2.rds.amazonaws.com (user default-writer from configs/default_passwords.json). Both are reachable from dpx - this session read those tables from dpx. /efp/scripts is just the deployed checkout. To run from dpx: repo .venv is missing termcolor (efp.terminal imports it); and grafana.py's add_perf_data() may fail on dpx if StatementLoanPositions needs datastore/EFS access, but it runs AFTER both process_model() calls so the model_requests/model_responses writes would already be committed. UNVERIFIED: whether the default-writer grant permits writes from dpx's IP (only reads were tested). dumbledore.edgefocus.net resolves to 172.31.33.180 and tcp/22 is open from dpx, so access is a key/account question not a network one - untested, the ssh attempt was blocked in-session.
