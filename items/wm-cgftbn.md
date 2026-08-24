@@ -2,7 +2,7 @@
 id: wm-cgftbn
 type: task
 title: Map FULLY_PAID_DATE for NorthPond after PR #6008
-status: active
+status: done
 priority: p2
 size: s
 people: [Abhijeet]
@@ -10,7 +10,7 @@ tags: [northpond, platform-data-owners]
 links: [relates:wm-j523sq, parent:wm-3sxcre]
 refs: [DEV-1516=https://linear.app/edge-focus/issue/DEV-1516/add-fully-paid-date-mapping-for-northpond]
 created: 2026-07-29T18:10:01Z
-updated: 2026-08-21T14:05:17Z
+updated: 2026-08-24T12:27:02Z
 source: claude-code
 ---
 
