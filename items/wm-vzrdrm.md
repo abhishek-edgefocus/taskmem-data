@@ -8,7 +8,7 @@ size: s
 tags: [openroad, datastores, data-quality]
 links: [relates:wm-4s2sad, parent:wm-jr5bup]
 created: 2026-08-24T12:27:48Z
-updated: 2026-08-24T12:28:10Z
+updated: 2026-08-24T12:39:35Z
 source: claude-code
 ---
 
@@ -39,3 +39,38 @@ original 08-06..08-11 UPDATED_AT and its wrong zeros. See [[wm-4s2sad]] for the 
 ## Provenance
 Read-only, 2026-08-24, PROD: freshness and COMMON_COUNT by date on
 GOLD.POSITIONS_COMPARISON_DAILY; UPDATED_AT by as-of month on SILVER.POSITIONS.
+
+## Log
+- 2026-08-24T12:39Z [claude-code] HOW TO ACTUALLY RUN IT, investigated 2026-08-24. The next-steps above were too optimistic: the prod job CANNOT do this repair, and we cannot write to prod at all.
+
+THE CODE (edgefocus/transformations/silver/comparison/compare_daily_summary.py, 691 lines):
+- Two modes. --backfill auto-detects (date, platform) pairs MISSING from the gold table, inside a
+  30-day window (DEFAULT_BACKFILL_DAYS=30). Manual mode (--platform/--start-date/--end-date --write)
+  does a DELETE+INSERT for exactly the dates given, so only manual mode can overwrite existing rows.
+- The prod Dagster asset positions_comparison_backfill calls run_backfill() only. openroad has zero
+  missing dates (154 rows, 2026-03-21..2026-08-21, no gaps), so the prod job will never revisit the
+  bad rows no matter how many times it ticks. Repairing prod REQUIRES a code change first — a
+  date-range/force path on the asset, or a run config it can take.
+- Destination database is NOT a flag: write_to_snowflake always writes to the env-derived database
+  (get_database_name(): ENVIRONMENT=dev + USERNAME=ABHISHEK -> DEV_ABHISHEK). --source-database only
+  chooses where silver.positions is READ from.
+
+WE CANNOT WRITE TO PROD, FULL STOP. SHOW GRANTS TO USER ABHISHEK returns exactly two roles:
+DB_CREATOR (owns the DEV_* databases) and PROD_READONLY. A DELETE against PROD.GOLD would be denied.
+So the prod half is not an approval question, it is a permissions wall — it needs the prod Dagster
+deployment's own role.
+
+THE DEV RUN IS FULLY OURS, no prod interaction (reads only):
+  cd <workspace>/efp
+  uv run python -m edgefocus.transformations.silver.comparison.compare_daily_summary \
+    --platform openroad --start-date 2026-03-21 --end-date 2026-08-09 \
+    --source-database PROD --warehouse COMPUTE_WH_XS_DEV --write
+Reads PROD.SILVER.POSITIONS (read-only) plus the datastore parquet from s3://efp-derived/datastores
+(read-only, AWS creds present on dpx), writes DEV_ABHISHEK.GOLD.POSITIONS_COMPARISON_DAILY. Pass
+--warehouse explicitly: the script defaults to COMPUTE_WH_XS_PROD but .env is COMPUTE_WH_XS_DEV.
+Feasibility confirmed: datastore index 1901 has all 142 dates in range (openroad 1120 dates total,
+2023-07-24..2026-08-16). The board reads DEV_ABHISHEK by default, so this alone makes it readable.
+
+BONUS the title implies: the datastore has openroad back to 2023-07-24 and silver back to
+2023-07-20, so genuine full history (~1120 dates) is computable into DEV_ABHISHEK — the table
+starting at 2026-03-21 is just where someone started, not a data limit. See [[wm-2994t7]] item 3.
