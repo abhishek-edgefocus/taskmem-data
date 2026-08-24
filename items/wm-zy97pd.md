@@ -8,7 +8,7 @@ size: s
 tags: [northpond]
 links: [parent:wm-3sxcre]
 created: 2026-08-21T21:56:59Z
-updated: 2026-08-24T21:05:18Z
+updated: 2026-08-24T21:05:55Z
 source: claude-code
 ---
 
@@ -25,3 +25,6 @@ Shape:
 Coverage by month: May 0/12 scored, June 0/28, July 125/140, August 519/519. The two clean-miss months are May and June 2026; July is partial.
 
 The question to settle: by design (a channel that bypasses EF decisioning) or a real submission gap? If by design, register it so coverage checks stop flagging it. The July partial overlaps the 2026-07-16→21 NorthPond API outage (wm-wvdxs4), but that outage cannot explain May and June.
+
+## Log
+- 2026-08-24T21:05Z [claude-code] Body premise corrected 2026-08-25 — see [[wm-b364vt]]. The 55 DO have a v2 model_request; only the model_response is missing. The original check keyed on a top-level PAYLOAD:application_uuid, which northpond model_requests do not have (it is nested at applicationInformation.applicationUuid). Title updated to match. Next question shifts from 'were they submitted' to 'why did the API not respond', i.e. the gateway/Experian failure surface.
