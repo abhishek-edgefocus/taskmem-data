@@ -10,7 +10,7 @@ tags: [northpond, edgex, oliv]
 links: [parent:wm-j523sq]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-08-14T19:56:08Z
-updated: 2026-08-14T19:56:16Z
+updated: 2026-08-24T12:28:18Z
 source: claude-code
 label: EDGEX deal readiness
 ---
@@ -54,3 +54,13 @@ do not read its step numbers as an order.
 - Sub-thread — ANL retarget / prediction chain: [[wm-btu784]]
 - DEV-1481 — https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction
 - Project: [[wm-j523sq]]
+
+## Log
+- 2026-08-24T12:28Z [claude-code] SWEEP 2026-08-24 — THE STORED NEXT STEP ON THIS ITEM IS STALE AND WOULD MISLEAD ANYONE PICKING IT UP. It reads 'Nelnet: get PR #6277 reviewed today — Monday's cutover is the only hard deadline in here.' PR #6277 is CLOSED, not open: it was superseded rather than merged, and the Nelnet work actually landed as PR #6323 (Ingest Oliv's Nelnet servicer feeds into silver, merged 2026-08-17) and PR #6324 (Merge the Nelnet loans into standardized positions and transfers, merged 2026-08-19). The Monday cutover it refers to was 2026-08-17 and has passed. Recorded here rather than rewritten into the body, since the body is a snapshot of what was true when written.
+
+CURRENT STATE OF THE THREE SUB-THREADS, as of this sweep:
+1. Nelnet cutover — landed. #6323 and #6324 both merged.
+2. Fund attribution — resolved and verified. All 9 business days of EDGEX purchase tapes (08-11..08-21, 265 loans) now read FUND=edgex20261NN in PROD.SILVER.NORTHPOND_STMT_PURCHASE_TAPES, including the original 29 that were written as efhyf before PR #6209 merged. The concern in the body that 'positions and transfers start disagreeing the moment the purchased loans appear' did not materialise — counts match at 265. Detail on wm-9dfnnt.
+3. Prediction chain — this is the one that has NOT moved and is now the live edge of this item. Still tracked on wm-btu784 and wm-3rsskm.
+
+So the umbrella's centre of gravity has shifted entirely to sub-thread 3; whoever picks this up next should start there, not at Nelnet.
