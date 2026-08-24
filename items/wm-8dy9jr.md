@@ -2,7 +2,7 @@
 id: wm-8dy9jr
 type: task
 title: Nelnet loan file is landing raw SSN/DOB/bank details into efp-raw (the NON-PII bucket)
-status: next
+status: dropped
 priority: p1
 size: s
 people: [Nate, Trishit]
