@@ -9,7 +9,7 @@ tags: [northpond, oncall, api-health]
 links: [parent:wm-3y3ckv, relates:wm-9kvv8c, parent:wm-d3qnqe]
 refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-07-29T13:43:02Z
-updated: 2026-08-22T07:43:05Z
+updated: 2026-08-24T12:27:55Z
 source: claude-code
 label: Experian 401 OAuth fix DEV-1478
 ---
@@ -102,3 +102,12 @@ dpx went unreachable mid-verification and came back 07:24:43Z; the uncommitted f
 PR body corrected twice over on claims that the CI failures exposed as overstated -- it now cites the full-suite figure rather than the earlier 595 from a two-directory run, and says mypy is clean over all of lib/efp rather than 'on the changed file'.
 
 STILL DRAFT ON PURPOSE. Green CI is not the gate; the gate is deploy-side evidence that the 401s actually stop. Thanks to #6425 carrying the status code that count is now directly measurable rather than inferred from response timing. Re-run the gateway scan on a post-deploy date and compare against the 2026-08-19 baseline on [[wm-rrvgdr]].
+- 2026-08-24T12:27Z [claude-code] PR STATE 2026-08-24 (sync sweep) — THE FIX IS DONE AND NOTHING IS MOVING IT. PR #6416 has all checks green (Run Tests SUCCESS, Select tests SUCCESS, integration skipped) and has been untouched since 2026-08-22 07:31Z. It is still isDraft=true with ZERO reviewers requested and zero assignees. mergeStateStatus=BLOCKED is branch protection waiting on an approving review, not a conflict — and no review can arrive while the PR is in draft.
+
+WHY THIS IS THE SHARPEST THING ON THE PLATE TODAY: the 2026-08-20 entry records Abhishek telling Sanjali he would implement DEV-1478 NEXT WEEK. Next week started today, 2026-08-24. The implementation is in fact already written, tested and green; the only thing between it and review is one click.
+
+COMPOUNDING FACT FOUND IN SLACK: in #platform-data-owners on 2026-08-21 02:26 IST Eshan explicitly volunteered — 'Mujhe review assign kar dena I can take a look into them later today!' — after Abhishek asked the channel to look at his three small PRs. Three days later no reviewer has been requested on #6416. A willing reviewer offered and the offer was never taken up; captured separately as its own micro-item.
+
+Independent corroboration that the bug is still live: the efp-agent production API health post for 2026-08-22 (#api-offers-daily, 2026-08-23 19:41 IST) shows northpond_loan_fl at 0% approval, $0 bid, 0 of 6.3K applications — 6.3K applications evaluated and not one approval. That is consistent with credit pulls failing at the auth layer and is worth a glance before deploying, though it is not by itself proof of the 401 path.
+
+NEXT ACTION IS ONE STEP: take #6416 out of draft and request Eshan (and/or Kushagra) as reviewer.
