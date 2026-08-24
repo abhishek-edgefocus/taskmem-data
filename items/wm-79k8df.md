@@ -9,7 +9,7 @@ tags: [northpond, edgex, predictions]
 links: [blocked-by:wm-qs96kd, parent:wm-3sxcre]
 refs: [DEV-1498=https://linear.app/edge-focus/issue/DEV-1498/setup-northpond-cmopbep-and-silvernorthpond-api-credit-attributes]
 created: 2026-07-20T15:25:55Z
-updated: 2026-08-24T21:04:20Z
+updated: 2026-08-24T21:15:21Z
 source: claude-code
 ---
 
@@ -108,3 +108,10 @@ CONSUMER-VISIBLE ASYMMETRY, flagged in the commit message. The exp at_orig rows 
 VERIFIED: transform SQL over PROD emits 1,294 rows (715 TU + 579 Exp), 0 duplicate (EFP_ID, AS_OF_DATE) keys, no null offer terms or payloads. CMOP+BEP run end to end for both channels against DEV_ABHISHEK writing to s3://efp-sandbox/abhishek/dev-1498/. ruff + mypy + dagster check_definitions clean; 38 prediction tests and 3,124 edgefocus/orchestration tests pass.
 
 NOT DONE, and it is ordered. (a) Push + open the PR as draft. (b) PROD BACKFILL of the credit-attributes slice must run BEFORE the predictions cron picks up the new channels -- the transform is stream-driven so a normal tick only sees new issuance dates, and the 1,294 historical loans need a --date all run of northpond_api_credit_attributes. Abhishek launches prod jobs himself. (c) Only after that will the 13:30 UTC curr_mod cron and the Sunday 14:00 best_est cron produce northpond rows.
+- 2026-08-24T21:15Z [claude-code] PR OPEN AS DRAFT 2026-08-25: https://github.com/edgefocus/efp/pull/6462 (branch pushed, base master, 9 files +667/-0, isDraft=true). Description written to ~/pr-style.md shape: what changed -> why two channels -> the non-standard join -> the deliberate _credit_pull_success non-filter -> why the preps are not empty -> Testing/Validation table -> verification SQL in a <details> block -> numbered Deployment/Setup with the backfill-before-crons order -> the at_orig/curr_mod CHANNEL asymmetry for consumers.
+
+PARITY EVIDENCE IS NOW RE-READABLE, not just a console log: persisted to DEV_ABHISHEK.SILVER.NP1498_CMOP_PARITY, 23,976 rows, one per (efp_id, period), columns SCORED_DEFAULT / LOGGED_DEFAULT / SCORED_PREPAY / LOGGED_PREPAY / MATCHES. Aggregate reads 19,296/19,296 matching on northpond_exp_loan_fl and 4,680/4,680 on northpond_loan_fl, MAX_ABS_DIFF 0.0 on both curves for both channels. Builder script dp:~/claude-ws/dev-1498/parity_table.py, screenshot-ready queries in dp:~/claude-ws/dev-1498/proof.sql.
+
+STAYS DRAFT ON TWO GAPS, both stated in the PR body: (1) DAG screenshot -- the asset graph changed, northpond_api_credit_attributes was added to ingest_api_output; (2) Snowflake screenshots with query-and-result in frame for the three assertions (parity, coverage, grain). The SQL is pasted in the body ready to run; only the captures are missing. Abhishek flips draft state himself -- 'gh pr ready 6462' once those are attached.
+
+Linear DEV-1498 left in Todo deliberately; ticket state is his to move.
