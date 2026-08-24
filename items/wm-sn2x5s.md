@@ -7,7 +7,7 @@ priority: p1
 tags: [openroad, data-quality, datastores]
 links: [relates:wm-jr5bup, relates:wm-skvqac]
 created: 2026-08-24T13:10:59Z
-updated: 2026-08-24T19:04:56Z
+updated: 2026-08-24T20:13:17Z
 source: claude-code
 ---
 
@@ -151,3 +151,40 @@ STILL OPEN AND DELIBERATELY NOT ACTED ON: silver.transactions_itd remains incomp
 exposure covers ~1.15M loan-date rows across 8 of 13 platforms with 6 trailing gaps open right
 now. Written up for Abhijeet at ~/itd-trailing-gap-note.md on the Mac. foursight's 73 dates look
 like a wider problem than a trailing edge and need their own look.
+- 2026-08-24T20:13Z [claude-code] TESTED IN DEV_ABHISHEK VIA LOCAL DAGSTER 2026-08-25, PR #6459 (draft, +14/-1).
+
+Stood up an isolated stack rather than using his: containers dagster-*-abhishek-itd, compose project
+openroaditd, ports 13060/15060, reusing the existing dagster-abhishek-*:latest images so no rebuild,
+mounting ~/claude-ws/openroad-itd/efp (master + the fix). Deliberately NOT ~/repos/efp, which his
+Dagster mounts: it carries another session's uncommitted Ramp work and its positions.py predates
+FULLY_PAID_DATE, so a run there would have written that column NULL into DEV_ABHISHEK. Confirmed the
+right baseline afterwards - FULLY_PAID_DATE is populated on 13 loans in the output.
+
+RESULT. DEV reproduced the defect exactly (2026-06-27..06-30 at zero across all 35 loans,
+transactions_itd missing those dates). After the fix, SUM(ITD_PAYMENT_PRINCIPAL_RECEIVED):
+  06-24  483,342.13 -> 483,342.13   unchanged (in grid, proves the no-op claim)
+  06-25  483,342.13 -> 483,342.13   unchanged
+  06-26  483,776.60 -> 483,776.60   unchanged
+  06-27       0.00  -> 483,776.60
+  06-28       0.00  -> 483,776.60
+  06-29       0.00  -> 483,776.60
+  06-30       0.00  -> 483,776.60
+Against the legacy datastore on those four dates: all five ITD legs 0.00%, COMMON_COUNT 35, versus
+97.14% on the three payment legs before. Zero monotonicity regressions.
+
+THE SHARP FINDING. asof repairs MISSING ITD dates, not WRONG values in rows that exist. The first
+DEV run fixed 06-27..06-30 and correctly left 07-02 onward reading the corrupted 268.43, because
+that is genuinely the most recent row - DEV still held the pre-rerun transactions_itd. Rebuilding
+transactions_itd in DEV first, then positions, gave the clean result. The two defects are
+independent and #6459 addresses only the trailing-gap one. Worth stating in review so nobody expects
+it to fix the other.
+
+TWO DEV-ENVIRONMENT GAPS FOUND, both unrelated to the fix but blocking any dev transform test:
+1. DEV_ABHISHEK.SILVER had ONE stream (RAMP_AI_TRANSACTIONS_STREAM) against PROD's 50. The run died
+   on 'DEV_ABHISHEK.SILVER.POSITIONS_STREAM does not exist'. Created the 8 the OpenRoad chain needs
+   with the same DDL prod uses (CREATE STREAM ... ON TABLE ...); OPS.CHANGED_KEYS already existed.
+   Anyone testing a transform in a cloned dev database will hit this first.
+2. orchestration/agent_env.py is in neither the June-built image nor the compose volume list, so the
+   code location fails to import definitions.py ('No module named orchestration.agent_env'). Mounted
+   it in my override. His own stack on :13053 probably has the same broken code location - worth
+   checking, since it would mean his local Dagster has been dead rather than idle.
