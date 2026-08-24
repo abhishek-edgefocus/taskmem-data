@@ -9,7 +9,7 @@ tags: [ai-billing, needs-reply]
 links: [parent:wm-gcdq6k]
 refs: [PR-6223=https://github.com/edgefocus/efp/pull/6223]
 created: 2026-08-12T13:30:57Z
-updated: 2026-08-24T12:27:55Z
+updated: 2026-08-24T15:00:12Z
 source: claude-code
 label: Ramp vendor exception
 ---
@@ -45,3 +45,14 @@ The OpenAI/Anthropic half of the promise is unaffected and still owed.
 (3) A SENTRY BOT FINDING LANDED 2026-08-22 08:25Z THAT DIRECTLY AFFECTS THIS ITEM'S ACTUAL EDIT, severity HIGH, on ingest_ramp_ai_transactions_utils.py:223-226: the vendor-name match is CASE-SENSITIVE. merchant_name comes straight off the Ramp API and is compared with a bare SQL IN against the vendor tuple, so 'OPENAI' or 'openai' would silently miss, while the memo-tag branch alongside it correctly uses LOWER(). This matters precisely because the promise to Brittney is to add 'OpenAI' and 'Anthropic' — adding two names to a case-sensitive matcher inherits the flaw for the two vendors she is waiting on. Fix is to LOWER() both sides, mirroring the memo-tag branch. A second, lower-severity bot note flags that an empty VENDORS_BOOKED_OUTSIDE_THE_EXPENSE_LEDGER tuple would render 'IN ()' and fail at runtime; latent only, since the tuple is never empty today.
 
 REVISED NEXT STEPS (superseding the ones in the body, which assumed a one-liner): (a) reply to Brittney now — she is owed an answer independent of the PR's state and it should not wait on a test-layer rewrite; (b) add OpenAI + Anthropic WITH case-insensitive matching, not without; (c) rewrite the integration tests to the md_tests/ pattern Frank named.
+- 2026-08-24T15:00Z [claude-code] PARTIAL PROGRESS TODAY, BUT THE ACTUAL PROMISE IS STILL UNKEPT. Re-checked PR #6223 and the group DM at 2026-08-24 14:5xZ.
+
+WHAT LANDED (3 commits, 12:59-13:06Z today): 'DEV-970: Match the vendor exception case-insensitively' — the Sentry HIGH I flagged in the entry above is FIXED. The diff now shows vendor.lower() over VENDORS_BOOKED_OUTSIDE_THE_EXPENSE_LEDGER and LOWER(PARSE_JSON(x.RAW_RESPONSE):merchant_name::STRING) in the SQL, matching the memo-tag branch. Also 'Drop a docstring reference to the deleted integration test' plus a master merge, which addresses Frank's CHANGES_REQUESTED by deleting the old-style integration test.
+
+WHAT DID NOT LAND — AND IT IS THIS ITEM'S WHOLE POINT: the constant is still VENDORS_BOOKED_OUTSIDE_THE_EXPENSE_LEDGER = ('Cursor',). OpenAI and Anthropic are NOT in it. Everything Brittney was promised on 2026-08-11 is still absent from the code. The silver lining is that the case-insensitivity fix makes adding them genuinely safe now, so this really is the one-line change the body describes — it just has not been made.
+
+BRITTNEY IS STILL UNANSWERED, NOW 13 DAYS. Re-read C0B6ZBZG61M today: the last message is still hers from 2026-08-12 18:39 IST. Nothing has been sent.
+
+PR IS STILL BLOCKED ON PROCESS, NOT CODE: #6223 remains reviewDecision=CHANGES_REQUESTED and mergeStateStatus=BLOCKED. Frank reviewed on 08-20 and has not re-reviewed; pushing fixes does not clear a changes-requested state on its own, so a re-review has to be requested explicitly.
+
+THREE THINGS LEFT, in the order that unblocks fastest: (1) add 'OpenAI' and 'Anthropic' to the tuple — one line, now case-safe; (2) re-request review from fjones1985; (3) reply to Brittney, which is independent of the PR and should not keep waiting on it.
