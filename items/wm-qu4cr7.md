@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [ERROR-1231=https://linear.app/edge-focus/issue/ERROR-1231/northpond-issued-missing-gateway-responses-15-issued-northpond-loans]
 created: 2026-07-14
-updated: 2026-08-24T18:23:29Z
+updated: 2026-08-24T20:09:05Z
 source: dpx-tasks #7
 label: NorthPond 15 missing loans
 ---
@@ -58,3 +58,12 @@ SUSPICIOUS TIMING worth checking: the model/gateway redeploy (build #62) complet
 
 OPEN: Sanjali Agrawal commented 2026-08-24T06:05Z '@abhishek any updates on this?' - Abhishek owes a reply today. Ticket is Backlog, priority High, assignee Abhishek Doshi, team Errors, label 'Data Ingestion'.
 STILL OPEN TECHNICALLY: 22 of the current 25 confirmed present in S3 gateway model_responses for 07-01..07-04 (reader validated by control, 553/553 on 07-05); 3 remain unexplained - worth testing whether those 3 are the corrupted-application_uuid pattern recurring rather than the load gap.
+- 2026-08-24T20:09Z [claude-code] CORRECTION 2026-08-25 (Abhishek spotted it): the 'Northpond Billing' Grafana dashboard (uid b213468c-71f8-4326-802c-640f2bd69fe8) is NOT affected by the MySQL gap. All 3 panels use the Snowflake datasource (michelin-snowflake-datasource, uid bqzSrsZvz) and read PROD.bronze.api_events (event_type='model_requests') + silver.northpond_stmt_issuance. My earlier '4 refs to model_requests' was a naive string match on the dashboard JSON - it matched the Snowflake event_type filter, not the MySQL table. Its header panel literally says 'Computed from Snowflake'.
+
+WHAT STILL STANDS: the actual invoice is NOT the dashboard. Verified against origin/master (99c70e725, my checkout 0984f1a4f was behind): bin/northpond/generate_monthly_fee.py line 46 still DATABASE = DB('stats-efp','northpond') = MySQL, line 86 direct_fee = direct_apps * 2, line 127 non_direct_funded_amt * 0.005. It is the script, reading MySQL, that POSTs to the Zapier webhook -> QuickBooks. So the ~$360-450 July under-billing finding is unchanged.
+
+USEFUL CONSEQUENCE: the Billing dashboard (Snowflake, complete) and the invoice (MySQL, 3 days missing) will DISAGREE for July 2026. That divergence is the cleanest available proof of the under-billing - screenshot the dashboard's July figure against what was actually invoiced.
+
+SEPARATE DISCREPANCY worth a look: the dashboard's header still advertises a 'Credit Reports: total_apps x $0.30' line item, but PR #5832 (OPS-36, nakula-efp, merged 2026-07-20) 'Remove NorthPond credit pull fees from monthly bill' removed that fee from generate_monthly_fee.py. So the dashboard computes a line item that is no longer billed - dashboard and script have drifted apart on the fee schedule, independent of this ticket.
+
+CONFIRMED AFFECTED (re-verified datasources): 'NorthPond FL 2.0' (uid qWXsxeWDk) is genuinely MySQL - 36 panel targets on mysql datasource Uih1s0PSk, 4 on mysql whibt6c7z, only 1 panel on Snowflake. That dashboard does have the 3-day hole.
