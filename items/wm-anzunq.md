@@ -2,9 +2,12 @@
 id: wm-anzunq
 type: task
 title: Re-authorize Linear MCP — no Linear tools load in Claude Code sessions
-status: open
+status: next
+priority: p2
+size: xs
+tags: [mcp, tooling]
 created: 2026-08-24T18:19:21Z
-updated: 2026-08-24T18:19:21Z
+updated: 2026-08-24T18:19:25Z
 source: claude-code
 ---
 
