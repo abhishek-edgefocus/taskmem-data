@@ -8,7 +8,7 @@ size: s
 tags: [northpond, notes]
 links: [parent:wm-j523sq]
 created: 2026-08-17T11:18:19Z
-updated: 2026-08-17T11:18:24Z
+updated: 2026-08-24T21:08:32Z
 source: claude-code
 ---
 
@@ -32,3 +32,6 @@ All of this is listed in `notes/areas/efp/platforms/northpond/meta.md`:
 Standing rule, now in `~/.claude/CLAUDE.md` and `dp:~/CLAUDE.md`: after work in a
 platform, refresh what you touched and stamp that platform's `meta.md` in the
 same edit.
+
+## Log
+- 2026-08-24T21:08Z [claude-code] 2026-08-25: added finding 11 to ~/notes/areas/efp/platforms/northpond/findings.md and stamped meta.md in the same edit (freshness row, known-stale item 4, provenance, change log). Covers NorthPond's two bureau generations behind the single northpond_loan_fl gateway channel, the nested-vs-flat application_uuid (request vs response) that caused the [[wm-zy97pd]] mis-diagnosis, the _credit_pull_success semantics, and the TurndownPrep pin-vs-NORTHPOND_MAP collision. Also corrected the README index, which said nine findings with ten present. api_events facts are prod-true; the DEV-1498 half is explicitly marked as an unpushed branch.
