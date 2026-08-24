@@ -6,6 +6,7 @@ status: open
 priority: p1
 size: s
 tags: [openroad, datastores, data-quality]
+links: [relates:wm-4s2sad]
 created: 2026-08-24T12:27:48Z
 updated: 2026-08-24T12:28:10Z
 source: claude-code
