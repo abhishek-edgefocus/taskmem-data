@@ -2,10 +2,16 @@
 id: wm-f7egzv
 type: followup
 title: Request Eshan as reviewer on the open PRs he offered to review
-status: open
+status: next
+priority: p1
+size: xs
+due: 2026-08-24
+people: [Eshan]
+tags: [northpond, needs-reply]
 created: 2026-08-24T12:28:37Z
-updated: 2026-08-24T12:28:37Z
+updated: 2026-08-24T12:29:31Z
 source: claude-code
+label: Eshan reviewer assignment
 ---
 
 Eshan volunteered to review Abhishek's PRs and the offer was never taken up.
