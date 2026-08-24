@@ -5,7 +5,7 @@ title: Set a MonitoringSchedule on northpond_purchase_tape_v0_csv now the cadenc
 status: inbox
 size: s
 tags: [northpond, edgex, monitoring]
-links: [relates:wm-9dfnnt]
+links: [relates:wm-9dfnnt, relates:wm-dfec2v]
 created: 2026-08-24T12:29:19Z
 updated: 2026-08-24T12:29:32Z
 source: claude-code
