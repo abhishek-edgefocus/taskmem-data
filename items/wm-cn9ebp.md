@@ -9,7 +9,7 @@ tags: [ai-billing, needs-reply]
 links: [parent:wm-gcdq6k]
 refs: [PR-6223=https://github.com/edgefocus/efp/pull/6223]
 created: 2026-08-12T13:30:57Z
-updated: 2026-08-12T13:32:07Z
+updated: 2026-08-24T12:27:55Z
 source: claude-code
 label: Ramp vendor exception
 ---
@@ -36,3 +36,12 @@ Either way Brittney is owed an answer, since she acted on his "I can do that".
 - 2026-08-12T13:32Z [claude-code] ANSWERED WITHIN THE HOUR, AND THE ANSWER IS 'KEEP THE VENDOR LIST'. This item was written speculating that the #efp-ai memo tag might make the vendor exception unnecessary; a parallel session ran the probe against the live Ramp API at 13:19Z and settled it — see the full numbers on [[wm-gcdq6k]]. Summary of what changes here: the tag is real and parses (19 transactions carry it, all dated 2026-01-06..2026-02-12), and 'GL 5510 OR tag' keeps 225 rows where 5510 alone keeps 206, so the tag recovers exactly the 18-charge Jan-Feb backlog Brittney could not re-code. But it does NOT cover ongoing spend: 8 Cursor charges since 2026-03 are missed by both rules, including two in August and one that landed today (2026-08-12, $763.18). Brittney tagged the history, not the future.
 SO STEP 2 BELOW IS SUPERSEDED — do not tell Brittney the vendor list is unnecessary. The vendor exception in PR #6223 is still required for ongoing Cursor charges, and the memo tag is an additional branch alongside the GL rule, never a replacement (tag-only would drop 206 charges). What is still genuinely open for Brittney is whether Cursor can be auto-memo'd going forward, which hinges on the unanswered 'Use memo for' dropdown-scope question.
 The OpenAI/Anthropic half of the promise is unaffected and still owed.
+- 2026-08-24T12:27Z [claude-code] SWEEP 2026-08-24 — BRITTNEY HAS NOW BEEN WAITING 12 DAYS, AND THE PR THIS SHIPS IN HAS ACQUIRED A REAL BLOCKER.
+
+(1) THE REPLY IS STILL UNSENT. Read the full group DM C0B6ZBZG61M today: the last message in the channel is Brittney's, 2026-08-12 18:39 IST — 'the memos have been updated. not sure they will stick but they are in Ramp currently'. Abhishek has not posted since. So she acted on his 'Oh ok - I can do that', then did the extra memo work Frank suggested, and has heard nothing back for twelve days. The 2026-08-12 entry below settled WHAT to tell her (keep the vendor list; the memo tag is an additional branch, never a replacement, because tag-only would drop 206 charges and the tag covers only the Jan-Feb backlog, missing 8 Cursor charges since 2026-03). That answer has simply never been delivered.
+
+(2) PR #6223 IS CHANGES_REQUESTED AND THE REASON IS CONCRETE. Frank Jones reviewed on 2026-08-20 13:04Z with the entire body being: 'This is not how we're doing integration tests anymore. Take a look at any file in edgefocus/integration_tests/md_tests/'. That is a rewrite of the test layer, not a nit — so this item is no longer the one-line change plus test cases the body describes. The PR is out of draft and has kushagrashukla2904 and nakula-efp requested.
+
+(3) A SENTRY BOT FINDING LANDED 2026-08-22 08:25Z THAT DIRECTLY AFFECTS THIS ITEM'S ACTUAL EDIT, severity HIGH, on ingest_ramp_ai_transactions_utils.py:223-226: the vendor-name match is CASE-SENSITIVE. merchant_name comes straight off the Ramp API and is compared with a bare SQL IN against the vendor tuple, so 'OPENAI' or 'openai' would silently miss, while the memo-tag branch alongside it correctly uses LOWER(). This matters precisely because the promise to Brittney is to add 'OpenAI' and 'Anthropic' — adding two names to a case-sensitive matcher inherits the flaw for the two vendors she is waiting on. Fix is to LOWER() both sides, mirroring the memo-tag branch. A second, lower-severity bot note flags that an empty VENDORS_BOOKED_OUTSIDE_THE_EXPENSE_LEDGER tuple would render 'IN ()' and fail at runtime; latent only, since the tuple is never empty today.
+
+REVISED NEXT STEPS (superseding the ones in the body, which assumed a one-liner): (a) reply to Brittney now — she is owed an answer independent of the PR's state and it should not wait on a test-layer rewrite; (b) add OpenAI + Anthropic WITH case-insensitive matching, not without; (c) rewrite the integration tests to the md_tests/ pattern Frank named.
