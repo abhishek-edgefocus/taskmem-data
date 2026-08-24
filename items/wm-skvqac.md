@@ -8,7 +8,7 @@ people: [Frank]
 tags: [openroad, datastores, data-quality]
 links: [follows:wm-hecgua, parent:wm-jr5bup]
 created: 2026-08-14T14:55:14Z
-updated: 2026-08-24T15:00:12Z
+updated: 2026-08-24T20:47:23Z
 source: claude-code
 effort: <1h
 label: openroad_verified.py
@@ -89,3 +89,29 @@ in PR #6040, and northpond's own registered columns read NULL in PROD gold today
 - 2026-08-24T15:00Z [claude-code] PR IS NOW UP — state moved past the 13:26Z entry. PR #6454 'DEV-1638: Register OpenRoad verified positions differences' was created 2026-08-24 14:48Z, so commit 78b28d923 is no longer sitting unpushed on dpx. Currently isDraft=true; CI partially reported ('Select tests' SUCCESS, 'Run Tests' still running, integration skipped) at time of check.
 
 Since Abhishek named this his #1 for today, the thing to watch is that it does not repeat the #6416 pattern — a green PR parked in draft with no reviewer requested. Once 'Run Tests' goes green the next actions are: take it out of draft, and request a reviewer (see wm-f7egzv — Eshan offered on 08-21 and still has not been assigned anything).
+- 2026-08-24T20:47Z [claude-code] FINAL 123-COLUMN ACCOUNTING 2026-08-25, run off DEV_ABHISHEK with the ITD fix applied (PR #6459), materialized through the local dpx Dagster, compared over 51 dates 2026-06-27..2026-08-16. COMMON_COUNT 35 on every date, zero extra loans either side, so every figure is a value difference on a fully matched book.
+
+  EQUAL       90 columns identical on all 51 dates
+  BETTER      26 - the 22 registered silver-richer/silver-correct columns, plus MGR_MARK_DQ_BUCKET
+                   and the three ITD payment legs (all three now explained, see below)
+  AMBIGUOUS    2 - INTEREST_AT_PURCHASE (1 loan, accrual-day convention, silver reads the real
+                   purchase transfer event) and PRINCIPAL_BAND (1 zero-balance loan, banding of 0)
+  WORSE        5 - IS_JOINT, plus ANL / IRR / ANL_BAND / IRR_BAND
+
+THE FIVE WORSE COLUMNS COME FROM EXACTLY TWO CAUSES, both documented, neither registrable without
+an explicit decision:
+1. openroad_5462736 - no model_responses event in bronze.api_events for its offer, and no
+   UNIQUE_OFFER_KEY on its purchase-tape row, so silver builds no prediction. One loan of 35 gives
+   the 2.86% on anl/irr/anl_band/irr_band. It is also the missing 1 in the 34/35 coverage on
+   credit_score, application_id, income and ef_score - one loan explains all of it. Fixing it needs
+   the model_requests/model_responses statement files ([[wm-bpmxnb]], DEV-1396).
+2. IS_JOINT - 2 loans, rule not reproducible from bronze ([[wm-cv963k]]).
+
+THE ITD FIX LANDED, measured end to end: the payment legs fell from 97.14% on 64 dates to a max of
+5.71% on 6 dates, and BOTH recovery legs are now identical on every date. The 6 remaining dates are
+2026-07-03..07-06 and 07-17..07-18, and they are no longer unexplained - see [[wm-sn2x5s]].
+
+RECOMMENDATION ON THE THREE ITD PAYMENT LEGS: leave them UNREGISTERED despite now being explained
+and despite silver being the more correct side. Registering blanks all three series on the board,
+and that is precisely the signal that surfaced the trailing-gap defect in the first place.
+Explained-and-visible beats suppressed here.
