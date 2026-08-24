@@ -6,8 +6,9 @@ status: next
 priority: normal
 size: s
 tags: [northpond, predictions]
+links: [blocked-by:wm-79k8df]
 created: 2026-08-24T21:06:38Z
-updated: 2026-08-24T21:06:38Z
+updated: 2026-08-24T21:06:56Z
 source: claude-code
 ---
 
