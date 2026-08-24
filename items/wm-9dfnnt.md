@@ -10,7 +10,7 @@ people: [Nate, Trishit]
 tags: [northpond, edgex]
 links: [relates:wm-jewha5, relates:wm-n7usn7, relates:wm-tvjjgw, parent:wm-4sxy5d]
 created: 2026-07-31T14:19:39Z
-updated: 2026-08-24T12:27:23Z
+updated: 2026-08-24T13:30:39Z
 source: claude-code
 ---
 
@@ -65,3 +65,13 @@ FUND ATTRIBUTION IS FIXED — this closes the concern raised in the 2026-08-12 e
 THE POSITIONS QUESTION FROM ENTRY (2) IS EFFECTIVELY ANSWERED. That entry flagged that 0 of the first 29 loans had reached silver.positions and said to re-check in a few days. The 265 cumulative purchased loans match exactly the 265 edgex20261NN loans wm-39q8fh verified in silver.positions at as_of 2026-08-21. Stated honestly: that is a count-level match across two tables, not the loan-level join — I attempted the direct join today and it failed on a column-name mismatch (NORTHPOND_STMT_POSITIONS has no LOAN_ID), and the retry timed out before returning. The counts agreeing exactly at 265 is strong evidence the feed is flowing end to end, but a loan-level join is what would make it airtight.
 
 WHAT IS ACTUALLY STILL OPEN on this item: only entry (3) — Abhishek asked Nate for the issuance file covering the 29 purchased loans and Nate never provided it; the group DM C0BJ1M304BU has had no messages at all since 2026-08-08, so that ask was never re-sent. Checklist points 1-5 in the body now all pass. Point 6 (legacy datastore starvation) is tracked separately on wm-tvjjgw. This item looks closable once Abhishek decides whether he still wants the issuance cross-check.
+- 2026-08-24T13:30Z [claude-code] LOAN-LEVEL JOIN NOW COMPLETED 2026-08-24 — the gap left in the entry above is closed, and the answer is clean.
+
+ALL 265 PURCHASED LOANS ARE ON THE SERVICING TAPE. Joined PROD.SILVER.NORTHPOND_STMT_PURCHASE_TAPES (AS_OF_DATE >= 2026-08-01, 265 distinct LOAN_ID) against PROD.SILVER.NORTHPOND_STMT_NELNET_POSITIONS on LOAN_EXTERNAL_REFERENCE_ID: 265 of 265 matched. They are also all present in PROD.SILVER.POSITIONS under PLATFORM=northpond FUND=edgex20261NN — 265 distinct EFP_ID, 2,052 rows, AS_OF_DATE 2026-08-11..2026-08-23. So entry (2) from 2026-08-12 ('0 of the 29 appear in positions, re-check in a few days') is fully resolved: they arrived, exactly as Nate described.
+
+METHOD NOTE, because it nearly produced a false alarm and the next person will hit the same trap. My first join used PROD.SILVER.NORTHPOND_STMT_POSITIONS and returned 0 of 265 — which looks like total starvation but is simply the WRONG TABLE. That is the legacy FCC feed. NorthPond now has two servicing tapes and the new Oliv loans land on the Nelnet one:
+  - NORTHPOND_STMT_POSITIONS       = legacy FCC. 715 loans, max id OLV12563276, last as_of 2026-08-24.
+  - NORTHPOND_STMT_NELNET_POSITIONS = Nelnet. 8,891 rows, last as_of 2026-08-24. Carries every EDGEX loan.
+Join keys differ too: purchase tape LOAN_ID and Nelnet LOAN_EXTERNAL_REFERENCE_ID are both OLV-prefixed, FCC uses LOANNUMBER, and Nelnet's own LOAN_NUMBER is a different 12-digit servicer id that does NOT join to anything on the purchase tape. Use LOAN_EXTERNAL_REFERENCE_ID.
+
+With this, checklist points 1-5 in the body are confirmed at loan level rather than by count agreement. Point 6 is the only thing left and it belongs to wm-tvjjgw, where I have logged what this join shows.
