@@ -10,7 +10,7 @@ people: [Eshan]
 tags: [northpond, needs-reply]
 links: [relates:wm-u52nd6, relates:wm-gp7g82]
 created: 2026-08-24T12:28:37Z
-updated: 2026-08-24T12:29:57Z
+updated: 2026-08-24T15:00:12Z
 source: claude-code
 label: Eshan reviewer assignment
 ---
@@ -50,3 +50,6 @@ not surface it for review. Take it out of draft first, then request.
 
 ## Log
 - 2026-08-24T12:29Z [claude-code] Captured by the 2026-08-24 sync sweep from the #platform-data-owners thread of 2026-08-21. Eshan's offer was explicit and time-bound ('later today'); three days on, gh reports zero reviewRequests on #6416 and #6131. Filed as needs-reply because a named person is waiting on Abhishek, not because the work is large.
+- 2026-08-24T15:00Z [claude-code] STILL UNDONE AS OF 2026-08-24 14:5xZ, and the backlog it applies to has grown. #6416 is unchanged since 08-22 — still draft, still zero reviewers, CI still green. Abhishek's new PR #6454 (DEV-1638, his stated #1 for today) was raised at 14:48Z and is ALSO draft with no reviewer.
+
+Full picture of his open PRs today: 6454 (draft, new), 6416 (draft, green, blocked only by draft), 6223 (not draft, CHANGES_REQUESTED, needs a re-review request), 6131 (draft, 24 days stale, needs a base retarget - wm-gp7g82), 5967 (draft since 2026-07-20, tracked on wm-7mtzka), 5925 (draft since 2026-07-17, tracked on wm-unb6pr). Four of the six are drafts that no one can act on, and one willing reviewer has been waiting three days to be assigned.
