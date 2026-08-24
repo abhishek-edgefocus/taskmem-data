@@ -9,7 +9,7 @@ tags: [northpond, oncall, api-health]
 links: [parent:wm-3y3ckv, relates:wm-9kvv8c, parent:wm-d3qnqe]
 refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-07-29T13:43:02Z
-updated: 2026-08-24T12:27:55Z
+updated: 2026-08-24T15:50:46Z
 source: claude-code
 label: Experian 401 OAuth fix DEV-1478
 ---
@@ -111,3 +111,27 @@ COMPOUNDING FACT FOUND IN SLACK: in #platform-data-owners on 2026-08-21 02:26 IS
 Independent corroboration that the bug is still live: the efp-agent production API health post for 2026-08-22 (#api-offers-daily, 2026-08-23 19:41 IST) shows northpond_loan_fl at 0% approval, $0 bid, 0 of 6.3K applications — 6.3K applications evaluated and not one approval. That is consistent with credit pulls failing at the auth layer and is worth a glance before deploying, though it is not by itself proof of the 401 path.
 
 NEXT ACTION IS ONE STEP: take #6416 out of draft and request Eshan (and/or Kushagra) as reviewer.
+- 2026-08-24T15:50Z [claude-code] 2026-08-24 ROOT CAUSE MEASURED (read-only investigation; PR/branch untouched). The 401 is a CLIENT CLOCK LAG, not a shared/stale token being replayed.
+
+MECHANISM: handler.py sets `self._token_expires_at = time.time() + expires_in` AFTER the OAuth POST returns, but Experian's 1800s runs from when IT issued the token. The client therefore believes every token lives ~0.65s longer than it does. Any credit-report POST landing in that final sliver uses a token Experian has already retired -> 401. The client's own expiry check then trips on the very next request, it mints a fresh token, and service resumes. Failure window per token = exactly the OAuth round-trip time.
+
+EVIDENCE (CloudWatch Logs Insights, northpond_loan_fl/production/gateway, 2026-04-15..08-24, 200,930 Experian POSTs: 200455x200, 383x400, 71x401, 21x500):
+1. Dead-window test, Aug 17-22: predicted window = [mint_request+1800, mint_response+1800]. Those windows cover 0.280% of wall clock. 23 of 23 401s fall inside one. 0 of 102 400s do. 
+2. 401 inter-arrival times cluster at integer multiples of 1800s: Monte-Carlo p<0.0001. 400s show nothing (10% vs 7% chance).
+3. 401s sit immediately BEFORE a mint (median 16s to next mint, 24% within 5s) and NOT after one (6/62 within 60s = baseline). Empirical null from 2,588 successful pulls: 0.59% within 5s. ~41x enrichment.
+4. Rate prediction: implied dead window = 1800 * 401_rate = 0.64s. Measured OAuth round-trip = 0.649s median / 0.672s mean (n=723). Predicted rate 0.0373% vs observed 0.0353%.
+5. Rate is FLAT across a 30x volume swing (0.031%-0.045%); implied window 0.55-0.81s in every regime. Confirms the 2026-08-21 "flat rate, not escalating" finding by an independent route.
+
+FALSIFIES THE PR'S STATED RATIONALE: "a token retired server-side gets replayed by that worker until its local expiry elapses; every request routed to that worker 401s in ~0.1s until then" is not what happens. 401s are isolated singletons - the very next request always succeeds. A replayed-dead-token model predicts runs of ~100 consecutive 401s per event; zero such runs exist in 131 days.
+
+THE FIX STILL WORKS, but for a different reason than the PR says: it is `_TOKEN_EXPIRY_MARGIN_SECONDS = 60` that does the work (0.65s dead window sits far inside a 60s margin), NOT the retry-on-401. The retry is a safety net. Anyone later "simplifying" the PR by dropping the margin and keeping only the retry would still recover but would burn a second Experian call on every occurrence instead of preventing it. Worth correcting the PR body before review.
+
+RULED OUT with evidence: deploys/container restarts (0 of 71 401s within 1h of a container start; median container age at failure 456h); container identity (401s spread over 6 containers in proportion to lifetime x volume); scaling (ASG ECS-northpond_loan_fl-production is min1/max2/desired1, one t3a.medium, one container at a time since 2026-04-27); time of day (tracks volume shape); request bursts/concurrency (bins containing a 401 average 12.2 pulls/min vs 8.4 overall, but the n-weighted null predicts 12.7 - fully explained by exposure).
+
+TWO CORRECTIONS TO THE INVESTIGATION PREMISE:
+- NOT 2 concurrent containers. One container at a time since 2026-04-27 (two concurrent before that). The "2 log streams" in the sample is the 2026-08-18 deploy handover: 37e223ea ran 07-13..08-18 14:48, c21cd773 started 08-18 14:18, overlapping ~30 min.
+- There are THREE token-holding objects per container, not two: 2 gunicorn sync workers x the scoring ExperianCreditPull, PLUS the cashflow instances on a separate Experian account (~132 requests/day, irregular mints). That third lattice is what corrupts any BACKWARD-looking token-age calculation. The earlier "median token age ~475s, only 1 of 57 near expiry" result is an artifact: the empirical null median for time-since-previous-mint is 445s, i.e. that number was the population baseline, not a measurement of the failing token. Looking FORWARD to the next mint is the correct attribution-free measurement.
+
+The 21x 500s are unrelated: two tight Experian-side clusters (2026-05-08 00:52-01:12, 2026-08-18 19:20-21:18), not deploy-adjacent.
+
+Grafana note: the dashboard efp-production-traffic/production-traffic-endpoint-lb is on grafana.sterling.edgefocuspartners.com, which rejects the ~/.grafana.env creds (those are for grafana.edgefocuspartners.com, which has no such dashboard). Went to the underlying source instead - it is an ALB target-group view; all of the above came from CloudWatch directly.
