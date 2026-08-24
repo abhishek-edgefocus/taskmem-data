@@ -8,7 +8,7 @@ size: xs
 due: 2026-08-24
 people: [Eshan]
 tags: [northpond, needs-reply]
-links: [relates:wm-u52nd6]
+links: [relates:wm-u52nd6, relates:wm-gp7g82]
 created: 2026-08-24T12:28:37Z
 updated: 2026-08-24T12:29:57Z
 source: claude-code
