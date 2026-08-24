@@ -9,7 +9,7 @@ tags: [openroad, datastores, dagster]
 links: [parent:wm-su6q4d, relates:wm-hjbt5a]
 refs: [DEV-1486=https://linear.app/edge-focus/issue/DEV-1486/deprecate-openroad-datastores]
 created: 2026-08-14T14:56:46Z
-updated: 2026-08-21T20:52:55Z
+updated: 2026-08-24T12:27:14Z
 source: claude-code
 label: OpenRoad revive + deprecate
 ---
@@ -103,3 +103,6 @@ ALSO OPEN, not owned by any item: GOLD.POSITIONS_COMPARISON_DAILY has not run fo
 2026-08-06..08-11, so the openroad board still reads 141/142 zero-common and the honest completion
 test for this revival cannot be evaluated yet. Tracked at [[wm-4s2sad]].
 - 2026-08-21T20:52Z [claude-code] 2026-08-22: Abhishek confirmed openroad_statement_sensor is ENABLED in prod. That closes the operational root cause behind wm-85nuv4 — the chain was previously advancing only on manual runs (statements_openroad had exactly one run ever, 2026-07-07, plus yesterday's 0790581c). Silver should now track bronze without hand-launched runs; watch the first few ticks per wm-hjbt5a (three other platform jobs fail on every sensor run). ERROR-1711 is now safe to close.
+- 2026-08-24T12:27Z [claude-code] STATUS CHANGE found 2026-08-24 while diagnosing the OpenRoad SF-vs-Datastore Grafana board (uid openroad-sfvsds-fullhist). THE SILVER CHAIN IS ALIVE. PROD.SILVER.POSITIONS for openroad now covers 2023-07-20..2026-08-24, 1132 as-of dates, 35 loans/day with no gaps in Jun/Jul/Aug. UPDATED_AT shows how: every as-of date in June and July, and 08-01..08-21, was written in one shot at 2026-08-22 00:42:32 PT (the revival + backfill), and daily writes have continued since (latest 2026-08-24 03:49 PT). So step 1 of this sequence is done in prod, which unblocks steps 2 and 3.
+
+WHAT IS STILL WRONG is downstream, not in silver: PROD.GOLD.POSITIONS_COMPARISON_DAILY for openroad only shows COMMON_COUNT=35 from as_of 2026-08-10 onward. Every date from 2026-03-21 to 2026-08-09 is still frozen at EXTRA_IN_DATASTORE=35 / COMMON_COUNT=0 with all mismatch pct columns NULL, because those rows were computed while silver was dead and the job never revisits them — the 2026-08-22 15:56 run rewrote only 08-10..08-19, i.e. a ~10-day rolling window. The comparison needs an explicit backfill over 2026-03-21..2026-08-09 before any board or verified-differences work reads it. See [[wm-4s2sad]].
