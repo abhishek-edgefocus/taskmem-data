@@ -11,6 +11,7 @@ links: [parent:wm-r45vp3, blocks:wm-399bwq]
 created: 2026-08-24T13:35:45Z
 updated: 2026-08-25T14:20:05Z
 source: meeting-2026-08-18
+next: Judge on screen whether Spend per User reads well now Cursor is back in -- Frank is ~62% of it (team card sits on him), so his bar may dominate; fallback is a top-10 user cap. Then: totals on top of bars (decide labelled total bar vs per-segment labels); review item 1 'AI usage' dashboard. Housekeeping: revoke GRAFANA_READER on DEV_ABHISHEK.SILVER (unused post-prod switch); chase Kabeer re 403 on Agents Usage dashboard e907d00b.
 ---
 
 Feedback from the 2026-08-18 "AI Spend Monitoring Dashboard - Review" call with Frank and Scott.
