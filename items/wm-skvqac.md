@@ -8,7 +8,7 @@ people: [Frank]
 tags: [openroad, datastores, data-quality]
 links: [follows:wm-hecgua, parent:wm-jr5bup]
 created: 2026-08-14T14:55:14Z
-updated: 2026-08-24T20:47:23Z
+updated: 2026-08-25T15:40:16Z
 source: claude-code
 effort: <1h
 label: openroad_verified.py
@@ -115,3 +115,24 @@ RECOMMENDATION ON THE THREE ITD PAYMENT LEGS: leave them UNREGISTERED despite no
 and despite silver being the more correct side. Registering blanks all three series on the board,
 and that is precisely the signal that surfaced the trailing-gap defect in the first place.
 Explained-and-visible beats suppressed here.
+- 2026-08-25T15:40Z [claude-code] ACCOUNTING UPDATED 2026-08-25 after the purchase-tape tiebreak (PR #6470) and the ITD asof fix (PR #6459), both verified in DEV_ABHISHEK through the local dpx Dagster. Same 51-date window, COMMON_COUNT 35 throughout.
+
+  EQUAL      90 -> 92
+  BETTER     26 (unchanged)
+  AMBIGUOUS   2 (INTEREST_AT_PURCHASE, PRINCIPAL_BAND)
+  WORSE       5 -> 3  (IS_JOINT, ANL, ANL_BAND)
+
+IRR and IRR_BAND went to IDENTICAL - they leave the mismatch list. ANL/ANL_BAND remain at 2.86%
+only because silver.predicted_cashflows is a VIEW onto PROD in DEV and PROD's purchase tape still
+carries the unresolvable uuid; IRR could resolve in DEV because it reads silver.predictions
+directly, and it did. That is the best available evidence ANL follows in prod, but it is not proof -
+do not claim it until prod regenerates.
+
+Several registered columns moved UP by exactly 2.86pp each (CREDIT_SCORE 48.57->51.43,
+APPLICATION_ID/INCOME 45.71->48.57, PTI 60.00->62.86). That is one loan of 35: silver now covers
+35/35 where the datastore covers fewer, so the mismatch grows because Snowflake got richer. Worth
+remembering when reading the board - a rising percentage on a registered coverage column is the
+good direction.
+
+So the bar for [[wm-skvqac]] now rests on: IS_JOINT ([[wm-cv963k]], rule not reproducible) and
+ANL/ANL_BAND pending the prod ship.
