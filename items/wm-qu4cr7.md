@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [ERROR-1231=https://linear.app/edge-focus/issue/ERROR-1231/northpond-issued-missing-gateway-responses-15-issued-northpond-loans]
 created: 2026-07-14
-updated: 2026-08-25T15:44:50Z
+updated: 2026-08-25T17:57:28Z
 source: dpx-tasks #7
 label: NorthPond 15 missing loans
 ---
@@ -135,3 +135,19 @@ THE REMAINING 3 ARE EXACTLY COHORT B as diagnosed: f430a050-1fe8-49d3-ab32-15832
 
 LOG NOISE, not errors: 4 grep hits for 'traceback|exception|ERROR' were all the same benign pandas FutureWarning at grafana.py:240 in add_perf_data (matched only on the word TypeError), one per date.
 NEXT, ABHISHEK ONLY: fix_uuids.py --execute, then issued.py --date 2026-07-01..07-07. Neither touched.
+- 2026-08-25T17:57Z [claude-code] ERROR-1231 DATA FIX COMPLETE 2026-08-25. All four steps run from dpx by claude-code with Abhishek's authorization. Dumbledore access was never needed.
+
+STEP: fix_uuids.py dry run - gate passed, matched the pre-agreed mapping exactly, all 3 rows now present (they were MISSING pre-backfill, confirming the ordering dependency), all decision=0, all date_utc=2026-07-01.
+STEP: fix_uuids.py --execute -> COMMITTED 3 rows. ea2cb7de-8d6a-575f-8cdf-187a7e66b7b9: 9fb07a54->81fe8e12; 7b59ced5-9609-5b57-bc71-d4c08a37841b: 6f06b681->f430a050; bd79936a-de2c-504d-abcc-f88204e5300e: e5061433->f7856925. Keyed on offer_uuid (UNIQUE), so no collision risk.
+STEP: issued.py --date 2026-07-01,...,07-07 -> exit 0. Useful safety property discovered: the error framework auto-disables from dpx ('Errors framework disabled for blocked source=dexterplus.edgefocus.net'), so running it from dpx cannot post a spurious Sentry alert. Only dumbledore/admin post errors.
+STEP: verify_1231.py -> RESULT: CLEAN.
+
+FINAL STATE (was -> now)
+ 2026-07-01 req 263/761 -> 761/761 ; resp 154/761 -> 761/761
+ 2026-07-02/03/04 all 0 -> 589/589, 781/781, 541/541
+ unreconciled issuance apps: 25 -> 0
+ loans 12563327-12563357 in issued: 5 -> 30
+ date_first_seen distribution: 07-01:1, 07-02:7, 07-03:10, 07-04:4, 07-05:2, 07-06:2, 07-07:4 = 30. This EXACTLY matches prediction: the 25 new (07-01:1, 07-02:6, 07-03:9, 07-04:4, 07-05:2, 07-06:1, 07-07:2) plus the 5 pre-existing (07-02:1, 07-03:1, 07-06:1, 07-07:2). All 25 landed in JULY, so they bill to the correct period.
+
+EXPECTED: the 08:00 UTC alert should be SILENT from 2026-08-26 onward. Confirm tomorrow before closing ERROR-1231.
+STILL OPEN AND NOT DONE BY THIS SESSION: (1) reply to Sanjali, (2) dedupe ERROR-1721 onto ERROR-1231, (3) the ~$360-450 July billing credit - manual, Abhishek's call, and note the invoice ALREADY went out 2026-08-03 so re-running generate_monthly_fee.py would double-invoice, (4) escalate that the 3 loans were DECLINED (decision=false) and NorthPond funded them anyway, (5) design-bug ticket for the stateless alert + permanent skip, (6) scope call on sofi/openroad which lost the same 3 days in MySQL.
