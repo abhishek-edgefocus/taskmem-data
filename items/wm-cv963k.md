@@ -6,7 +6,7 @@ status: open
 priority: p2
 tags: [openroad, data-quality]
 created: 2026-08-24T15:00:17Z
-updated: 2026-08-24T20:44:45Z
+updated: 2026-08-25T19:06:29Z
 source: claude-code
 ---
 
@@ -70,3 +70,36 @@ should be implemented and registered as a verified difference in silver's favour
 legacy. If they do not, legacy applies a condition we have not identified and implementing on
 presence alone ships a known-wrong mapping. Not implementing until that is settled; shipping the
 naive rule to clear the column would be exactly the kind of board-clearing Abhishek ruled out.
+- 2026-08-25T19:06Z [claude-code] RULE ESTABLISHED AND IMPLEMENTED 2026-08-26. It is reproducible after all, and the datastore is the side that is wrong.
+
+Legacy's rule is literally df["is_joint"] = np.where(df["secondaryBorrower.zipCode"].isna(), False,
+True) (datastore_standardized_positions_openroad.py:106). Applied to the gateway data that flags 6
+of 35 loans, not 2.
+
+NOTHING IN THE CO-APPLICANT DATA SEPARATES THE SIX. All carry an identical, complete 14-key
+secondaryBorrower block - city, creditInformation, currentEmployerName, currentEmploymentLength,
+employmentStatus, homeOwnershipStatus, householdGrossAnnualIncome, individualGrossAnnualIncome,
+numberOfOutstandingLoans, occupation, priorLoanBalance, recentCashAdvance, state, zipCode - with
+populated values, on BOTH payload paths (payload:request:secondaryBorrower on
+endpoint_transactions, payload:secondaryBorrower on model_requests, which agree), one event each.
+Not income, not employment status, not fico grade, not event selection.
+
+WHAT SEPARATES THEM IS THE DATASTORE'S OWN COVERAGE, and it is a perfect split:
+  4944443, 5129970  -> is_joint True,  application_id / income / dti / employment / credit_score ALL SET
+  4972236, 5186687,
+  5215393, 5865766  -> is_joint False, ALL of those EMPTY
+Legacy evaluated secondaryBorrower.zipCode.isna() on rows its _get_requests_df() dedup had already
+dropped. A missing row gives NaN, which gives False. Those four Falses are absence, not judgement -
+the same dedup that costs the datastore 17 of 35 loans on the borrower attributes already
+registered as verified differences in [[wm-skvqac]].
+
+So silver flagging 6 is strictly more correct. IS_JOINT moves OUT of 'silver worse' and into the
+coverage family. Implemented in PR #6459 (commit 8d7b81fd3): openroad_offers.py extracts
+SECONDARY_BORROWER_ZIP with NULLIF for the JSON-null case, positions.py maps IS_JOINT off it,
+terraform adds the column. Verified in DEV_ABHISHEK through the local Dagster: TRUE on exactly
+those six, FALSE on the other 29, NULL on none. The comparison moves IS_JOINT from 5.71%
+silver-worse to 11.43% silver-richer.
+
+CONSEQUENCE FOR [[wm-skvqac]] / PR #6454: the is_joint registration there carries
+snowflake_is_correct=False and a reason describing an accepted limitation. That is now WRONG in
+both the flag and the prose and must be rewritten before #6454 goes ready.
