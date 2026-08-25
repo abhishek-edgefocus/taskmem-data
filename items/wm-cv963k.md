@@ -2,7 +2,7 @@
 id: wm-cv963k
 type: task
 title: Carry IS_JOINT for OpenRoad - the secondaryBorrower IS in bronze, silver just never extracts it
-status: open
+status: done
 priority: p2
 tags: [openroad, data-quality]
 created: 2026-08-24T15:00:17Z
