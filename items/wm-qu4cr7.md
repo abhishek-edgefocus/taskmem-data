@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [ERROR-1231=https://linear.app/edge-focus/issue/ERROR-1231/northpond-issued-missing-gateway-responses-15-issued-northpond-loans]
 created: 2026-07-14
-updated: 2026-08-25T15:26:53Z
+updated: 2026-08-25T15:44:50Z
 source: dpx-tasks #7
 label: NorthPond 15 missing loans
 ---
@@ -116,3 +116,22 @@ IT IS THE PROD INTERPRETER, not merely a complete one: execution/cron/dumbledore
 Other conda envs are near-complete but lack snowflake.connector: efp_env_20260121, efp_env_py311_new, efp_env_seaborn.
 Other users DO have their own repo venvs (gobind, perk, sanjali x5, kshitij, kushagra, ...) but they are irrelevant now and were deliberately NOT probed - the system conda env is a strictly better answer and there is no reason to execute colleagues' interpreters on a shared box.
 ~/repos/efp/.venv remains the odd one out (incomplete); it is a personal venv, not the env prod uses. Nothing was installed into it.
+- 2026-08-25T15:44Z [claude-code] STEPS 3+4 EXECUTED 2026-08-25 by claude-code on dpx, authorized by Abhishek. Cohort A is FIXED.
+
+RUN: /opt/conda/envs/efp_env/bin/python efp/bin/northpond/grafana.py --date 2026-07-01,2026-07-02,2026-07-03,2026-07-04 --verbose, from ~/claude-ws/error-1231 against the isolated checkout pinned to origin/master 99c70e725. Run under nohup so an ssh drop could not kill a prod write mid-flight. Wall time ~85s (15:36:38 -> 15:38:01 UTC). Process exited cleanly; no traceback.
+
+IDEMPOTENCY CONFIRMED IN THE LOG exactly as predicted: 07-01 processed only the missing uris - 498 requests (761-263) and 607 responses (761-154), leaving already-loaded rows alone. 07-02/03/04 processed the full 589/781/541 each.
+ROWS WRITTEN: model_requests 2,409 (498+589+781+541) - which matches the earlier independent estimate of 2,409 absent applications for the billing line. model_responses 2,518 (607+589+781+541). Plus 4 performance rows, 1 per date (that table is append-per-run by design and had 0 rows for these dates, so this filled a gap rather than duplicating).
+
+BEFORE -> AFTER
+ 2026-07-01 requests 263/761 -> 761/761 ; responses 154/761 -> 761/761
+ 2026-07-02 0/589 -> 589/589 ; 0/589 -> 589/589
+ 2026-07-03 0/781 -> 781/781 ; 0/781 -> 781/781
+ 2026-07-04 0/541 -> 541/541 ; 0/541 -> 541/541
+ unreconciled issuance apps: 25 -> 3
+ loans 12563327-12563357 in : 5 -> 5 (unchanged, correct - issued.py has NOT been run, it stays with Abhishek)
+
+THE REMAINING 3 ARE EXACTLY COHORT B as diagnosed: f430a050-1fe8-49d3-ab32-158320355416, f7856925-4f47-4b25-a61f-3a8e3f2b23c0, 81fe8e12-15c5-46f1-b519-a259e6f97458. Their response rows are now present in MySQL but under the corrupted application_uuid, so fix_uuids.py will now find them by offer_uuid (its earlier dry run correctly reported them MISSING pre-backfill).
+
+LOG NOISE, not errors: 4 grep hits for 'traceback|exception|ERROR' were all the same benign pandas FutureWarning at grafana.py:240 in add_perf_data (matched only on the word TypeError), one per date.
+NEXT, ABHISHEK ONLY: fix_uuids.py --execute, then issued.py --date 2026-07-01..07-07. Neither touched.
