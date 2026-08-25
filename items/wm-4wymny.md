@@ -9,7 +9,7 @@ people: [Frank, Scott]
 tags: [ai-billing, ramp, dev-970, grafana]
 links: [parent:wm-r45vp3, blocks:wm-399bwq]
 created: 2026-08-24T13:35:45Z
-updated: 2026-08-24T13:35:57Z
+updated: 2026-08-25T14:20:05Z
 source: meeting-2026-08-18
 ---
 
@@ -28,3 +28,6 @@ Dashboard is f0cd399b-fe80-4bb2-82b7-a5a3fc092440.
 9. **Match the API Gateway Monitoring / SoFi look and feel** — rolling average as dots in the text/white colour.
 
 Then book the 15–30 min follow-up with Frank (wm-399bwq).
+
+## Log
+- 2026-08-25T14:20Z [claude-code] Dashboard v88-v92. Frank's Slack asks implemented: blue notice strip / title tile / Last Updated cloned from API Gateway; 'Ramp Cardholder' label; titles Spend per Month / Spend per User / Spend by Vendor. Spend per User reworked -- vertical bars stacked by vendor, team-subscription (Cursor) exclusion dropped, orange SELECTED stripe removed, axis labels shortened to 'First L.', moved to full width. All three graphs now honour both the time range and the cardholder dropdown and agree on totals (July all = 7901.25; July Frank = 4883.11; 10-12 Mar = 1344.80). Exact ranges no longer round out to whole months. 3-month average + projection suppressed unless the range is whole months, so they cannot sit beside a partial bar.
