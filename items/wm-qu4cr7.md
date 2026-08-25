@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [ERROR-1231=https://linear.app/edge-focus/issue/ERROR-1231/northpond-issued-missing-gateway-responses-15-issued-northpond-loans]
 created: 2026-07-14
-updated: 2026-08-25T15:01:55Z
+updated: 2026-08-25T15:26:53Z
 source: dpx-tasks #7
 label: NorthPond 15 missing loans
 ---
@@ -109,3 +109,10 @@ NOT a blocker, checked: /efs/data is NOT mounted on dpx, but BaseStatement reads
 
 TWO CLEAN PATHS (his call): (a) run step 3 on dumbledore where the prod env is complete - the original plan, needs his ssh access; or (b) build a faithful venv in the isolated workspace from the repo's own lockfile, 'cd ~/claude-ws/error-1231/efp && uv sync' (uv is at ~/.local/bin/uv, not on the non-interactive PATH) - uses the project's pinned dependency set rather than hand-picked packages.
 NOTHING WRITTEN TO PROD. fix_uuids.py and issued.py untouched as instructed.
+- 2026-08-25T15:26Z [claude-code] ENVIRONMENT SOLVED 2026-08-25 - neither option (a) nor (b) needed. /opt/conda/envs/efp_env on dpx is COMPLETE for grafana.py (termcolor, GitPython/git, mypy_boto3_batch, pandas, numpy, pymysql, sqlalchemy, boto3, pyarrow, zstandard, snowflake.connector all import; Python 3.11.3). Full grafana.py import chain verified against the isolated checkout at ~/claude-ws/error-1231/efp with zero installs.
+
+IT IS THE PROD INTERPRETER, not merely a complete one: execution/cron/dumbledore/ubuntu/existing.cron line 16 sets PATH=/opt/conda/envs/efp_env/bin:... so the every-5-minutes cron 'cd /efp/scripts && python bin/northpond/grafana.py' runs exactly this interpreter. Jenkins job 'Build efp_env Admin, Dpx, Dumbledore' builds the same env on dpx and dumbledore. Python 3.11.3 also matches the Sentry event runtime from dumbledore. So running on dpx with /opt/conda/envs/efp_env/bin/python against a checkout pinned to origin/master 99c70e725 is the same code + same interpreter as the prod cron.
+
+Other conda envs are near-complete but lack snowflake.connector: efp_env_20260121, efp_env_py311_new, efp_env_seaborn.
+Other users DO have their own repo venvs (gobind, perk, sanjali x5, kshitij, kushagra, ...) but they are irrelevant now and were deliberately NOT probed - the system conda env is a strictly better answer and there is no reason to execute colleagues' interpreters on a shared box.
+~/repos/efp/.venv remains the odd one out (incomplete); it is a personal venv, not the env prod uses. Nothing was installed into it.
