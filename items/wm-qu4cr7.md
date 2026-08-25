@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [ERROR-1231=https://linear.app/edge-focus/issue/ERROR-1231/northpond-issued-missing-gateway-responses-15-issued-northpond-loans]
 created: 2026-07-14
-updated: 2026-08-25T14:34:58Z
+updated: 2026-08-25T15:01:55Z
 source: dpx-tasks #7
 label: NorthPond 15 missing loans
 ---
@@ -95,3 +95,17 @@ WHY IT DOES NOT NEED FIXING: the silver transform that consumes the affected dat
 
 DO NOT MUTATE bronze.api_events: it is a raw mirror of the S3 gateway payloads (the wrong uuid is in the S3 file itself), data_retention_time_in_days=1, and any re-ingest would reintroduce it. Correct posture is to treat timestamp_ns as the canonical request<->response key, which the code already does.
 RESIDUAL RISK ONLY: ad-hoc SQL, notebooks or dashboards that join a northpond RESPONSE on payload:application_uuid for 2026-01-16..2026-07-01 will silently return nothing or wrong rows. Worth a note in ~/notes rather than a code change.
+- 2026-08-25T15:01Z [claude-code] EXECUTION ATTEMPT 2026-08-25 (Abhishek authorized steps 1-4 on dpx only). Steps 1 and 2 DONE and clean; step 3 BLOCKED, stopped per his standing instruction rather than improvising.
+
+STEP 1 BEFORE-STATE (verified, read-only): MySQL gaps confirmed - 2026-07-01 requests 263/761 responses 154/761; 07-02 0/589; 07-03 0/781; 07-04 0/541. Unreconciled issuance apps: 25 of 1339. Loans 12563327-12563357 present in issued: 5 (07-02 x1, 07-03 x1, 07-06 x1, 07-07 x2).
+STEP 2 WRITE GRANT: CONFIRMED. default-writer@'%' holds GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES, LOCK TABLES ON northpond.* - host-agnostic, so writes from dpx are permitted.
+
+ISOLATION WORK DONE (nothing shared touched): cloned own checkout at ~/claude-ws/error-1231/efp, pinned to true origin/master 99c70e725 (note: a --local clone's origin/master is the SHARED checkout's local master, 5c0005322, which was behind - had to fetch refs/remotes/origin/master explicitly). Confirmed bin/northpond/grafana.py, lib/efp/md_grafana.py, lib/efp/sqlalchemy.py, lib/efp/s3.py are IDENTICAL between the two. IMPORTANT: ~/repos/efp is on branch abhishek/dev-1481-northpond-stmt-dedup-guard with uncommitted changes from another session - his instruction not to work there was correct.
+
+BLOCKER: ~/repos/efp/.venv is an incomplete environment for grafana.py. Missing termcolor (efp.terminal), GitPython (efp.batch), and then mypy_boto3_batch (efp.batch) - a cascade, depth unknown. Installed termcolor 3.3.0 and GitPython into ~/claude-ws/error-1231/pylibs via uv --target (workspace only; the shared .venv is verified still WITHOUT termcolor, deliberately untouched). Stopped at the third missing dep rather than keep patching an environment that prod writes would run from.
+Import chain needed: grafana.py -> efp.stats.datastores.northpond.statement_loan_positions -> base_statement_northpond -> base_statement -> efp.batch -> git, mypy_boto3_batch.
+
+NOT a blocker, checked: /efs/data is NOT mounted on dpx, but BaseStatement reads statements from S3 (STATEMENTS_S3_BUCKET='efp-raw'), so add_perf_data() would work from dpx once imports resolve. This matters because add_perf_data() is called INSIDE main()'s per-date loop - if it raised, dates after the first would never process.
+
+TWO CLEAN PATHS (his call): (a) run step 3 on dumbledore where the prod env is complete - the original plan, needs his ssh access; or (b) build a faithful venv in the isolated workspace from the repo's own lockfile, 'cd ~/claude-ws/error-1231/efp && uv sync' (uv is at ~/.local/bin/uv, not on the non-interactive PATH) - uses the project's pinned dependency set rather than hand-picked packages.
+NOTHING WRITTEN TO PROD. fix_uuids.py and issued.py untouched as instructed.
