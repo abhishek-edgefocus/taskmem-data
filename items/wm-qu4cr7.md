@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [ERROR-1231=https://linear.app/edge-focus/issue/ERROR-1231/northpond-issued-missing-gateway-responses-15-issued-northpond-loans]
 created: 2026-07-14
-updated: 2026-08-24T20:57:05Z
+updated: 2026-08-25T14:34:58Z
 source: dpx-tasks #7
 label: NorthPond 15 missing loans
 ---
@@ -83,3 +83,15 @@ BUSINESS FINDING: all 3 responses carry decision=false. EFP DECLINED these three
 EXACT CUTOVER: on 2026-07-01 the no-response count by hour drops to 0 from hour 20:00 UTC onward (hour 19 was 33 of 46), pinning the fix to the 19:39 UTC deploy.
 
 NEW, SEPARATE GAP: the 07-15 recovery was applied to MySQL only. Snowflake bronze.api_events STILL holds the corrupted uuids for the whole pre-fix period - every northpond request from 2026-06-01 to 2026-07-01 19:35 UTC has no joinable response, about 11,595 applications (11,015 in June + 580 on 07-01). Anything joining request->response in the warehouse for that period is broken. Not checked before 2026-06-01, so the true count may be larger. Does NOT affect the Billing dashboard (it counts model_requests only).
+- 2026-08-25T14:34Z [claude-code] SNOWFLAKE CORRUPTION SCOPED 2026-08-25 - much narrower impact than feared; effectively nothing to fix in Snowflake.
+
+EXTENT (join on native BRONZE.API_EVENTS.TIMESTAMP_NS + channel + api_version):
+ - northpond_loan_fl api_version=1 (2024-04-17 -> 2026-01-15): 276,440 requests, 0 corrupted. CLEAN.
+ - northpond_loan_fl api_version=2 (2026-01-16 -> present): 195,800 requests, 21,856 corrupted, window 2026-01-16 -> 2026-07-01.
+ - northpond_loan_fl_dark_mode api_version=2 (2025-11-20 -> 2026-01-15): 213 requests, 212 corrupted.
+ TOTAL 22,068 responses carrying a wrong application_uuid. First occurrence 2025-11-20 (v2 dark-mode shadow traffic), became the live path at the v2 cutover 2026-01-16, ended 2026-07-01 19:39 UTC with the model retag. Monthly corrupted counts: 2025-11 52, 2025-12 108, 2026-01 95, 2026-02 65, 2026-03 84, 2026-04 228, 2026-05 9844, 2026-06 11012, 2026-07 580, 2026-08 0.
+
+WHY IT DOES NOT NEED FIXING: the silver transform that consumes the affected data, edgefocus/transformations/silver/api_events/northpond_exp_offers.py, joins bronze.api_events on timestamp_ns + channel + platform + api_version (lines 110-121) - NOT on application_uuid. So silver.northpond_exp_offers is correct today and always was. The one northpond transform that DOES join on res.payload:application_uuid is northpond_tu_offers.py:123, and that covers the v1/TU channel which has ZERO corruption (tu_request/tu_raw_data also stop 2026-01-15, before the v2 cutover). No silver table is wrong.
+
+DO NOT MUTATE bronze.api_events: it is a raw mirror of the S3 gateway payloads (the wrong uuid is in the S3 file itself), data_retention_time_in_days=1, and any re-ingest would reintroduce it. Correct posture is to treat timestamp_ns as the canonical request<->response key, which the code already does.
+RESIDUAL RISK ONLY: ad-hoc SQL, notebooks or dashboards that join a northpond RESPONSE on payload:application_uuid for 2026-01-16..2026-07-01 will silently return nothing or wrong rows. Worth a note in ~/notes rather than a code change.
