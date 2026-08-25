@@ -4,7 +4,7 @@ type: task
 title: OpenRoad sent requestUuid as acceptedOfferUuid on loan 5462736 — offer link recoverable by rate
 status: open
 created: 2026-08-25T14:37:26Z
-updated: 2026-08-25T14:37:26Z
+updated: 2026-08-25T15:18:06Z
 source: claude-code
 ---
 
@@ -60,3 +60,41 @@ the two share is that both were initially misdiagnosed as "never submitted" from
 Read-only, 2026-08-25, PROD. Unscoped payload search on the uuid, RECURSIVE FLATTEN to locate its
 json paths, LATERAL FLATTEN of the 19-offer array, purchase tape and silver.positions for the
 funded terms.
+
+## Log
+- 2026-08-25T15:18Z [claude-code] DIAGNOSIS CORRECTED AGAIN 2026-08-25, before writing any code. This is NOT a requestUuid-instead-of-offerUuid problem to be patched with a fallback join. It is a NON-DETERMINISTIC TIE IN THE DEDUP.
+
+OpenRoad's file 1EdgeFocusDealsFunded_7.13.2024.csv contains APP ID 5218485 TWICE, same as_of_date,
+same S3_KEY, every field identical except Offer_UUID:
+  row A  2f5a0c60-7eac-48a8-8cb7-4d67fce64564   the requestUuid - resolves to nothing
+  row B  3d87a511-a4c6-43f7-80bb-3a03e794bf7b   a REAL APPROVED offer, rate 14.73, term 72,
+                                                amount 31,451.00, maxLTV 1.25,
+                                                UNIQUE_OFFER_KEY 20657d3ad71ee41d12d88843e2620681,
+                                                APPLICATION_UUID 0655b6d4... - the same application
+                                                as the 2024-07-10 decisioning event
+
+openroad_stmt_purchase_tapes.py dedups with ROW_NUMBER() OVER (PARTITION BY APP ID ORDER BY
+src.AS_OF_DATE ASC) = 1. Both rows share an as_of_date, so the ORDER BY is a complete tie and
+Snowflake breaks it arbitrarily. It picked row A. The result is not even stable across rebuilds.
+
+THE RATE FALLBACK ABHISHEK ASKED FOR WOULD HAVE RESOLVED THIS LOAN TO THE WRONG OFFER. Positions
+INT_RATE is 14.48, which uniquely matches offer 47583904-d4fb-43d5-8f6d-4db64cd638ae. The tape
+itself names 3d87a511 at 14.73. The tape is authoritative; my rate inference was not - this loan is
+one of the 2 of 34 where the loan-tape rate does not equal the offer rate (32 of 34 match exactly,
+avg delta 0.0024; purchase-tape APR matches only 2 of 34, avg delta 0.3274, so APR was never the
+right basis either). Good thing this surfaced before the build.
+
+THE ACTUAL FIX is three lines in openroad_stmt_purchase_tapes.py and nothing else - no REQUEST_UUID
+column, no rate matching, no fallback join, no new dependency:
+  QUALIFY ROW_NUMBER() OVER (
+      PARTITION BY APP ID
+      ORDER BY src.AS_OF_DATE ASC,
+               IFF(oo.UNIQUE_OFFER_KEY IS NOT NULL, 0, 1) ASC,   -- prefer a resolvable offer
+               UPPER(TRIM(Offer_UUID)) ASC                        -- deterministic final tiebreak
+  ) = 1
+The oo join is already in the query, so the resolvability test is free. The third key removes the
+non-determinism regardless.
+
+SCALE: exactly 1 app in the entire OpenRoad purchase tape has more than one distinct Offer_UUID, so
+this changes that one loan and provably nothing else. Awaiting Abhishek's go-ahead since it is a
+different mechanism from the one he authorized.
