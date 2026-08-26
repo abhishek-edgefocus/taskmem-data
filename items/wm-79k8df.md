@@ -9,7 +9,7 @@ tags: [northpond, edgex, predictions]
 links: [blocked-by:wm-qs96kd, parent:wm-3sxcre, relates:wm-nyjurp]
 refs: [DEV-1498=https://linear.app/edge-focus/issue/DEV-1498/setup-northpond-cmopbep-and-silvernorthpond-api-credit-attributes]
 created: 2026-07-20T15:25:55Z
-updated: 2026-08-26T16:51:30Z
+updated: 2026-08-26T16:51:51Z
 source: claude-code
 ---
 
@@ -164,3 +164,10 @@ LESSON FOR ANY FUTURE PR-BODY EDIT:  is a whole-body overwrite. If the human may
 SCREENSHOT VERIFIED by fetching it (it is an SVG, 232 KB, not a PNG despite the filename) and parsing its text nodes: shows northpond_api_credit_attributes in SILVER with kinds shared_table / silver.api_credit_attributes / Snowflake, and exactly the two upstream edges api_events (BRONZE) and northpond_stmt_issuance. Materialized 26 Aug 20:54 IST = my 15:24Z run. So it is the correct minimal DAG delta, which is what he asked for.
 
 ONE COSMETIC FLAG RAISED WITH HIM: both upstream nodes render as 'Never materialized' in that shot, confirmed via GraphQL (assetMaterializations empty for api_events and northpond_stmt_issuance on my isolated instance, one entry for the new asset). That is an artifact of the throwaway instance having no run history for upstream assets — their data comes from the DEV database mirror, not from runs on this webserver. A reviewer could misread it as a broken dependency.
+- 2026-08-26T16:51Z [claude-code] Correction to the entry immediately above: three phrases were eaten by shell backtick expansion when it was written, so it reads with gaps. The intended text:
+
+- "my [gh pr edit --body-file] at 16:49:05Z replaced the whole body"
+- "each node's [diff] field holds the full body at that revision"
+- "LESSON: [gh pr edit --body-file] is a whole-body overwrite"
+
+Nothing else in that entry is affected. Note for future sessions: taskmem log text containing backticked shell-looking commands must be passed via a file or single-quoted heredoc, never interpolated into a double-quoted ssh/bash argument.
