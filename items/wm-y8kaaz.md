@@ -2,7 +2,7 @@
 id: wm-y8kaaz
 type: task
 title: DEV_ABHISHEK is missing Snowflake streams that PROD has — transforms write rows then fail
-status: next
+status: done
 priority: normal
 size: s
 tags: [snowflake, dev-env, terraform]
