@@ -9,7 +9,7 @@ tags: [northpond, edgex, predictions]
 links: [blocked-by:wm-qs96kd, parent:wm-3sxcre, relates:wm-nyjurp]
 refs: [DEV-1498=https://linear.app/edge-focus/issue/DEV-1498/setup-northpond-cmopbep-and-silvernorthpond-api-credit-attributes]
 created: 2026-07-20T15:25:55Z
-updated: 2026-08-26T16:51:51Z
+updated: 2026-08-26T19:28:13Z
 source: claude-code
 ---
 
@@ -171,3 +171,23 @@ ONE COSMETIC FLAG RAISED WITH HIM: both upstream nodes render as 'Never material
 - "LESSON: [gh pr edit --body-file] is a whole-body overwrite"
 
 Nothing else in that entry is affected. Note for future sessions: taskmem log text containing backticked shell-looking commands must be passed via a file or single-quoted heredoc, never interpolated into a double-quoted ssh/bash argument.
+- 2026-08-26T19:28Z [claude-code] 2026-08-27: Nakula reviewed PR #6462 — APPROVED, with a suggestion: generate curr_mod for recently originated loans and compare against the at_orig rows in silver.predictions; defaults and prepays should match bit-wise, which would guarantee the curr_mod/best_est model mirrors the gateway.
+
+RAN IT. The answer is yes on both channels, but his exact formulation only works on one of them, and the reason matters.
+
+TU channel (northpond_loan_fl), curr_mod vs at_orig source='api', all 715 funded loans / 25,740 curve points:
+  - 4,681 points exactly bit-identical
+  - 25,740 of 25,740 equal within 1e-12
+  - max abs diff default 8.8e-16, prepay 2.9e-13
+The 4,680 bit-identical ones are the loans decided under model_policy_version v4, the model the predictor loads today. Everything else is last-bit float representation, NOT model divergence: at_orig api rows are cast from a JSON number by Snowflake (GET(payload,...)::FLOAT) while curr_mod rows arrive as parquet doubles. Notable side finding: the v3-decided loans agree to 1e-16 too, so the v3->v4 policy bump did not move these curves at all.
+
+EXP channel (northpond_exp_loan_fl) — his test CANNOT use at_orig as the reference, and this is the thing to write down. Exp at_orig in silver.predictions is source='s3' from OlivExpStatementPredictor: the Oliv-ANL-retargeted curve, not the gateway curve. The retarget rescales DEFAULTS and leaves PREPAYS alone, and the data shows exactly that signature over 536 loans / 19,296 points (at_orig deduped to the latest vintage per loan, otherwise the join fans out across vintages and reports 35,208):
+  - prepay bit-identical 19,296 / 19,296, max abs diff exactly 0.0
+  - default bit-identical only 72, max abs diff 0.016883, avg ratio at_orig/curr_mod 0.9777
+Against the correct reference for exp — the raw model_responses payload — curr_mod is 19,296/19,296 bit-identical (the existing parity table).
+
+ACTIONS TAKEN: added a fourth validation section to the PR description ('curr_mod reproduces each loan's at_orig curve, where at_orig is the gateway's own') carrying the TU table, the exp caveat table and the explanation, so a future naive curr_mod-vs-at_orig check on recent loans does not read the ~2% default gap as a bug. Re-read the live PR body and diffed it against my local copy before appending, per the earlier clobbering incident.
+
+Reply to Nakula drafted at ~/pr6462-nakula-reply.md for Abhishek to post — I do not post on shared surfaces.
+
+NO CODE CHANGE NEEDED. The guarantee he asked for already existed in the PR, expressed against the gateway payload rather than against silver.predictions, which for the exp channel is the stricter and correct reference.
