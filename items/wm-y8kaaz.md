@@ -6,8 +6,9 @@ status: next
 priority: normal
 size: s
 tags: [snowflake, dev-env, terraform]
+links: [relates:wm-u57a42]
 created: 2026-08-26T15:50:26Z
-updated: 2026-08-26T15:50:26Z
+updated: 2026-08-26T15:50:39Z
 source: claude-code
 ---
 
