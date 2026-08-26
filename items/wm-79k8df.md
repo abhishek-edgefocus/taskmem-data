@@ -9,7 +9,7 @@ tags: [northpond, edgex, predictions]
 links: [blocked-by:wm-qs96kd, parent:wm-3sxcre, relates:wm-nyjurp]
 refs: [DEV-1498=https://linear.app/edge-focus/issue/DEV-1498/setup-northpond-cmopbep-and-silvernorthpond-api-credit-attributes]
 created: 2026-07-20T15:25:55Z
-updated: 2026-08-26T19:28:13Z
+updated: 2026-08-26T20:12:32Z
 source: claude-code
 ---
 
@@ -191,3 +191,15 @@ ACTIONS TAKEN: added a fourth validation section to the PR description ('curr_mo
 Reply to Nakula drafted at ~/pr6462-nakula-reply.md for Abhishek to post — I do not post on shared surfaces.
 
 NO CODE CHANGE NEEDED. The guarantee he asked for already existed in the PR, expressed against the gateway payload rather than against silver.predictions, which for the exp channel is the stricter and correct reference.
+- 2026-08-26T20:12Z [claude-code] 2026-08-27: Abhishek asked for "Nakula's rename" — td_predictor.py -> predictor.py and td_prep.py -> prep.py, to match the other platforms. NOT DONE, because it cannot be done as stated and the request could not be located.
+
+BLOCKER: both target filenames are already taken, on origin/master, by different code.
+  edgefocus/modeling/predictions/northpond/predictor.py  (21 KB) = OlivExpStatementPredictor, from PR #6082, last touched by #6354
+  edgefocus/modeling/predictions/northpond/prep.py       (2.5 KB) = OlivExpStatementPrep
+Imported by orchestration/assets/northpond_assets.py:28 (the northpond_exp_predictions asset, which calls OlivExpStatementPredictor().run() at :508), by predictor_test.py, and referenced in a code comment in northpond_api_predictions.py:125. Renaming the new TD files onto those names would overwrite the Oliv exp-statement at_orig adjuster.
+
+WHY THE PREMISE DOES NOT TRANSFER: every other platform package holds ONE predictor family, so predictor.py/prep.py are unambiguous there. northpond holds TWO — the exp-statement at_orig curve adjuster (scheduled by the statements job) and the new TD CMOP/BEP predictors (scheduled by the predictions cron). The td_ prefix is what separates them.
+
+REQUEST NOT FOUND ANYWHERE I CAN READ: GitHub review bodies (1 review, nakula-efp APPROVED, body is the parity-test suggestion only), GitHub inline review comments (0), GitHub issue comments (only the linear-code linkback and Nakula's approval note), Linear comments on DEV-1498 (0). So it likely came via Slack or in person.
+
+OPTIONS PUT TO HIM: (a) leave as td_predictor.py/td_prep.py — zero risk, PR is approved and green; (b) rename the incumbents to exp_statement_predictor.py/exp_statement_prep.py and take the plain names for TD — touches merged code plus the asset import, widens the PR past DEV-1498; (c) subpackages northpond/td/ and northpond/exp/ — cleanest, biggest diff, also touches merged code. Recommended (a) now, (b) or (c) as a follow-up PR so the rename of merged code gets its own review.
