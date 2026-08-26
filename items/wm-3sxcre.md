@@ -8,7 +8,7 @@ people: [Abhijeet]
 tags: [northpond, data-quality, reporting]
 links: [parent:wm-j523sq]
 created: 2026-08-14T19:56:57Z
-updated: 2026-08-24T21:05:55Z
+updated: 2026-08-26T13:11:11Z
 source: claude-code
 label: NorthPond DQ + reporting
 ---
@@ -47,3 +47,4 @@ and was confirmed outstanding on both platforms in the 2026-07-29 exchange with 
 ## Log
 - 2026-08-20T20:48Z [claude-code] 2026-08-20 Linear tidy-up landed (the [P1] LINEAR-PROJECTS work): DEV-1486 Deprecate OpenRoad Datastores -> Done; DEV-1474, DEV-1468, DEV-1452, DEV-1627, DEV-1290 -> Done; DEV-1565 and DEV-1511 -> Duplicate. Still open: DEV-1396 (Backlog, closing comment drafted but NOT pasted), DEV-1539 (Todo, draft PR #6413), DEV-1516 (In Progress, PR #6401), DEV-1522 (In Progress, PR #6390), DEV-970 (In Review but PR #6223 is CHANGES_REQUESTED).
 - 2026-08-24T21:05Z [claude-code] 2026-08-25: DEV-1498 (NorthPond CMOP/BEP + the northpond slice of silver.api_credit_attributes) is implemented and committed on branch abhishek/dev-1498-setup-northpond-cmopbep-and — full detail on [[wm-79k8df]]. Parity gate passed bit-identically on every eligible loan. Not pushed yet, and the PROD backfill of the credit-attributes slice must run before the predictions cron picks up the two new channels.
+- 2026-08-26T13:11Z [claude-code] LINEAR CLOSE-OUTS CONFIRMED DONE 2026-08-26 (Linear MCP is authorized again, so this could finally be checked rather than assumed). The two tickets I flagged on 2026-08-24 as shipped-but-still-open in Linear have both been closed out: DEV-1516 and DEV-1522 no longer appear in Abhishek's In Review queue, and DEV-1478 is now the ONLY issue of his in that state. Also closed since: DEV-1024 (Done — see the wm-unb6pr reassessment), DEV-1395 (Done), DEV-970 (Done), DEV-1663 (Done), ERROR-1231 (Done). Nothing is owed on the close-out comments I raised twice; that thread is finished.
