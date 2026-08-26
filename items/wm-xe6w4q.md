@@ -10,7 +10,7 @@ tags: [openroad, predictions]
 links: [relates:wm-79k8df, relates:wm-prm54n, relates:wm-85nuv4, parent:wm-jr5bup]
 refs: [DEV-1499=https://linear.app/edge-focus/issue/DEV-1499/setup-openroad-cmopbep]
 created: 2026-07-29T15:33:45Z
-updated: 2026-08-26T17:49:24Z
+updated: 2026-08-26T18:06:38Z
 source: claude-code
 label: OpenRoad CMOP + BEP
 ---
@@ -160,3 +160,4 @@ CONSEQUENCE. No coverage filter, no input changes, no openroad-side workaround. 
 and what every other platform does. Commit 406779f45 stands as the complete answer to DEV-1499; the
 remaining work is only the deployment items in the previous entry (checkin rows, terraform apply +
 stream check, Dagster materialize / parquet round trip), plus push and open the PR.
+- 2026-08-26T18:06Z [claude-code] PR OPEN AS DRAFT 2026-08-26: https://github.com/edgefocus/efp/pull/6496 (branch pushed, base master, 8 files +243/-5, isDraft=true). Body follows ~/pr-style.md: what changed -> 'DAG - unchanged.' (no orchestration/ file touched; the asset and its job entry already existed) -> Validation. Each evidence piece is a titled claim with the SQL in a <details> block and the result table visible outside it. States plainly that the transform ran via its module CLI and the predictors via the run.py CLI, NOT through local Dagster, so there are no Dagster run URLs, and that the parquet round trip into silver.predictions was not exercised. Includes the anchored comparison as the precedent argument, plus the two named non-bugs (null_per_loan is an underwriting decline not a prediction gate; the 2.30x ratio is model drift, with anchored's 1.006 sparse vs 1.439 dense as the control). Deployment/Setup is 4 numbered steps: tf-apply with the in-place-vs-replace check on the shared API_CREDIT_ATTRIBUTES_STREAM, backfill the openroad slice, create the two checkin rows, then watch the first ingest_prediction_files tick.
