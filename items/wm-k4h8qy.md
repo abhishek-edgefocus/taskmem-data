@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-08-26T20:11:03Z
+updated: 2026-08-26T20:24:00Z
 source: claude-code
 ---
 
@@ -131,3 +131,10 @@ TEARDOWN when DEV-1510 closes: python3 /tmp/make_dev1510_dashboard.py --delete o
 PR #6491 body rewritten with all of the above. STILL DRAFT — remaining gap is the duckdb unit test over generate_shared_daily_sql; the prod-data proof is stronger but the repo convention wants an executable test. Workspace is ~/claude-ws/dev-1510/efp (isolated clone, not ~/repos).
 
 STILL UNFIXED and called out in the PR: Applications Bid = 0 on BOTH v1 and v2. Confirmed again in the materialized tables. That is the decision-half of DEV-1510.
+- 2026-08-26T20:24Z [claude-code] 2026-08-26 DASHBOARD REBUILT LEAN (Abhishek: 'I wasn't expecting you to copy the entire dashboard... only the panels Sean was mentioning'). v1 of the scratch dash was a full 25-panel clone; replaced with v2 carrying ONLY Sean's three-column block — panels 10/11/12 (stats) + 13/14/15 (timeseries) = Evaluated / Bid / Owned, plus a markdown note panel explaining what to look at. Template vars trimmed 6 -> 4 (platform, channel, api_version, unit); breakdown/averages dropped as unused. 6 queries repointed (was 32). Same uid dev1510-npv2-owned so the link is stable; new slug /d/dev1510-npv2-owned/59a7b4c.
+
+ORIGINAL CONFIRMED UNTOUCHED, checked twice: prod 6bc89871 still v10, updated 2026-08-21 by kabeer, 25 panels, 0 DEV_ABHISHEK refs, still reads gold.offers_daily. The script only ever GETs it and POSTs to its own uid — there is no write path to the original in the code.
+
+Consequence of going lean: the dashboard no longer reads OFFERS_BUCKETED_DEV1510 (the geomaps were dropped). That table still stands and the bucketed half of the fix is still proven by SQL (v1 372 / v2 324 under BUCKET_NAME=STATE, agreeing exactly with daily). Teardown should still drop BOTH *_DEV1510 tables.
+
+STANDING PREFERENCE TO CARRY FORWARD: when building a scratch/verification dashboard, replicate only the specific panels in question — do not clone a whole dashboard.
