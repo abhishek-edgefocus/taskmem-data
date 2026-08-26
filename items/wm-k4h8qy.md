@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-08-22T08:15:38Z
+updated: 2026-08-26T12:57:35Z
 source: claude-code
 ---
 
@@ -91,3 +91,16 @@ just on a different page. Do not conflate the two tickets, but do reference it.
    model_responses.payload:decision is always False by design. Ask Sean/Nate
    whether "bid" should mean "we returned an offer" (derivable today) rather than
    the unused decision flag.
+
+## Log
+- 2026-08-26T12:57Z [claude-code] PR RESERVED 2026-08-22: #6491 (DRAFT) https://github.com/edgefocus/efp/pull/6491, branch abhishek/dev-1510-northpond-approvedoriginated-loan-tracking, base master. Ships the OWNED/originated half only: northpond_exp_offers_daily.py + northpond_exp_offers_bucketed.py now pass owned_join_table='silver.northpond_stmt_purchase_tapes' / owned_join_key='application_uuid', mirroring the TU (v1) siblings. 4 lines, 2 files, no schema change, no shared-code change. Expected effect v2 owned_apps_count 0 -> 265, v1 must stay 372.
+
+BLOCKER: dpx unreachable from ~08:20 UTC (resolves to VPC-internal 172.31.175.73, 100%% packet loss, port 22 closed; grafana.edgefocuspartners.com on public IPs still fine, so it is the VPN tunnel or the instance, not general connectivity). Worked earlier in the same session. Could not use ~/claude-ws; made the change in a blobless clone in the Mac scratchpad instead and pushed from there.
+
+STILL TO DO before it leaves draft (all need dpx):
+1. duckdb test over generate_shared_daily_sql — owned rows present with the join, absent without it (no SQL substring assertions).
+2. DEV_ABHISHEK run of both transforms + Snowflake before/after with query and result in frame.
+3. v1 regression: api_version=1 owned_apps_count unchanged at 372.
+Local test run is NOT possible: Mac has system python 3.9.6 and no duckdb; repo targets 3.13 and uses 3.10+ annotation syntax at def time.
+
+NOTE recorded in the PR: neither TU nor EXP declares the purchase tape in source_tables, so a newly landed tape does not itself trigger a re-run — pre-existing v1 behaviour, deliberately not changed here.
