@@ -10,7 +10,7 @@ tags: [openroad, predictions]
 links: [relates:wm-79k8df, relates:wm-prm54n, relates:wm-85nuv4, parent:wm-jr5bup]
 refs: [DEV-1499=https://linear.app/edge-focus/issue/DEV-1499/setup-openroad-cmopbep]
 created: 2026-07-29T15:33:45Z
-updated: 2026-08-26T19:11:37Z
+updated: 2026-08-26T19:35:38Z
 source: claude-code
 label: OpenRoad CMOP + BEP
 ---
@@ -174,3 +174,8 @@ Structural case still covered with no guard: base.py:810 reads each _EXTRA_CREDI
 prepare_features is now 3 lines. _MAX_REPORTED_IDS -- added one commit earlier to fix the silent [:10] truncation Abhishek also flagged -- is gone with it, which resolves that comment properly rather than elaborating around it. Tests: swapped the 3 error-message assertions for the invariant that matters (NaN LTV still yields the column so the fan-out stays suppressed; coerced not filled). 40 prediction tests pass, ruff/mypy clean. Re-ran curr_mod after the change: 35 loans, 2,507 rows, same 'Not overwriting provided maximum LTV' branch -- byte-identical behaviour to before the simplification.
 
 LESSON worth carrying: my first response to the [:10] comment was to elaborate the block (named constant + truncation suffix + 2 tests) when the correct response was to delete it. Check whether a flagged construct should exist before improving it.
+- 2026-08-26T19:35Z [claude-code] CI FIX 2026-08-26 (PR #6496, commit 6664f14e1). CI 'Run Tests' was failing: prep_test.py imported run.py at module scope, run.py pulls efp.checkin -> sqlalchemy -> termcolor which is conda-only, and the whole module became a collection error (ModuleNotFoundError: termcolor). I introduced this myself when hoisting the in-function imports to satisfy ruff PLC0415 earlier in the session.
+
+THE TRAP I ALMOST FELL INTO, worth remembering. The obvious fix is to copy run_test.py, which module-scope pytest.importorskips the same two conda stacks. That would have made CI green by making the tests DISAPPEAR. ci_tests.yml runs the legacy suite as 'conda python -m pytest . --ignore=edgefocus/ --ignore=orchestration/' (line 165) and the new suite as 'uv run pytest edgefocus/ orchestration/' (line 172). So everything under edgefocus/ is uv-only, and a module-scope importorskip on a conda module means the file never executes in CI. Verified: run_test.py reports '1 skipped' under uv, and conda never sees edgefocus/ -- so its ~40 registry assertions are DEAD IN CI today. Pre-existing repo coverage hole, not mine to fix in this PR, but worth raising separately.
+
+FIX: only the registry test needs run.py, so it now calls pytest.importorskip INSIDE the test. prep, predictor and base all import cleanly under uv (checked individually), so the other 8 tests collect and run there. Result: uv 33 passed / 2 skipped for the predictions dir (was a collection error), conda 40 passed. Full CI command reproduced locally -- 'PYTHONPATH=lib pytest edgefocus/ orchestration/' under uv gives 4,394 passed / 5 skipped. Legacy spot-check lib/efp/modeling/{models,auto} under conda: 202 passed.
