@@ -9,7 +9,7 @@ tags: [northpond, edgex, predictions]
 links: [blocked-by:wm-qs96kd, parent:wm-3sxcre, relates:wm-nyjurp]
 refs: [DEV-1498=https://linear.app/edge-focus/issue/DEV-1498/setup-northpond-cmopbep-and-silvernorthpond-api-credit-attributes]
 created: 2026-07-20T15:25:55Z
-updated: 2026-08-26T16:18:58Z
+updated: 2026-08-26T16:37:28Z
 source: claude-code
 ---
 
@@ -140,3 +140,18 @@ DPX WAS DOWN at the time of asking -- ssh dpx.edgefocuspartners.com:22 timed out
 PR #6462 body updated again: the drift paragraph now says it was found AND fixed (13 of 133 -> 133 of 133, with the openroad control test kept as the proof it was never this change's fault), a predicted_cashflows row was added to the validation table, and the predicted_cashflows caveat was removed from 'still draft because'. Only the two screenshots remain.
 
 NOT DONE, deliberately, and not claimed anywhere: the gold layer beyond predicted_cashflows — best_est_projections_at_orig, gold.predicted_cashflows_mob, gold.predicted_cashflows_calendar_month, ef_scores. Those would prove the new channel survives to the gold tables people actually read. Cheap to add now that the streams exist.
+- 2026-08-26T16:37Z [claude-code] 2026-08-26 (gold layer attempt): PARTLY BLOCKED, and the blocker is a second class of DEV drift — not streams this time.
+
+WHAT RAN: ef_scores RUN_SUCCESS (15c835d7-5ac5-4883-9fed-39373ac8f7f2) — but its 35 inserted rows were openroad keys, and northpond's 501 ef_scores rows are pre-existing from 2026-08-21, so this PR's loans are NOT covered there. best_est_projections_at_orig RUN_SUCCESS (c378ffa1-6f5c-46ed-8356-2197d3399fb5) but inserted 0 rows, and the table has NO northpond rows at all for any of the 8 platforms present.
+
+ROOT CAUSE, established not guessed: DEV_ABHISHEK.SILVER.PREDICTED_CASHFLOWS is a VIEW whose body is literally 'SELECT * FROM PROD.SILVER.PREDICTED_CASHFLOWS'. It is a PROD pass-through. terraform/snowflake/silver_predicted_cashflows.tf declares something completely different — a view over the LOCAL silver.predicted_cashflows_history with a QUALIFY that branches on PREDICTION_TYPE and explicitly resolves curr_mod and best_est to the latest curve per loan. So DEV's view is drift, and while it stands, nothing written to DEV's own predicted_cashflows_history can ever reach anything downstream of that view.
+
+WHAT THAT BLOCKS: best_est_projections_at_orig (PREDICTED_SOURCE = silver.predicted_cashflows), gold.predicted_cashflows_mob and gold.predicted_cashflows_calendar_month (SOURCE_TABLE = silver.predicted_cashflows in predicted_cashflows_aggregate.py:42, plus PROJECTION_TABLE = silver.best_est_projections_at_orig which is itself empty for northpond). ef_scores is the exception — it streams off PREDICTED_CASHFLOWS_HISTORY directly, which is why it ran at all.
+
+NOT A ONE-OFF: DEV has 10 views that are PROD pass-throughs — BRONZE.V_STATEMENT_FILE_BATCHES, GOLD.PREDICTED_CASHFLOWS_MONTHLY, GOLD.PREDICTION_COVERAGE, GOLD.REALIZED_CASHFLOWS_AGG, GOLD.WAREHOUSE_ADVANCE_RATE, GOLD.WAREHOUSE_CL_INCLUDE_TO_BE_PURCHASED, SILVER.PREDICTED_CASHFLOWS, SILVER.SOFI_OFFERS_BY_APP, SILVER.WAREHOUSE_CASH_BALANCE, SILVER.WAREHOUSE_NEXT_PAYMENT_DUE. terraform hardcodes PROD nowhere, so all 10 look like the same drift. Only PREDICTED_CASHFLOWS blocks this PR.
+
+BLAST RADIUS CHECKED BEFORE PROPOSING THE FIX: DEV's predicted_cashflows_history closely mirrors PROD (per-platform row counts within a few percent, all 9 platforms present), so repointing the view at DEV's own history would NOT make DEV sparse. It would make DEV self-consistent and expose this PR's northpond curr_mod 50,041 rows / 1,251 loans and best_est 49,296 / 996.
+
+STOPPED: the CREATE OR REPLACE VIEW was denied by the permission classifier. Did not work around it. Awaiting Abhishek's call — the exact statement is staged at dp:~/claude-ws/dev-1498/fixview.sql and the current definition is one line, so reverting is trivial.
+
+CORRECTION TO MY OWN EARLIER ALARM IN THIS SESSION: I briefly thought a rogue daemon was firing scheduled runs every 30 minutes. It was not. A command of mine failed to write /tmp/runs.json (permission denied) and my parser silently read a PRE-EXISTING /tmp/runs.json belonging to another session, so I was reading someone else's Dagster runs. My instance has 23 runs, all ephemeral, all mine, none after 16:27, and no schedules or sensors enabled.
