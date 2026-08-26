@@ -9,7 +9,7 @@ tags: [ai-billing, needs-reply]
 links: [parent:wm-gcdq6k]
 refs: [PR-6223=https://github.com/edgefocus/efp/pull/6223]
 created: 2026-08-12T13:30:57Z
-updated: 2026-08-24T15:00:12Z
+updated: 2026-08-26T13:10:30Z
 source: claude-code
 label: Ramp vendor exception
 ---
@@ -56,3 +56,17 @@ BRITTNEY IS STILL UNANSWERED, NOW 13 DAYS. Re-read C0B6ZBZG61M today: the last m
 PR IS STILL BLOCKED ON PROCESS, NOT CODE: #6223 remains reviewDecision=CHANGES_REQUESTED and mergeStateStatus=BLOCKED. Frank reviewed on 08-20 and has not re-reviewed; pushing fixes does not clear a changes-requested state on its own, so a re-review has to be requested explicitly.
 
 THREE THINGS LEFT, in the order that unblocks fastest: (1) add 'OpenAI' and 'Anthropic' to the tuple — one line, now case-safe; (2) re-request review from fjones1985; (3) reply to Brittney, which is independent of the PR and should not keep waiting on it.
+- 2026-08-26T13:10Z [claude-code] SWEEP 2026-08-26 — THE PR SHIPPED WITHOUT THE THING THIS ITEM IS ABOUT, BUT THE RIGHT ANSWER HAS ALSO CHANGED. Read both halves before acting.
+
+(1) PR #6223 MERGED 2026-08-24 21:03Z AND IS LIVE IN PROD, and the vendor list went with it unchanged. Verified on master today: VENDORS_BOOKED_OUTSIDE_THE_EXPENSE_LEDGER = ('Cursor',). OpenAI and Anthropic are NOT there. The case-insensitivity fix DID land (LOWER(merchant) IN (lowered tuple)), so the matcher is now correct — it just has two fewer names in it than Brittney was promised.
+
+(2) BRITTNEY IS NOW 14 DAYS UNANSWERED. C0B6ZBZG61M still ends at her 2026-08-12 18:39 IST message.
+
+(3) THE SUBSTANCE HAS MOVED, AND IT ARGUABLY VINDICATES SHIPPING WITHOUT THEM. The promise was made on 2026-08-11, BEFORE the #efp-ai memo tag existed. What has happened since:
+  - Abhishek's own 2026-08-11 message already said OpenAI and Anthropic 'have been categorised correctly since 7th Feb', i.e. their ONGOING spend lands on GL 5510 and needs no vendor exception at all. Only the Jan-Feb 2026 backlog (3 OpenAI + 7 Anthropic = 10 charges) sat outside it, and that is precisely what could not be re-coded once QBO had synced.
+  - Brittney then memo-tagged that history, and the prod backfill confirms it works: PROD attribution is GL 5510 = 218, vendor rule only = 45, memo tag only = 18. The 18 memo-only rows are the Jan-Feb backlog the vendor names were going to rescue.
+  So the vendor exception is genuinely Cursor-specific — Cursor is the one AI vendor coded to 'Due From Funds' rather than 5510 — and adding OpenAI/Anthropic would now be redundant with the GL rule for new spend and redundant with the memo tag for old spend.
+
+WHAT THIS MEANS FOR THE ITEM: the code half is probably CORRECT AS SHIPPED and should not be changed without a reason. The reply half is the entire remaining obligation, and it is now a better message than the one drafted on 2026-08-12: tell Brittney the two vendors did not need adding after all, because the memo tags she applied are doing exactly that job (18 charges recovered in prod), and thank her for it. Do NOT send the older 'keep the vendor list, we still need it' framing — that was about Cursor and would read as if her memo work was wasted.
+
+STILL GENUINELY OPEN AND WORTH INCLUDING IN THE REPLY: per the DEV-970 prod log, Brittney was also going to re-code the Jan-Feb OpenAI (3) + Anthropic (7) charges in Ramp, which would move ~10 rows off the memo rule onto the GL rule. Worth telling her that is now optional rather than needed, so she does not spend time on it.
