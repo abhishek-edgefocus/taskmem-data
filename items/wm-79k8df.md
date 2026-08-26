@@ -9,7 +9,7 @@ tags: [northpond, edgex, predictions]
 links: [blocked-by:wm-qs96kd, parent:wm-3sxcre]
 refs: [DEV-1498=https://linear.app/edge-focus/issue/DEV-1498/setup-northpond-cmopbep-and-silvernorthpond-api-credit-attributes]
 created: 2026-07-20T15:25:55Z
-updated: 2026-08-24T21:15:21Z
+updated: 2026-08-26T12:47:52Z
 source: claude-code
 ---
 
@@ -115,3 +115,22 @@ PARITY EVIDENCE IS NOW RE-READABLE, not just a console log: persisted to DEV_ABH
 STAYS DRAFT ON TWO GAPS, both stated in the PR body: (1) DAG screenshot -- the asset graph changed, northpond_api_credit_attributes was added to ingest_api_output; (2) Snowflake screenshots with query-and-result in frame for the three assertions (parity, coverage, grain). The SQL is pasted in the body ready to run; only the captures are missing. Abhishek flips draft state himself -- 'gh pr ready 6462' once those are attached.
 
 Linear DEV-1498 left in Todo deliberately; ticket state is his to move.
+- 2026-08-26T12:47Z [claude-code] VALIDATION GAP, surfaced by Abhishek 2026-08-25 ('is everything tested in dev abhishek? with my local dagster setup in dpx'). Honest answer: NO. The DATA path is validated in DEV_ABHISHEK; the ORCHESTRATION path is not.
+
+RAN IN DEV_ABHISHEK (real code paths):
+- northpond_api_credit_attributes.py --date all -- built the temp table and delete-inserted 1,251 rows into DEV_ABHISHEK.SILVER.API_CREDIT_ATTRIBUTES (715 TU + 536 exp; DEV issuance/api_events are ~3 days behind PROD, hence 536 not 579). It then FAILED at consume_stream: 'Object DEV_ABHISHEK.SILVER.API_CREDIT_ATTRIBUTES_STREAM does not exist'. The rows landed BEFORE that failure. The stream is declared in terraform/snowflake/silver_api_credit_attributes.tf and DOES exist in PROD (verified: created 2026-06-25, owner PROD_WRITER), and it is on the SHARED target table, so this looks like DEV terraform drift affecting every platform's credit-attributes transform, not something specific to this change -- but that inference is NOT verified, and it means the transform has never completed a full clean run anywhere.
+- After that I DELETEd and re-INSERTed the same 1,251 rows via plain SQL so the predictors had a clean known input. So the table CONTENT the predictors read was placed by hand, not by the transform's own successful run.
+- CMOP and BEP for both channels, in-process via Predictor.run(). Proof they read DEV and not PROD is data-level, not env-var-level: candidate_efp_ids() returned 536 exp loans, which is DEV's count -- PROD's slice would have been 579.
+- Parity table write: explicit database='DEV_ABHISHEK'.
+
+RAN READ-ONLY AGAINST PROD: all exploration, plus the transform's generated SQL wrapped as a SELECT (that is where 1,294 / 715+579 comes from). Zero writes to PROD.
+
+NOT TESTED AT ALL:
+1. DAGSTER MATERIALIZE. The asset was never materialized through Dagster -- I ran the transform's module CLI directly. The wiring (create_transform_asset wrapper, deps ordering inside ingest_api_output, the api_events dep I added) is validated only STATICALLY: orchestration/scripts/check_definitions.py passes and northpond_api_credit_attributes resolves in the job's selected asset keys. This is what Abhishek is asking for and it is the right next step.
+2. run.py CLI end to end. Predictors were driven through the Predictor.run() API; only _select_predictor_classes was unit-tested for curr_mod/best_est.
+3. THE PARQUET ROUND TRIP. Predictions were written to s3://efp-sandbox/abhishek/dev-1498/ and read back with pandas for the parity diff. They were NEVER ingested through ingest_prediction_files -> s3_prediction_files -> s3_predictions -> silver.predictions, so nothing proves the rows land in silver.predictions with the right schema, nor that predicted_cashflows consumes them. This is the biggest untested seam.
+4. The md_test. Needs the per-PR ephemeral Snowflake DB; it only runs in CI. Locally only md_tests_validity_test.py passed (it checks the file parses and its table/column references resolve against terraform).
+
+PR BODY IS CURRENTLY MISLEADING ON POINT (1) and silent on (3): it says 'Validated in DEV_ABHISHEK' and gives a Deployment/Setup section, without stating that no Dagster run happened and no parquet was ingested into silver.predictions. Fix the body when dpx is reachable.
+
+DPX WAS DOWN at the time of asking -- ssh dpx.edgefocuspartners.com:22 timed out on 4 consecutive attempts, so none of this could be run then.
