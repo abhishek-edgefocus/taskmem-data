@@ -9,7 +9,7 @@ tags: [northpond, edgex, predictions]
 links: [blocked-by:wm-qs96kd, parent:wm-3sxcre, relates:wm-nyjurp]
 refs: [DEV-1498=https://linear.app/edge-focus/issue/DEV-1498/setup-northpond-cmopbep-and-silvernorthpond-api-credit-attributes]
 created: 2026-07-20T15:25:55Z
-updated: 2026-08-26T16:37:28Z
+updated: 2026-08-26T16:51:30Z
 source: claude-code
 ---
 
@@ -155,3 +155,12 @@ BLAST RADIUS CHECKED BEFORE PROPOSING THE FIX: DEV's predicted_cashflows_history
 STOPPED: the CREATE OR REPLACE VIEW was denied by the permission classifier. Did not work around it. Awaiting Abhishek's call — the exact statement is staged at dp:~/claude-ws/dev-1498/fixview.sql and the current definition is one line, so reverting is trivial.
 
 CORRECTION TO MY OWN EARLIER ALARM IN THIS SESSION: I briefly thought a rogue daemon was firing scheduled runs every 30 minutes. It was not. A command of mine failed to write /tmp/runs.json (permission denied) and my parser silently read a PRE-EXISTING /tmp/runs.json belonging to another session, so I was reading someone else's Dagster runs. My instance has 23 runs, all ephemeral, all mine, none after 16:27, and no schedules or sensors enabled.
+- 2026-08-26T16:51Z [claude-code] 2026-08-26: PR #6462 description rewritten to match his own merged-PR style (studied #6401 and #6390 rather than working from ~/pr-style.md alone). Shape now: opening paragraph with the Linear URL inline -> two-channel table -> ## What changed (bold filenames, one line each) -> 'Three things the transform gets right, each of which is wrong the obvious way' -> ## Why the preps are not empty like sofi/prep.py -> 'Additive only — nothing deleted.' -> DAG: + screenshot -> ## Validation Check|Result table -> ### Dagster runs in DEV_ABHISHEK -> **Evidence.** with italic claim captions and small result tables labelled P1..P5 -> ONE collapsed <details>Click here to expand the SQL query</details> holding all five queries commented -- P1: .. -- P5:. Per his asks: SQL is collapsible, the Deployment section is gone, and the ruff/mypy/test-count line is gone (CI shows that).
+
+INCIDENT: I clobbered his screenshot. He added it at 16:47:43Z; my  at 16:49:05Z replaced the whole body and wiped it. Recovered from GitHub's own edit history via the GraphQL userContentEdits(last: 10) field on the PR — each node's  holds the full body at that revision. Diffed his revision against mine with line endings normalised (the API returns CRLF, so a naive diff reports every line changed): his ONLY edit was swapping the <!-- DAG screenshot --> marker for the img tag, nothing else lost. Spliced the exact same img tag back into the new body and verified: 1 image, 1 details block, no Deployment section, no ruff/mypy mention.
+
+LESSON FOR ANY FUTURE PR-BODY EDIT:  is a whole-body overwrite. If the human may have touched the description, re-read the live body first and merge, or recover via userContentEdits. Do not assume the local file is current.
+
+SCREENSHOT VERIFIED by fetching it (it is an SVG, 232 KB, not a PNG despite the filename) and parsing its text nodes: shows northpond_api_credit_attributes in SILVER with kinds shared_table / silver.api_credit_attributes / Snowflake, and exactly the two upstream edges api_events (BRONZE) and northpond_stmt_issuance. Materialized 26 Aug 20:54 IST = my 15:24Z run. So it is the correct minimal DAG delta, which is what he asked for.
+
+ONE COSMETIC FLAG RAISED WITH HIM: both upstream nodes render as 'Never materialized' in that shot, confirmed via GraphQL (assetMaterializations empty for api_events and northpond_stmt_issuance on my isolated instance, one entry for the new asset). That is an artifact of the throwaway instance having no run history for upstream assets — their data comes from the DEV database mirror, not from runs on this webserver. A reviewer could misread it as a broken dependency.
