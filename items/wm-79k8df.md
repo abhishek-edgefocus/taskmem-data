@@ -9,7 +9,7 @@ tags: [northpond, edgex, predictions]
 links: [blocked-by:wm-qs96kd, parent:wm-3sxcre, relates:wm-nyjurp]
 refs: [DEV-1498=https://linear.app/edge-focus/issue/DEV-1498/setup-northpond-cmopbep-and-silvernorthpond-api-credit-attributes]
 created: 2026-07-20T15:25:55Z
-updated: 2026-08-26T12:48:11Z
+updated: 2026-08-26T15:50:39Z
 source: claude-code
 ---
 
@@ -134,3 +134,4 @@ NOT TESTED AT ALL:
 PR BODY IS CURRENTLY MISLEADING ON POINT (1) and silent on (3): it says 'Validated in DEV_ABHISHEK' and gives a Deployment/Setup section, without stating that no Dagster run happened and no parquet was ingested into silver.predictions. Fix the body when dpx is reachable.
 
 DPX WAS DOWN at the time of asking -- ssh dpx.edgefocuspartners.com:22 timed out on 4 consecutive attempts, so none of this could be run then.
+- 2026-08-26T15:50Z [claude-code] 2026-08-26: the validation gap is closed — see [[wm-u57a42]]. Dagster materialize RUN_SUCCESS (7bf8cd43), parquet round trip 80,892 rows into silver.predictions with zero loss and 0.0 diff against the gateway curves, PR #6462 body corrected. Two gaps remain before it leaves draft: the DAG and Snowflake screenshots, and predicted_cashflows which is blocked by DEV stream drift ([[wm-y8kaaz]]), not by this change.
