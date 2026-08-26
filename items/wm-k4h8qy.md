@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-08-26T12:57:35Z
+updated: 2026-08-26T19:34:12Z
 source: claude-code
 ---
 
@@ -104,3 +104,12 @@ STILL TO DO before it leaves draft (all need dpx):
 Local test run is NOT possible: Mac has system python 3.9.6 and no duckdb; repo targets 3.13 and uses 3.10+ annotation syntax at def time.
 
 NOTE recorded in the PR: neither TU nor EXP declares the purchase tape in source_tables, so a newly landed tape does not itself trigger a re-run — pre-existing v1 behaviour, deliberately not changed here.
+- 2026-08-26T19:34Z [claude-code] 2026-08-26 dashboard-harness request (Abhishek): build a scratch Grafana dashboard in the 'Abhishek' folder that copies the prod API Gateway Monitoring panels but reads DEV_ABHISHEK, to eyeball the DEV-1510 fix before it goes near prod. Explicitly disposable — DELETE IT once DEV-1510 is validated.
+
+SCRIPT WRITTEN, NOT YET RUN: scratchpad/make_dev1510_dashboard.py (Mac). GETs prod dash 6bc89871, strips id, sets uid=dev1510-npv2-owned, retitles '[DEV-1510] API Gateway Monitoring - NorthPond v2 owned (DEV_ABHISHEK)', tags dev-1510/scratch/delete-me, rewrites every queryText/rawSql through a new ${database} template var (default DEV_ABHISHEK, switchable to PROD for side-by-side), POSTs into folder uid ffmmyvk05io74f (Abhishek). Has a --delete flag for the teardown. The repoint() regex IS unit-tested offline and is idempotent (bare gold.x and PROD.GOLD.X both handled, already-rewritten strings untouched); nothing else in the script has been executed.
+
+STILL BLOCKED: dpx unreachable all session. Grafana itself IS reachable from the Mac (443 open, public IPs) — the ONLY missing piece for the dashboard is credentials, which live solely in ~/.grafana.env on dpx. So an Editor-scoped Grafana token stored on the Mac would unblock the dashboard half independently of dpx (cf [[wm-jct9pm]], though that one is Viewer scope and a different instance).
+
+VPN DIAGNOSIS: AWS VPN client is running, utun4 is up, and there IS a route to 172.31.175.73 via gateway 10.22.1.1 — but the gateway itself does not answer ICMP and traceroute is silent for 4 hops. So this looks more like the dpx INSTANCE being stopped than the tunnel being down, though AWS Client VPN commonly blocks ICMP to the gateway so it is not conclusive. Abhishek to check the AWS VPN client / whether the instance is running.
+
+NOTE the dashboard alone is not proof: DEV_ABHISHEK gold.offers_daily will not show 265 until the patched transforms are actually RUN there, which also needs dpx.
