@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-08-26T20:24:00Z
+updated: 2026-08-26T20:27:55Z
 source: claude-code
 ---
 
@@ -138,3 +138,16 @@ ORIGINAL CONFIRMED UNTOUCHED, checked twice: prod 6bc89871 still v10, updated 20
 Consequence of going lean: the dashboard no longer reads OFFERS_BUCKETED_DEV1510 (the geomaps were dropped). That table still stands and the bucketed half of the fix is still proven by SQL (v1 372 / v2 324 under BUCKET_NAME=STATE, agreeing exactly with daily). Teardown should still drop BOTH *_DEV1510 tables.
 
 STANDING PREFERENCE TO CARRY FORWARD: when building a scratch/verification dashboard, replicate only the specific panels in question — do not clone a whole dashboard.
+- 2026-08-26T20:27Z [claude-code] 2026-08-26 SCRATCH DASHBOARD WAS BROKEN — my bugs, four of them, now fixed (dash v2 -> v4). Abhishek opened it and saw nothing working.
+
+ROOT CAUSE 1 (the one he actually saw): I carried the prod dashboard's SAVED VARIABLE STATE over verbatim, which points at platform=openroad / channel=openroad_auto_refi / api_version=1. OpenRoad has approved=0 AND owned=0 in these tables, so all three stat panels read 0 and both lower timeseries were eliminated by their own 'HAVING SUM(...) > 0'. The dashboard therefore opened completely empty on a slice that has nothing to do with NorthPond. Fixed by forcing current= northpond / northpond_loan_fl / 2 / count.
+
+ROOT CAUSE 2: template-variable SQL was never repointed. My rewriter only touched keys named queryText/rawSql, but query-type Grafana variables keep their SQL under the key 'query'. So the channel and api_version dropdowns were still reading PROD.GOLD.OFFERS_DAILY while the panels read the DEV table. Fixed by adding 'query' to the rewrite key set (safe: custom vars store an options string there, which the table regexes never match). Repointed count went 6 -> 8.
+
+ROOT CAUSE 3: I hand-built the dashboard dict and omitted annotations/editable/timepicker/graphTooltip/fiscalYearStartMonth/weekStart/links. editable defaulted to FALSE, so he could not even adjust it in place. All now carried over from the source.
+
+ROOT CAUSE 4 (would have bitten next): default window was 12 months, but v1 ended 2026-01-15 — at 12M v1 shows owned=0 (evaluated only 7,684). Flipping to v1 to compare would have read as 'still broken'. Verified across windows: v1 owned = 0 (12M) / 370 (2y) / 372 (3y); v2 owned = 324 at every window. Default now now-3y so both versions are fully in frame.
+
+VERIFIED by running the dashboard's own SQL: channel var -> northpond_loan_fl + northpond_loan_fl_dark_mode; api_version var -> 1, 2; stats at the new defaults -> evaluated 230,399 / bid 0 / owned 324.
+
+LESSON: when lifting panels into a scratch dashboard, the saved template-variable state comes with them and will point wherever the source was last left. Always pin current= explicitly to the slice under test, and re-run the variable queries themselves — not just the panel queries — before calling it done.
