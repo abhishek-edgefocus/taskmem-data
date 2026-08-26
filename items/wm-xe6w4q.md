@@ -10,7 +10,7 @@ tags: [openroad, predictions]
 links: [relates:wm-79k8df, relates:wm-prm54n, relates:wm-85nuv4, parent:wm-jr5bup]
 refs: [DEV-1499=https://linear.app/edge-focus/issue/DEV-1499/setup-openroad-cmopbep]
 created: 2026-07-29T15:33:45Z
-updated: 2026-08-26T17:32:31Z
+updated: 2026-08-26T17:49:24Z
 source: claude-code
 label: OpenRoad CMOP + BEP
 ---
@@ -118,3 +118,45 @@ both runs ended with "Invalid checkin predictions ... for platform curr_mod_open
 and the best_est equivalent -- needs a checkin.py --create before the cron runs. (d) PROD terraform
 apply for the new column not planned yet; worth confirming the column add does not recreate the
 shared API_CREDIT_ATTRIBUTES_STREAM, since that stream is shared by every platform.
+- 2026-08-26T17:49Z [claude-code] CORRECTION 2026-08-26, to my own log entry above. The "back book is untrustworthy" framing was
+wrong on both halves, and the answer to DEV-1499 is that there is nothing further to build.
+
+1. NULL_PER_LOAN IS NOT ENFORCED IN THE CMOP/BEP PATH, and that is not a framework bug. The only
+enforcement site in the repo is OfferModel.offers_from_preds (lib/efp/modeling/models/offer_model.py
+:202). The predictions framework never calls offers_from_preds, make_decisions or the offer
+producer -- grep across edgefocus/modeling/predictions/ returns one comment in sofi/prep.py and no
+call. pipeline.run_prep_model goes straight to model.predict(). So the threshold is structurally
+unreachable from this path.
+
+More importantly it would not do the hoped-for thing even if reachable. It does not exclude a loan
+from scoring: it sets oc.DECISION=False, nulls oc.RATE and prepends an adverse-action reason
+"High NaNs in loan: >50%|". It is an UNDERWRITING DECLINE for a new applicant -- we cannot see
+enough of the file to make an offer -- and it runs AFTER predictions are produced, which are still
+logged via log_predictions. It was never a prediction-coverage gate. upgrade_loan_td has
+null_per_loan=None, disabled outright, which confirms it is a per-model underwriting knob rather
+than a data-quality invariant.
+
+2. THIS IS NOT AN OPENROAD PROBLEM -- anchored has the identical cliff and already ships. Measured
+the exact offers_from_preds nan_mask (features[model.get_model_columns()].isnull().mean(axis=1) >
+null_per_loan) across all six TD channels on PROD:
+  sofi 0/120 over threshold (thr 0.3), happymoney 0/59 (0.25), prosper 0/167 (0.5),
+  upgrade 0/117 (thr None), anchored 23/146 (0.5), openroad 32/34 (0.5).
+Anchored's median null fraction is 0.881 for 2023 loans and 0.000 from 2025 -- the same
+credit-pull-depth cliff openroad has at 2024-07-13.
+
+And anchored SCORES them, in production, today: for its 23 sparse loans PROD.SILVER.PREDICTIONS
+holds curr_mod 23/23 fresh to 2026-08-24 and best_est 12/23; all 23 reach
+predicted_cashflows_history and all 23 reach silver.ef_scores, the table people actually read. So
+passing sparse loans through is the established, live behaviour of this pipeline, not an oversight.
+
+3. THE 2.3x RATIO WAS NOT EVIDENCE OF ANYTHING. I claimed openroad's curr_mod mean monthly default
+running 2.3x its logged at_orig was "consistent with" 89% imputation. The anchored control refutes
+the causal link: anchored's SPARSE cohort ratio is 1.006 while its DENSE cohort is 1.439. Sparsity
+is not what moves the ratio. Openroad's 2.3x is model drift between the 2023/24 models that decided
+the loans and the 2026-06-23 model CMOP loads -- which is precisely what CMOP exists to show.
+
+CONSEQUENCE. No coverage filter, no input changes, no openroad-side workaround. Abhishek directed
+"pass what we have and let the pipeline handle it", which is what the committed code already does
+and what every other platform does. Commit 406779f45 stands as the complete answer to DEV-1499; the
+remaining work is only the deployment items in the previous entry (checkin rows, terraform apply +
+stream check, Dagster materialize / parquet round trip), plus push and open the PR.
