@@ -10,7 +10,7 @@ tags: [openroad, predictions]
 links: [relates:wm-79k8df, relates:wm-prm54n, relates:wm-85nuv4, parent:wm-jr5bup]
 refs: [DEV-1499=https://linear.app/edge-focus/issue/DEV-1499/setup-openroad-cmopbep]
 created: 2026-07-29T15:33:45Z
-updated: 2026-08-26T19:35:38Z
+updated: 2026-08-26T19:58:49Z
 source: claude-code
 label: OpenRoad CMOP + BEP
 ---
@@ -179,3 +179,8 @@ LESSON worth carrying: my first response to the [:10] comment was to elaborate t
 THE TRAP I ALMOST FELL INTO, worth remembering. The obvious fix is to copy run_test.py, which module-scope pytest.importorskips the same two conda stacks. That would have made CI green by making the tests DISAPPEAR. ci_tests.yml runs the legacy suite as 'conda python -m pytest . --ignore=edgefocus/ --ignore=orchestration/' (line 165) and the new suite as 'uv run pytest edgefocus/ orchestration/' (line 172). So everything under edgefocus/ is uv-only, and a module-scope importorskip on a conda module means the file never executes in CI. Verified: run_test.py reports '1 skipped' under uv, and conda never sees edgefocus/ -- so its ~40 registry assertions are DEAD IN CI today. Pre-existing repo coverage hole, not mine to fix in this PR, but worth raising separately.
 
 FIX: only the registry test needs run.py, so it now calls pytest.importorskip INSIDE the test. prep, predictor and base all import cleanly under uv (checked individually), so the other 8 tests collect and run there. Result: uv 33 passed / 2 skipped for the predictions dir (was a collection error), conda 40 passed. Full CI command reproduced locally -- 'PYTHONPATH=lib pytest edgefocus/ orchestration/' under uv gives 4,394 passed / 5 skipped. Legacy spot-check lib/efp/modeling/{models,auto} under conda: 202 passed.
+- 2026-08-26T19:58Z [claude-code] CI FULLY GREEN 2026-08-26 on PR #6496 head 6664f14e1: Run Tests pass 7m30s, Run integration tests pass 2m6s, Select tests pass 17s. The termcolor collection error is resolved.
+
+MISREPORT WORTH REMEMBERING: 'gh pr checks' rendered a CANCELLED job as 'fail', and I relayed that to Abhishek as a genuine test failure before checking. Integration attempt 1 (job 98299198208) sat 19m30s waiting for a runner and was cancelled, never executing; attempt 2 (98305348333) ran in 2m6s and passed, consistent with the 2m49s baseline. When a check reads as failing, query the conclusion field -- 'gh api repos/edgefocus/efp/commits/<sha>/check-runs' -- before calling it a failure, since cancelled/skipped/timed_out all surface as 'fail' in the summary view.
+
+PR state: draft, 8 files, +275/-5. Remaining before it leaves draft, both needing Abhishek: (1) terraform plan on the shared silver.api_credit_attributes must be confirmed an in-place ALTER rather than a replace, because the tf declares replace_triggered_by on API_CREDIT_ATTRIBUTES_STREAM which every platform's credit-attributes transform consumes; (2) checkin.py --create rows for curr_mod_openroad_openroad_auto_refi and best_est_openroad_openroad_auto_refi. Also still unraised as its own ticket: run_test.py's ~40 registry assertions never execute in CI (module-scope importorskip on conda-only modules + ci_tests.yml running the legacy suite with --ignore=edgefocus/), a pre-existing repo-wide hole deliberately left out of this PR.
