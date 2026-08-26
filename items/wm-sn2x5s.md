@@ -7,7 +7,7 @@ priority: p1
 tags: [openroad, data-quality, datastores]
 links: [relates:wm-jr5bup, relates:wm-skvqac]
 created: 2026-08-24T13:10:59Z
-updated: 2026-08-24T20:13:17Z
+updated: 2026-08-26T13:10:50Z
 source: claude-code
 ---
 
@@ -188,3 +188,8 @@ TWO DEV-ENVIRONMENT GAPS FOUND, both unrelated to the fix but blocking any dev t
    code location fails to import definitions.py ('No module named orchestration.agent_env'). Mounted
    it in my override. His own stack on :13053 probably has the same broken code location - worth
    checking, since it would mean his local Dagster has been dead rather than idle.
+- 2026-08-26T13:10Z [claude-code] REVIEW GAP FOUND BY THE 2026-08-26 SWEEP. PR #6459 ('DEV-1666: Fix OpenRoad ITD zeroing, the non-deterministic purchase-tape dedup, and hardcoded IS_JOINT') is OUT of draft as of 2026-08-26 12:40Z but has ZERO reviewers requested and mergeStateStatus=BLOCKED. Branch protection needs an approving review, and with nobody requested, none is coming — it will sit exactly as PR #6416 did for three days.
+
+This is the second instance this week of the same failure mode, so it is worth treating as a habit rather than a one-off: undrafting a PR does not request a reviewer, and BLOCKED reads like a merge conflict when it actually means 'no approval yet'.
+
+Linear DEV-1666 is In Progress, Medium, under 'Generic bug fixes'. One action: request reviewers on #6459. See wm-f7egzv for who has offered.
