@@ -10,7 +10,7 @@ tags: [openroad, predictions]
 links: [relates:wm-79k8df, relates:wm-prm54n, relates:wm-85nuv4, parent:wm-jr5bup]
 refs: [DEV-1499=https://linear.app/edge-focus/issue/DEV-1499/setup-openroad-cmopbep]
 created: 2026-07-29T15:33:45Z
-updated: 2026-08-20T11:52:26Z
+updated: 2026-08-26T17:32:31Z
 source: claude-code
 label: OpenRoad CMOP + BEP
 ---
@@ -56,3 +56,65 @@ follow-on work" implies. Worth settling with Abhijeet as one question rather tha
 Sequencing consequence: the silver chain has to be alive first ([[wm-85nuv4]]) — predictions are
 derived downstream of positions, and silver.positions openroad stops at 2026-07-06.
 - 2026-08-20T11:52Z [claude-code] 2026-08-20 17:20 IST: Abhishek de-prioritised CMOP+BEP for OpenRoad — low priority.
+- 2026-08-26T17:32Z [claude-code] IMPLEMENTED 2026-08-26 on branch abhishek/dev-1499-setup-openroad-cmopbep (dpx workspace
+~/claude-ws/dev-1499/efp, commit 406779f45, NOT pushed). Much smaller than the northpond
+analogue on [[wm-79k8df]] -- but the useful output is a finding, not the code.
+
+WHAT WAS ALREADY DONE, contrary to the sizing note on this item. openroad_api_credit_attributes.py
+exists on master, targets the SHARED silver.api_credit_attributes (the new preferred table -- there
+is no per-platform openroad credit table), has a Dagster asset, and is already in the
+ingest_api_output job selection. The cfframe config for openroad_auto_refi is in both the git
+history and the overrides file, and the current model is registered in models_by_channel.json. So
+the only gap was the predictor package. Answering the question directly: yes, api_credit_attributes
+is the right table and openroad already uses it -- no new table needed.
+
+SCOPE REALITY. OpenRoad is a 35-loan pilot. All 35 purchased, last purchase 2024-12-12, nothing
+since. realized_cashflows_from_origination covers all 35 fresh to 2026-08-21, so BEP was never
+blocked here the way it was for northpond.
+
+WHAT SHIPPED (8 files, +243). openroad/{prep,predictor,prep_test}.py, run.py + run_test.py
+registration, one column on the shared credit table (terraform + transform), md_test updated.
+
+TWO PLATFORM-SPECIFIC BUGS, both measured not guessed.
+1. MAXIMUM_LTV fan-out. OpenRoadOfferModel is a MultiOfferModel with 19 MAXIMUM_LTV_FACTORS. With
+   ec.maximum_ltv absent it treats LTV as an offer axis: 35 loans -> 665 rows, ids rewritten to
+   "openroad_4841228-0.5", and run_prep_model then cannot map back to efp_id. The LTV is NOT in the
+   gateway payload, so silver.api_credit_attributes gained a nullable openroad-only MAXIMUM_LTV
+   (same shape as the existing upgrade-only RATE_MEAN) read via _EXTRA_CREDIT_COLUMNS. Real
+   per-loan input: 12 distinct values 0.70..1.40 across 34 loans -- not hardcodable. Abhishek chose
+   the shared-column route over overriding load_credit_features when asked.
+2. Duplicate c_term. OPENROAD_MAP renames applicationInformation.requestedTerm/requestedAmount onto
+   ec.TERM/ec.AMOUNT which the base prep already pins; features_from_credit then sums over a
+   DataFrame slice and dies with "unsupported operand type(s) for +: 'int' and 'str'". Prep drops
+   the raw keys. The openroad adapter never re-derives amount/term, so unlike northpond nothing has
+   to be written back into the raw key.
+
+THE PARITY GATE IS IMPOSSIBLE HERE -- established, not assumed. All 34 funded loans were decided
+2023-06-30..2024-11-13 under openroad_model/policy v1; the registered model is the 2026-06-23
+artifact. Date-pinning per loan does not rescue it: 8 of 9 historical cohorts (32 loans) have no
+offer_model artifact left in s3://efp-derived/modeling/statics, and the 9th (20241004v1, 2 loans)
+raises ModelStaticUnloadable against the current lib/ checkout. Evidence substituted: 9 unit tests
+that mutation-test both behaviours without an artifact, plus the DEV run.
+
+THE FINDING THAT ACTUALLY MATTERS, and it is a go/no-go question for Abhijeet. Only 3 of 35 loans
+(decided 2024-07-13 onward) carry the credit attributes the current model reads -- 146 of its 148
+source keys populated. The other 32 populate 14. The pulls are not thin overall (~917
+transunionCreditAttributes fields each); the gateway simply pulled a narrower set before
+2024-07-13. So 32 of 35 loans would score with ~89% of model inputs imputed, above the model's own
+NULL_PER_LOAN = 0.5 threshold. CMOP mean monthly default comes out 2.3x the logged at_orig curves,
+consistent with that. The pipeline works; the numbers it produces for the back book should not be
+trusted. Future originations get full coverage.
+
+VALIDATED IN DEV_ABHISHEK: transform --date all = 35 rows, LTV 35/35 populated, other platforms
+still NULL, stream consumed clean; curr_mod 35 loans/2,507 rows; best_est 20 terminal dropped, 15
+scored/1,067 rows; pinned columns non-duplicated, zero nulls. ruff + mypy + dagster
+check_definitions clean; 39 prediction tests, 3,090 transformations/orchestration tests, 44 md_test
+validity tests pass.
+
+NOT DONE. (a) Not pushed, no PR -- waiting on the go/no-go above, since a PR that enables scoring
+for 32 untrustworthy loans may not be what is wanted. (b) Dagster materialize of the asset and the
+parquet round trip into silver.predictions not run (the dev-1498 gaps). (c) checkin rows missing:
+both runs ended with "Invalid checkin predictions ... for platform curr_mod_openroad_openroad_auto_refi"
+and the best_est equivalent -- needs a checkin.py --create before the cron runs. (d) PROD terraform
+apply for the new column not planned yet; worth confirming the column add does not recreate the
+shared API_CREDIT_ATTRIBUTES_STREAM, since that stream is shared by every platform.
