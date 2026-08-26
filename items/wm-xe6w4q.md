@@ -10,7 +10,7 @@ tags: [openroad, predictions]
 links: [relates:wm-79k8df, relates:wm-prm54n, relates:wm-85nuv4, parent:wm-jr5bup]
 refs: [DEV-1499=https://linear.app/edge-focus/issue/DEV-1499/setup-openroad-cmopbep]
 created: 2026-07-29T15:33:45Z
-updated: 2026-08-26T18:06:38Z
+updated: 2026-08-26T19:11:37Z
 source: claude-code
 label: OpenRoad CMOP + BEP
 ---
@@ -161,3 +161,16 @@ and what every other platform does. Commit 406779f45 stands as the complete answ
 remaining work is only the deployment items in the previous entry (checkin rows, terraform apply +
 stream check, Dagster materialize / parquet round trip), plus push and open the PR.
 - 2026-08-26T18:06Z [claude-code] PR OPEN AS DRAFT 2026-08-26: https://github.com/edgefocus/efp/pull/6496 (branch pushed, base master, 8 files +243/-5, isDraft=true). Body follows ~/pr-style.md: what changed -> 'DAG - unchanged.' (no orchestration/ file touched; the asset and its job entry already existed) -> Validation. Each evidence piece is a titled claim with the SQL in a <details> block and the result table visible outside it. States plainly that the transform ran via its module CLI and the predictors via the run.py CLI, NOT through local Dagster, so there are no Dagster run URLs, and that the parquet round trip into silver.predictions was not exercised. Includes the anchored comparison as the precedent argument, plus the two named non-bugs (null_per_loan is an underwriting decline not a prediction gate; the 2.30x ratio is model drift, with anchored's 1.006 sparse vs 1.439 dense as the control). Deployment/Setup is 4 numbered steps: tf-apply with the in-place-vs-replace check on the shared API_CREDIT_ATTRIBUTES_STREAM, backfill the openroad slice, create the two checkin rows, then watch the first ingest_prediction_files tick.
+- 2026-08-26T19:11Z [claude-code] REVIEW FIX 2026-08-26 (PR #6496, commit dabfe8f08): removed the missing-LTV guard in openroad/prep.py entirely. Abhishek flagged it as hacky and he was right on two counts.
+
+It defended against nothing. offer_model.py:453 branches on ec.maximum_ltv being ABSENT AS A COLUMN, not on its value -- so a NaN LTV suppresses the 19x fan-out exactly as well as a real one. The guard was protecting an invariant that was never at risk.
+
+It was also on the wrong side of a rule this codebase already documents. northpond/prep.py states it outright: a missing feature VALUE is coerced and left to the model, a missing COLUMN is a query bug and raises. Surveyed every platform prep/predictor: missing-column raises exist (northpond/prep.py:48, prosper/predictor.py:183); missing-VALUE is coerced everywhere -- northpond, sofi, upgrade, happymoney, prosper -- and nobody raises. The single null-value raise is marlette/predictor.py:164 on FUNDED_DATE, an ANCHOR date that misplaces the whole curve on the time axis rather than degrading one feature, and even northpond handles its equivalent MOB anchor by warning and dropping the loan (northpond/predictor.py:429) rather than raising. So the openroad guard was the only one of its kind.
+
+And it contradicted this PR's own position: openroad scores loans with ~89% of model inputs NaN by design (the sparse-back-book finding), so hard-failing the whole channel on ONE NaN input was incoherent.
+
+Structural case still covered with no guard: base.py:810 reads each _EXTRA_CREDIT_COLUMNS entry off the credit table, so a missing MAXIMUM_LTV column (e.g. terraform not applied) raises KeyError naming the column at load time, before the prep runs.
+
+prepare_features is now 3 lines. _MAX_REPORTED_IDS -- added one commit earlier to fix the silent [:10] truncation Abhishek also flagged -- is gone with it, which resolves that comment properly rather than elaborating around it. Tests: swapped the 3 error-message assertions for the invariant that matters (NaN LTV still yields the column so the fan-out stays suppressed; coerced not filled). 40 prediction tests pass, ruff/mypy clean. Re-ran curr_mod after the change: 35 loans, 2,507 rows, same 'Not overwriting provided maximum LTV' branch -- byte-identical behaviour to before the simplification.
+
+LESSON worth carrying: my first response to the [:10] comment was to elaborate the block (named constant + truncation suffix + 2 tests) when the correct response was to delete it. Check whether a flagged construct should exist before improving it.
