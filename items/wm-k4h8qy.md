@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-08-26T19:34:12Z
+updated: 2026-08-26T20:11:03Z
 source: claude-code
 ---
 
@@ -113,3 +113,21 @@ STILL BLOCKED: dpx unreachable all session. Grafana itself IS reachable from the
 VPN DIAGNOSIS: AWS VPN client is running, utun4 is up, and there IS a route to 172.31.175.73 via gateway 10.22.1.1 — but the gateway itself does not answer ICMP and traceroute is silent for 4 hops. So this looks more like the dpx INSTANCE being stopped than the tunnel being down, though AWS Client VPN commonly blocks ICMP to the gateway so it is not conclusive. Abhishek to check the AWS VPN client / whether the instance is running.
 
 NOTE the dashboard alone is not proof: DEV_ABHISHEK gold.offers_daily will not show 265 until the patched transforms are actually RUN there, which also needs dpx.
+- 2026-08-26T20:11Z [claude-code] 2026-08-26 VALIDATED IN DEV_ABHISHEK — dpx came back (225d uptime, so it was the VPN tunnel, never the box).
+
+NUMBER CORRECTION: the owned figure is 324, NOT the 265 I logged on 08-22. Not an error in the earlier query — the purchase tape GREW. Tape went 637 -> 696 apps (59 landed 2026-08-22..25), and 265+59 = 324 exactly. Split is still a clean partition: 696 = 372 TU(v1) + 324 EXP(v2) + 0 unmatched. Treat the number as moving daily, not fixed.
+
+PROOF (read-only, transform's own generated SQL, full v2 range 2026-01-16..2026-08-26):
+  BEFORE owned_join_table='' : total=230406 approved=0 owned=0   day-rows=225
+  AFTER  tape joined         : total=230406 approved=0 owned=324 day-rows=225
+total and approved byte-identical; only owned moves. 324 are DISTINCT apps, not double counts — APP_CHANNEL_PAIRS=324, DISTINCT_APPS=324, all in one channel, first_as_of_date 2026-07-29..2026-08-21 all inside the window.
+
+MATERIALIZED: DEV_ABHISHEK.GOLD.OFFERS_DAILY_DEV1510 and OFFERS_BUCKETED_DEV1510 = prod rows for everything EXCEPT northpond v2, that slice recomputed from the branch. Deliberately did NOT touch the pre-existing DEV_ABHISHEK.GOLD.OFFERS_DAILY/OFFERS_BUCKETED — another session may own them. Daily and bucketed agree exactly (v1 372 / v2 324 in both), which is the real consistency check since the stat row and the geomap read different tables.
+
+DASHBOARD CREATED: /d/dev1510-npv2-owned 'API Gateway Monitoring - NorthPond v2 owned (DEV_ABHISHEK)', folder Abhishek, tags dev-1510/scratch/delete-me. Copy of prod 6bc89871 with ONLY gold.offers_daily + gold.offers_bucketed repointed (32 queries rewritten); every other table still reads PROD so unrelated panels keep working. Panel sim confirms: panel 12 stat v2 owned=324, panel 15 timeseries 22 non-zero days (so it renders instead of being eaten by HAVING >0), panel 20 geomap FL 92 / MI 43 / VA 35 / GA 34 / TN 22 / OH 18, v1 unchanged 246768/0/372.
+
+TEARDOWN when DEV-1510 closes: python3 /tmp/make_dev1510_dashboard.py --delete on dpx (script also in Mac scratchpad), then DROP the two *_DEV1510 tables.
+
+PR #6491 body rewritten with all of the above. STILL DRAFT — remaining gap is the duckdb unit test over generate_shared_daily_sql; the prod-data proof is stronger but the repo convention wants an executable test. Workspace is ~/claude-ws/dev-1510/efp (isolated clone, not ~/repos).
+
+STILL UNFIXED and called out in the PR: Applications Bid = 0 on BOTH v1 and v2. Confirmed again in the materialized tables. That is the decision-half of DEV-1510.
