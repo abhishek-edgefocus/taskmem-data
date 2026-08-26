@@ -9,7 +9,7 @@ tags: [oncall]
 links: [parent:wm-3y3ckv]
 refs: [ERROR-1231=https://linear.app/edge-focus/issue/ERROR-1231/northpond-issued-missing-gateway-responses-15-issued-northpond-loans]
 created: 2026-07-14
-updated: 2026-08-25T17:57:28Z
+updated: 2026-08-26T13:10:10Z
 source: dpx-tasks #7
 label: NorthPond 15 missing loans
 ---
@@ -151,3 +151,10 @@ FINAL STATE (was -> now)
 
 EXPECTED: the 08:00 UTC alert should be SILENT from 2026-08-26 onward. Confirm tomorrow before closing ERROR-1231.
 STILL OPEN AND NOT DONE BY THIS SESSION: (1) reply to Sanjali, (2) dedupe ERROR-1721 onto ERROR-1231, (3) the ~$360-450 July billing credit - manual, Abhishek's call, and note the invoice ALREADY went out 2026-08-03 so re-running generate_monthly_fee.py would double-invoice, (4) escalate that the 3 loans were DECLINED (decision=false) and NorthPond funded them anyway, (5) design-bug ticket for the stateless alert + permanent skip, (6) scope call on sofi/openroad which lost the same 3 days in MySQL.
+- 2026-08-26T13:10Z [claude-code] POST-FIX VERIFICATION 2026-08-26 13:07 UTC. Today's 08:00 UTC issued.py run was SILENT - the fix holds.
+ - EFP-ERRORS-15E (-> ERROR-1231): last seen 2026-08-25T08:00:07Z, 82 occurrences, status now RESOLVED. No 2026-08-26 event.
+ - EFP-ERRORS-1P8 (-> ERROR-1721, the duplicate): last seen 2026-08-25T08:00:07Z, 5 occurrences, status now RESOLVED. No 2026-08-26 event.
+ - Both 08-25 events still listed all 25 loans, which is correct and expected: that run was at 08:00 UTC and the fix was applied later the same day (15:36-17:56 UTC). 2026-08-26 is therefore the FIRST post-fix run, and it produced nothing.
+ - No 'Heartbeat for northpond:issued has not checked in' alert in the last 7 days, so the job is still running and checking in rather than silently not executing.
+CAVEAT, stated honestly: heartbeat staleness has a threshold and a single missed daily run might not trip it, so 'no heartbeat alert' is strong but not conclusive proof the cron fired today. The direct confirmation - new rows in northpond.issued for 08-25/08-26 and current model_responses dates - could NOT be run because dpx is unreachable right now (ssh to dpx.edgefocuspartners.com:22 timed out twice, VPN likely down). Worth one verify_1231.py run when dpx is back before closing the ticket.
+Both Sentry issues auto-resolving is itself corroboration: Sentry marks an issue resolved when it stops recurring.
