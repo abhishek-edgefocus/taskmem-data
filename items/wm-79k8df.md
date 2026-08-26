@@ -9,7 +9,7 @@ tags: [northpond, edgex, predictions]
 links: [blocked-by:wm-qs96kd, parent:wm-3sxcre, relates:wm-nyjurp]
 refs: [DEV-1498=https://linear.app/edge-focus/issue/DEV-1498/setup-northpond-cmopbep-and-silvernorthpond-api-credit-attributes]
 created: 2026-07-20T15:25:55Z
-updated: 2026-08-26T15:50:39Z
+updated: 2026-08-26T16:18:58Z
 source: claude-code
 ---
 
@@ -135,3 +135,8 @@ PR BODY IS CURRENTLY MISLEADING ON POINT (1) and silent on (3): it says 'Validat
 
 DPX WAS DOWN at the time of asking -- ssh dpx.edgefocuspartners.com:22 timed out on 4 consecutive attempts, so none of this could be run then.
 - 2026-08-26T15:50Z [claude-code] 2026-08-26: the validation gap is closed — see [[wm-u57a42]]. Dagster materialize RUN_SUCCESS (7bf8cd43), parquet round trip 80,892 rows into silver.predictions with zero loss and 0.0 diff against the gateway curves, PR #6462 body corrected. Two gaps remain before it leaves draft: the DAG and Snowflake screenshots, and predicted_cashflows which is blocked by DEV stream drift ([[wm-y8kaaz]]), not by this change.
+- 2026-08-26T16:18Z [claude-code] 2026-08-26 (later): predicted_cashflows gap CLOSED. After fixing the DEV stream drift wholesale ([[wm-y8kaaz]], 120 streams created, DEV now 133/133 vs terraform), predicted_cashflows ran through Dagster to RUN_SUCCESS (run 3fbcedeb-82f4-4401-86ed-597ba7c079aa) and consumed all four new slices into silver.predicted_cashflows_history: curr_mod 30,745 rows/715 loans on northpond_loan_fl and 19,296/536 on northpond_exp_loan_fl; best_est 26,334/462 and 22,962/534. Loan counts match silver.predictions exactly, so the new northpond_exp_loan_fl channel value is consumed correctly by the downstream cashflow stage — that was the main open risk of introducing a second channel. MOB extends past 36 on the curr_mod/best_est slices (to 43 and 57) because those are scored with elapsed seasoning and the cfframe adds payment_lag 4 + recovery_lag 6; expected, not a defect.
+
+PR #6462 body updated again: the drift paragraph now says it was found AND fixed (13 of 133 -> 133 of 133, with the openroad control test kept as the proof it was never this change's fault), a predicted_cashflows row was added to the validation table, and the predicted_cashflows caveat was removed from 'still draft because'. Only the two screenshots remain.
+
+NOT DONE, deliberately, and not claimed anywhere: the gold layer beyond predicted_cashflows — best_est_projections_at_orig, gold.predicted_cashflows_mob, gold.predicted_cashflows_calendar_month, ef_scores. Those would prove the new channel survives to the gold tables people actually read. Cheap to add now that the streams exist.
