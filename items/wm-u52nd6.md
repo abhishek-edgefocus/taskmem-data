@@ -11,7 +11,7 @@ tags: [northpond, oncall, api-health]
 links: [parent:wm-3y3ckv, relates:wm-9kvv8c, parent:wm-d3qnqe]
 refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-07-29T13:43:02Z
-updated: 2026-08-26T13:10:49Z
+updated: 2026-08-27T17:17:43Z
 source: claude-code
 label: Experian 401 OAuth fix DEV-1478
 ---
@@ -189,3 +189,20 @@ EXPECTATION AFTER THE FIX -- and this is the part worth setting straight before 
 ZERO REVIEWS SUBMITTED IN TWO DAYS. reviews[] is empty; mergeStateStatus=BLOCKED is branch protection waiting on an approving review. So the thing I flagged on 2026-08-24 (green fix invisible in draft) is fixed — the ball is now in the reviewers' court, not his, which is why this is waiting rather than next. Set nudge=2026-08-27: if no review has landed by then, chase in #platform-data-owners, where he already has a live reviewer-swap thread from 2026-08-21.
 
 Worth remembering when chasing: Sanjali chased HIM on this on 2026-08-20 and he committed to shipping it this week. The code has been ready since 08-21; only review latency is left.
+- 2026-08-27T17:17Z [claude-code] DEPLOYED TO PRODUCTION 2026-08-27. Jenkins 'Endpoint - NorthPond / Production - Model and Gateway Task' build #64, Finished: SUCCESS, total 1384.76s.
+
+WHAT SHIPPED: gateway = 662f8db57c36be0d8fc8fc4716c555ab52dc56e7 (master HEAD at deploy time; our merge b9503fa62 verified as an ancestor, and the handler at that commit confirmed to contain requested_at = time.monotonic(), _TOKEN_REFRESH_BUFFER_SECONDS = 65, _TOKEN_REJECTED_STATUS = 401). Model UNCHANGED at b04ca1f63 -- log line 'b04ca1f63... already present in ECR', so the ERROR-1231 stale-model trap was avoided. Launch template v61 -> v62.
+
+ROLLOUT: new instance i-01e90004b90d04bf1 added 16:55:44Z, SUCCESS signal 17:12:29Z (17 min of the 35 min PT35M budget), old instance i-056d7ea8af704b40b terminated 17:12:31Z, stack UPDATE_COMPLETE 17:12:35Z. Zero customer impact: HTTPCode_ELB_5XX_Count and HTTPCode_Target_5XX_Count both returned NO datapoints across the window, and RequestCount per 5min ran 89/85/90/74/90/95 straight through the swap.
+
+HEALTH-CHECK PROGRESSION during cold load (useful for the next deploy, it looks alarming and is not): Target.FailedHealthChecks -> Target.Timeout -> Target.ResponseCodeMismatch -> healthy. The Timeout phase is CPU starvation on a t3a.medium (2 vCPU running 2 gateway + 2 model gunicorn workers while the model loads artifacts).
+
+CORRECTION I MADE MID-DEPLOY: I raised a possible traffic-gap alarm on seeing new=unhealthy + old=draining in one poll frame. That was a stale 30s frame. CFN proves the ordering was correct -- SUCCESS signal at 12:12:29 preceded termination at 12:12:30, and that signal only fires after the instance's own user-data loop gets 200 from /server-status.
+
+ALSO CORRECTED: I had flagged the 4 CVE dependency bumps as the highest-risk part of this deploy. The Docker build shows Steps 7-16 ALL 'Using cache', including COPY requirements.txt and pip install. Only Step 17 (COPY repo-code) changed. The runtime environment is byte-identical to the previous image, so that risk did not materialise -- but it also means those CVE bumps may not actually be in the running image. Worth a separate check.
+
+BASELINE (24h pre-deploy, captured 16:36:30Z): Experian 200=13,360 / 400=20 / 401=4 / 403 absent; token mints 151/day; retry warnings 0. First 20 min post-deploy: 200 x 329, 4 mint/retry-class lines, zero 401s -- far too early to mean anything.
+
+STILL TO VERIFY (the actual point of the PR): 401 count should go to ~0 against the 4/day baseline, and the new warning 'discarding the cached token and retrying once' should stay silent. If it fires steadily, a second mechanism retires tokens and the round-trip diagnosis is incomplete. Give it 24h. Also confirm the null-creditGrade rate holds at ~5.30% of scoring (705/day on 2026-08-19) -- a move there would indicate one of the other 413 commits broke something.
+
+REVERT (still valid): same Jenkins job, gateway_branch=622bb331e42037f41439db450da89e3b493887c1, model_tag=model_northpond_exp_20260701_191417_UTC. Both images still in ECR, no lifecycle policy.
