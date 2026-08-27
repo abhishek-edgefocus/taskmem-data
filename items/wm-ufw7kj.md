@@ -2,7 +2,7 @@
 id: wm-ufw7kj
 type: task
 title: Investigate NULL/missing Clarity attributes in the Experian Activate model container (DEV-1490)
-status: next
+status: active
 priority: p2
 size: m
 people: [Nate]
@@ -10,7 +10,7 @@ tags: [northpond, experian-activate, api-health]
 links: [relates:wm-mmmc9t, follows:wm-9dx47e, parent:wm-d3qnqe]
 refs: [DEV-1490=https://linear.app/edge-focus/issue/DEV-1490/investigate-how-the-northpond-experian-model-container-handles-null]
 created: 2026-07-31T12:54:52Z
-updated: 2026-08-27T14:25:33Z
+updated: 2026-08-27T14:25:41Z
 source: claude-code
 label: Activate NULL Clarity attributes
 ---
