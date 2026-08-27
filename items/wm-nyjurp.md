@@ -8,7 +8,7 @@ size: s
 tags: [northpond, predictions]
 links: [blocked-by:wm-79k8df, parent:wm-3sxcre]
 created: 2026-08-24T21:06:38Z
-updated: 2026-08-27T13:14:56Z
+updated: 2026-08-27T13:23:15Z
 source: claude-code
 ---
 
@@ -60,3 +60,8 @@ Run the `northpond_api_credit_attributes` asset (job `ingest_api_output`, group 
 TIMING: the curr_mod cron is 13:30 UTC daily, best_est 14:00 UTC Sundays. Backfilling before 13:30 gets CMOP the same day; after it, the tick is a harmless no-op and CMOP waits until the next day. best_est additionally needs silver.realized_cashflows_from_origination, which is populated for northpond (11.5k rows / 1,075 loans).
 
 AFTER THE BACKFILL, confirm silver.predictions gains PREDICTION_TYPE curr_mod (then best_est) with SOURCE 's3' under BOTH channels for PLATFORM 'northpond'. Expect roughly 715 loans on northpond_loan_fl and 595 on northpond_exp_loan_fl for curr_mod; best_est will be lower because terminal loans are dropped.
+- 2026-08-27T13:23Z [claude-code] 2026-08-27: DONE. Abhishek launched it in prod Dagster — run 8ff3a5fa-43b9-4c5c-9243-60e6dbcb4424, SUCCESS in 37.3s, asset selection correctly scoped to northpond_api_credit_attributes alone (job __ASSET_JOB, not the whole ingest_api_output), config as_of_date: all.
+
+RESULT MATCHES THE PREDICTED ACCEPTANCE NUMBER EXACTLY: rows_inserted 1310, rows_deleted 0. Verified independently in Snowflake, not just from the run metadata — PROD.SILVER.API_CREDIT_ATTRIBUTES now holds 715 rows on CHANNEL northpond_loan_fl (AS_OF_DATE 2024-10-09 -> 2026-01-12) and 595 on northpond_exp_loan_fl (2026-01-20 -> 2026-08-25), zero nulls across AMOUNT/TERM/RATE/MONTHLY_PAYMENT/PAYLOAD, zero duplicate (EFP_ID, AS_OF_DATE) keys. Every other platform slice unchanged (anchored 358, happymoney 204, openroad 34, prosper 284, sofi 12,254, upgrade 20,429).
+
+WHAT STILL HAS TO HAPPEN FOR CMOP/BEP ROWS TO APPEAR, and it is not instant at 13:30Z. The curr_mod cron on dumbledore writes PARQUET to s3://efp-raw/predictions; the rows only reach silver.predictions when the ingest_prediction_files job next runs. In prod that job is on schedule ingest_prediction_files_schedule, cron */30 * * * *, status RUNNING. So expect a lag of up to ~30 minutes after 13:30Z before curr_mod rows are queryable, and confirm there rather than at 13:30 sharp.
