@@ -2,7 +2,7 @@
 id: wm-nyjurp
 type: task
 title: Backfill the northpond slice of silver.api_credit_attributes in PROD (1,294 loans) before the CMOP/BEP crons run
-status: next
+status: done
 priority: high
 size: s
 tags: [northpond, predictions]
