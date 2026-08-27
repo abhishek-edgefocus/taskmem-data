@@ -9,7 +9,7 @@ tags: [northpond, edgex, predictions]
 links: [blocked-by:wm-qs96kd, parent:wm-3sxcre, relates:wm-nyjurp]
 refs: [DEV-1498=https://linear.app/edge-focus/issue/DEV-1498/setup-northpond-cmopbep-and-silvernorthpond-api-credit-attributes]
 created: 2026-07-20T15:25:55Z
-updated: 2026-08-26T20:12:32Z
+updated: 2026-08-27T13:14:39Z
 source: claude-code
 ---
 
@@ -203,3 +203,12 @@ WHY THE PREMISE DOES NOT TRANSFER: every other platform package holds ONE predic
 REQUEST NOT FOUND ANYWHERE I CAN READ: GitHub review bodies (1 review, nakula-efp APPROVED, body is the parity-test suggestion only), GitHub inline review comments (0), GitHub issue comments (only the linear-code linkback and Nakula's approval note), Linear comments on DEV-1498 (0). So it likely came via Slack or in person.
 
 OPTIONS PUT TO HIM: (a) leave as td_predictor.py/td_prep.py — zero risk, PR is approved and green; (b) rename the incumbents to exp_statement_predictor.py/exp_statement_prep.py and take the plain names for TD — touches merged code plus the asset import, widens the PR past DEV-1498; (c) subpackages northpond/td/ and northpond/exp/ — cleanest, biggest diff, also touches merged code. Recommended (a) now, (b) or (c) as a follow-up PR so the rename of merged code gets its own review.
+- 2026-08-27T13:14Z [claude-code] 2026-08-27: MERGED AND DEPLOYED. PR #6462 merged 11:27:52Z (squash cc4ac6496f48); deploy-dagster-prod succeeded 12:56:40Z on master. Verified the transform and both predictor modules are on origin/master. Nakula approved; his parity suggestion was answered in the description rather than with a code change, and the td_predictor/td_prep rename he was said to want was not done — both target filenames are taken on master by OlivExpStatementPredictor/OlivExpStatementPrep, and the request could not be found in any GitHub review, inline comment or Linear comment.
+
+PROD STATE AT 13:12Z, checked not assumed: PROD.SILVER.API_CREDIT_ATTRIBUTES has ZERO northpond rows, and northpond predictions are still at_orig only (api 25,740/715 and s3 37,908/595). So the code is live and the data is not. The crons will select northpond_loan_fl and northpond_exp_loan_fl and produce nothing until the backfill runs, because the credit table IS the turndown universe.
+
+BACKFILL ACCEPTANCE NUMBER REFRESHED against PROD today: 1,310 rows — 715 northpond_loan_fl (2024-10-09 -> 2026-01-12) and 595 northpond_exp_loan_fl (2026-01-20 -> 2026-08-25), zero nulls across AMOUNT/TERM/RATE/MONTHLY_PAYMENT/PAYLOAD, zero duplicate (EFP_ID, AS_OF_DATE) keys. Note this is up from the 1,294 quoted in the PR: the issuance book has grown to 1,365 first-seen loans since the PR was written, so quoting 1,294 as the target would look like a shortfall. wm-nyjurp updated with the new number.
+
+TIMING: checked at 13:12Z, the curr_mod cron fires 13:30 UTC daily and best_est 14:00 UTC Sundays.
+
+NOTES REFRESHED (wm-e9bhr2): finding 11's "Branch, not prod ... not merged, not even pushed" paragraph replaced with the merged-and-deployed-but-not-backfilled state, carrying the merge/deploy timestamps, the 1,310 acceptance number and the pre-merge parity result so it is not re-derived. Dated the "1,294 funded loans" measurement since the book has moved. meta.md stamped in the same edit — freshness row, known-stale item 4 rewritten, change log entry. Another session had added a finding 12 in the meantime; patched around it rather than over it. Mirrored to dpx.
