@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-08-26T20:27:55Z
+updated: 2026-08-27T12:57:09Z
 source: claude-code
 ---
 
@@ -151,3 +151,14 @@ ROOT CAUSE 4 (would have bitten next): default window was 12 months, but v1 ende
 VERIFIED by running the dashboard's own SQL: channel var -> northpond_loan_fl + northpond_loan_fl_dark_mode; api_version var -> 1, 2; stats at the new defaults -> evaluated 230,399 / bid 0 / owned 324.
 
 LESSON: when lifting panels into a scratch dashboard, the saved template-variable state comes with them and will point wherever the source was last left. Always pin current= explicitly to the slice under test, and re-run the variable queries themselves — not just the panel queries — before calling it done.
+- 2026-08-27T12:57Z [claude-code] 2026-08-26 DASHBOARD REBUILT FROM SCRATCH (3rd attempt). Abhishek: 'still broken — and the problem is that it's still a copy of the prod dashboard rather than what I asked for.' Correct: v2-v4 were all derived from prod 6bc89871 by GET + rewrite, which is why prod's baggage (saved variable state, unused vars, HAVING>0, prod-pointed var queries) kept leaking through. v5 is AUTHORED, and the build script no longer reads 6bc89871 at all.
+
+SHAPE: 6 data panels + 1 markdown note. Stats row (ids 100/101/102) and timeseries row (200/201/202) = Evaluated / Bid / Owned. Exactly ONE variable, api_version, a CUSTOM var with options 1,2 (no query, so nothing to point at the wrong database). platform='northpond' and channel='northpond_loan_fl' are INLINED in all 6 queries — no selectors. Table is DEV_ABHISHEK.GOLD.OFFERS_DAILY_DEV1510 in every query. Default time 2024-04-01 -> now (absolute, so v1 which ends 2026-01-15 is always in frame). Dropped HAVING SUM(...)>0 deliberately: a real zero now draws a flat line instead of an empty panel, which is the whole point when Bid is legitimately 0.
+
+VERIFICATION IS NOW READ-BACK, not trust-the-rewriter: the script GETs the deployed dashboard and asserts (a) every queryText contains the DEV_ABHISHEK table, (b) every queryText contains the hardcoded platform and channel literals, (c) templating list == exactly ['api_version'], (d) zero 'PROD.' references after masking DEV_ABHISHEK, (e) no leftover $platform/$channel refs. Exits non-zero on any failure. All PASS at v5.
+
+DATA CONFIRMED for both versions at the dashboard's own default window: v1 = 246,768 / 0 / 372 over 521 day-points (180 with owned>0); v2 = 230,399 / 0 / 324 over 218 day-points (22 with owned>0). Both render.
+
+PROD UNTOUCHED (checked again after): 6bc89871 still v10, 2026-08-21 by kabeer, 25 panels, 0 DEV_ABHISHEK refs.
+
+OPEN DEVIATION TO RESOLVE WITH HIM: he asked for the dashboard to read 'the same tables the job writes, in DEV_ABHISHEK' — that would be DEV_ABHISHEK.GOLD.OFFERS_DAILY, not my *_DEV1510 suffixed copy. I used the suffix to avoid clobbering the pre-existing DEV_ABHISHEK.GOLD.OFFERS_DAILY (10,429 rows) which another parallel session may own. Schema and the northpond slice are identical, so the answer is the same, but the table NAME differs from the job's real target. Needs his call: overwrite the real table or keep the suffix.
