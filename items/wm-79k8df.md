@@ -2,7 +2,7 @@
 id: wm-79k8df
 type: task
 title: Scope: enable CMOP + BEP predictions for NorthPond (~400-550 LOC)
-status: open
+status: done
 priority: p3
 size: l
 tags: [northpond, edgex, predictions]
