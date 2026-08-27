@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-08-27T12:57:09Z
+updated: 2026-08-27T13:14:34Z
 source: claude-code
 ---
 
@@ -162,3 +162,20 @@ DATA CONFIRMED for both versions at the dashboard's own default window: v1 = 246
 PROD UNTOUCHED (checked again after): 6bc89871 still v10, 2026-08-21 by kabeer, 25 panels, 0 DEV_ABHISHEK refs.
 
 OPEN DEVIATION TO RESOLVE WITH HIM: he asked for the dashboard to read 'the same tables the job writes, in DEV_ABHISHEK' — that would be DEV_ABHISHEK.GOLD.OFFERS_DAILY, not my *_DEV1510 suffixed copy. I used the suffix to avoid clobbering the pre-existing DEV_ABHISHEK.GOLD.OFFERS_DAILY (10,429 rows) which another parallel session may own. Schema and the northpond slice are identical, so the answer is the same, but the table NAME differs from the job's real target. Needs his call: overwrite the real table or keep the suffix.
+- 2026-08-27T13:14Z [claude-code] 2026-08-27 'No data' everywhere — TWO real causes, both of which my earlier verification was structurally incapable of catching. I had been running the panel SQL myself through sqlrun (user abhishek, role DB_CREATOR) and calling that verified. Grafana does not run queries as me.
+
+CAUSE 1 — MISSING queryType ON THE TARGETS. I hand-authored the panel targets with only {refId, datasource, queryText}. The michelin-snowflake-datasource plugin requires queryType ('table' for stat panels, 'time series' for timeseries), plus fillMode and timeColumns. Without queryType the plugin returns no frames at all -> every panel renders 'No data'. Found by diffing my target JSON against prod panels 12/15. Fixed.
+
+CAUSE 2 — NO SELECT GRANT FOR THE GRAFANA ROLE ON DEV_ABHISHEK. The Grafana Snowflake datasource (uid bqzSrsZvz, the ONLY Snowflake datasource) connects as user GRAFANA_USER / role GRAFANA_READER / warehouse COMPUTE_WH_XS_GRAFANA. That role could not read ANY table in DEV_ABHISHEK — not my scratch tables, not the pre-existing DEV_ABHISHEK.GOLD.OFFERS_DAILY either. Error: 'Object ... does not exist or not authorized.'
+Diagnosis by comparison: GRAFANA_READER CAN read DEV_KABEER.GOLD.OFFERS_DAILY (8,727 rows) and DEV_SCOTT.GOLD.OFFERS_DAILY (10,361). Grants tell the story — USAGE on database and schema is already granted to GRAFANA_READER on DEV_ABHISHEK, but TABLE-level SELECT is not, and there are NO future grants on any of these schemas. Kabeer's table carries an explicit 'SELECT -> GRAFANA_READER'; Abhishek's carries only OWNERSHIP -> DB_CREATOR. So every dev table needs an explicit grant, one at a time.
+
+ACTION TAKEN (tell him, it is a privilege change on his own dev DB):
+  GRANT SELECT ON TABLE DEV_ABHISHEK.GOLD.OFFERS_DAILY_DEV1510 TO ROLE GRAFANA_READER;
+  GRANT SELECT ON TABLE DEV_ABHISHEK.GOLD.OFFERS_BUCKETED_DEV1510 TO ROLE GRAFANA_READER;
+Scoped to the two scratch tables only — deliberately NOT 'ALL TABLES' and NOT 'FUTURE TABLES', so nothing else in his dev database becomes Grafana-readable. Revoke with REVOKE SELECT ON TABLE ... FROM ROLE GRAFANA_READER.
+GENERAL CONSEQUENCE worth remembering: any future DEV_ABHISHEK-backed Grafana dashboard will hit this same wall until the table is granted. Consider asking whether he wants a one-time 'GRANT SELECT ON FUTURE TABLES IN SCHEMA DEV_ABHISHEK.GOLD TO ROLE GRAFANA_READER' so this stops recurring.
+
+VERIFIED PROPERLY THIS TIME via POST /api/ds/query — Grafana's own execution path, not mine. All 12 panel/version combinations return data:
+  v1: evaluated 246,768 (521 day-points) / bid 0 / owned 372
+  v2: evaluated 230,399 (218 day-points) / bid 0 / owned 324
+Also confirmed the frame schema: AS_OF_DATE comes back type=time / time.Time, identical to prod reference panel 13 — so the timeseries panels genuinely plot rather than just returning rows. New script ~/claude-ws/dev-1510/bin/ds_check.py does this and exits non-zero on any failure; it is the check to run before ever telling him a dashboard works.
