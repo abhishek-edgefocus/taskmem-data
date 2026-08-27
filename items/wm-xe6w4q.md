@@ -10,7 +10,7 @@ tags: [openroad, predictions]
 links: [relates:wm-79k8df, relates:wm-prm54n, relates:wm-85nuv4, parent:wm-jr5bup]
 refs: [DEV-1499=https://linear.app/edge-focus/issue/DEV-1499/setup-openroad-cmopbep]
 created: 2026-07-29T15:33:45Z
-updated: 2026-08-26T19:58:49Z
+updated: 2026-08-27T13:32:44Z
 source: claude-code
 label: OpenRoad CMOP + BEP
 ---
@@ -184,3 +184,19 @@ FIX: only the registry test needs run.py, so it now calls pytest.importorskip IN
 MISREPORT WORTH REMEMBERING: 'gh pr checks' rendered a CANCELLED job as 'fail', and I relayed that to Abhishek as a genuine test failure before checking. Integration attempt 1 (job 98299198208) sat 19m30s waiting for a runner and was cancelled, never executing; attempt 2 (98305348333) ran in 2m6s and passed, consistent with the 2m49s baseline. When a check reads as failing, query the conclusion field -- 'gh api repos/edgefocus/efp/commits/<sha>/check-runs' -- before calling it a failure, since cancelled/skipped/timed_out all surface as 'fail' in the summary view.
 
 PR state: draft, 8 files, +275/-5. Remaining before it leaves draft, both needing Abhishek: (1) terraform plan on the shared silver.api_credit_attributes must be confirmed an in-place ALTER rather than a replace, because the tf declares replace_triggered_by on API_CREDIT_ATTRIBUTES_STREAM which every platform's credit-attributes transform consumes; (2) checkin.py --create rows for curr_mod_openroad_openroad_auto_refi and best_est_openroad_openroad_auto_refi. Also still unraised as its own ticket: run_test.py's ~40 registry assertions never execute in CI (module-scope importorskip on conda-only modules + ci_tests.yml running the legacy suite with --ignore=edgefocus/), a pre-existing repo-wide hole deliberately left out of this PR.
+- 2026-08-27T13:32Z [claude-code] APPROACH CHANGED 2026-08-27 (PR #6496, commits e6b8e991b + 9b48df22b): the shared-column route is OUT. Abhishek rejected adding MAXIMUM_LTV to silver.api_credit_attributes and asked for the option space. maximum_ltv now rides on the openroad PAYLOAD instead. PR touches NO terraform -- 7 files, +278/-7.
+
+OPTIONS EXPLORED, two killed by measurement not taste:
+- Drop the value entirely (all-NaN): RULED OUT. maximum_ltv is in model.get_model_columns(); scoring without it moves cumulative default 17.8% median / 27.4% max. Measured by scoring the same 35 loans with real / NaN / constant LTV.
+- Predictor joins silver.openroad_offers on TIMESTAMP_NS: RULED OUT. All 34 funded credit rows match MANY offers on that key and all 34 have CONFLICTING LTVs across matches -- the key hits the whole 19-offer grid. Disambiguating needs unique_offer_key, so the predictor would have to re-implement the transform's purchase-tape -> offers chain incl. the DEV-1393 crosswalk and QUALIFY dedupe; two copies of a subtle join that mis-score silently on drift.
+- CHOSEN: OBJECT_INSERT the accepted offer's maximum_ltv onto the payload in openroad_api_credit_attributes. Abhishek noted the precedent himself -- bronze/api_events_utils.py:183-195 rewrites payload keys the same way at ingestion -- and the payload already carries gateway annotations (gateway_time, gateway_transaction_id, _credit_pull_attempt/_success), so it was never a pristine partner request. anchored's prep already depends on gateway_time arriving that way.
+
+THE PAYOFF: json_normalize lands it under exactly ec.maximum_ltv, so the prep's whole prepare_features AND the predictor's _EXTRA_CREDIT_COLUMNS are both DELETED. prep.py is now one method (the raw-key drop) and predictor.py is pure config -- the anchored shape exactly.
+
+THE TRAP, found by testing the edge case: OBJECT_INSERT DROPS a key whose value is a SQL NULL, and a dropped key is precisely the 19x fan-out trigger. So a single future NULL LTV would have broken the whole channel with a confusing 'no efp_id mapping' error. Fix is COALESCE(TO_VARIANT(x), PARSE_JSON('null')) which keeps the key as JSON null -> NaN model input. Verified both branches. Abhishek asked for a test pinning this: md_test gains loan E with a NULL offer LTV asserting payload contains maximum_ltv: null rather than omitting the key, plus a unit test that the prep does not drop the column.
+
+BEHAVIOUR-PRESERVING, proven not asserted: dropped MAXIMUM_LTV from the DEV table entirely so nothing could fall back to it, re-ran the transform (35 rows, key present 35/35, 12 distinct values, no other platform's payload touched) and curr_mod, then diffed the parquet against the column-based run -- 2,507/2,507 rows exact, max_abs_diff 0.0 on default_probability, prepay_probability, term, rate, amount.
+
+MY ERROR WORTH REMEMBERING: I first 'reverted' the terraform with 'git checkout <file>', which restores from HEAD -- and HEAD already carried the column from the earlier commit, so it was a no-op. I then printed the diff vs origin/master, which clearly showed the column still there, and labelled it '(empty = no terraform change)'. Caught it only in the next diffstat. git checkout <path> reverts to the INDEX, not to the base branch; use 'git checkout origin/master -- <path>' to undo a committed change.
+
+Gates: ruff/mypy clean, dagster check_definitions clean, uv edgefocus/+orchestration/ 4,392 passed / 5 skipped, conda predictions 38 passed, md_tests validity 44 passed. PR body rewritten -- no tf-apply step, the two ruled-out options documented, and a new evidence block showing the 0.0-diff refactor proof.
