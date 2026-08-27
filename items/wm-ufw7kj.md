@@ -13,6 +13,7 @@ created: 2026-07-31T12:54:52Z
 updated: 2026-08-27T14:25:41Z
 source: claude-code
 label: Activate NULL Clarity attributes
+next: Decide the fix with Nate: mirror PROD's gate in the container (return creditGrade=null when the Clarity block is absent) vs. flag-and-return. Before that, re-verify the unverified July claim that the model learned no-Clarity=prime from training data — it decides whether the optimistic prior is ever correct.
 ---
 
 Created by Abhishek 2026-07-30 13:48Z off the Activate early-results discussion with Nate
