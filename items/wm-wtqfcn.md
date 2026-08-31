@@ -2,10 +2,14 @@
 id: wm-wtqfcn
 type: task
 title: Reply to Sean in #data-discussion: Oliv issues 4 & 5 on the EDGEX deployment dashboard + fix timeline
-status: open
+status: next
+priority: high
+due: 2026-09-01
+tags: [northpond, edgex, dashboards, oliv]
 created: 2026-08-31T16:46:27Z
-updated: 2026-08-31T16:46:27Z
+updated: 2026-08-31T16:46:32Z
 source: claude-code
+estimate: <1h
 ---
 
 Thread: #data-discussion (C03JR4V1448), parent ts 1787666136.977779, opened by
