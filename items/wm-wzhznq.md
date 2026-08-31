@@ -7,9 +7,10 @@ priority: p3
 size: xs
 people: [Nakula]
 tags: [openroad, predictions, needs-reply]
+links: [relates:wm-xe6w4q]
 refs: [PR6496=https://github.com/edgefocus/efp/pull/6496]
 created: 2026-08-31T15:50:01Z
-updated: 2026-08-31T15:50:01Z
+updated: 2026-08-31T15:50:31Z
 source: slack
 label: Nakula ping PR 6496
 ---
