@@ -8,7 +8,7 @@ size: m
 tags: [northpond, predictions, dev-1498]
 links: [relates:wm-79k8df, parent:wm-3sxcre]
 created: 2026-08-31T15:33:08Z
-updated: 2026-08-31T15:33:26Z
+updated: 2026-08-31T16:17:43Z
 source: claude-code
 ---
 
@@ -51,3 +51,28 @@ PR was explicit that the gold layer past `predicted_cashflows` was not claimed.
 
 Blocks closing DEV-1498: the ticket is "Setup NorthPond CMOP/**BEP**", and BEP is
 not visible where it is consumed.
+
+## Log
+- 2026-08-31T16:17Z [claude-code] 2026-08-31: MECHANISM FOUND at code level; which branch fires for northpond is NOT yet confirmed (prod Snowflake was too contended to run the confirming query — a northpond-scoped aggregate on REALIZED_CASHFLOWS_FROM_ORIGINATION timed out at 240s, and dpx SSH dropped repeatedly).
+
+THE GATE is in loan_state_pred_ctes_sql, edgefocus/transformations/silver/predictions/best_est_projections_base.py:29. A best_est prediction reaches the overlay only if COALESCE(ls.is_active, TRUE):
+
+  frontier   = MAX(bop_date) per PLATFORM over realized rows WHERE valid_mask AND eop_principal > 0
+  loan_state = per efp_id, its latest valid realized row (ORDER BY bop_date DESC, mob DESC)
+  is_active  = COALESCE(eop_principal,0) > 0
+               AND bop_date >= DATEADD(month, -1, platform_frontier)
+  pred       = SELECT ... FROM silver.predicted_cashflows p
+               LEFT JOIN loan_state ls USING (efp_id)
+               WHERE prediction_type='best_est' AND COALESCE(ls.is_active, TRUE)
+
+WHY AN EMPTY pred WIPES THE WHOLE PLATFORM: the `real` CTE is itself scoped to
+  efp_id IN (SELECT efp_id FROM pred) OR (platform, canonical_channel(channel)) IN (SELECT platform, channel FROM pred)
+so if pred has no northpond rows, real has none either, the FULL OUTER JOIN produces nothing, and the platform is absent from the target — exactly the observed symptom.
+
+NOTE the LEFT JOIN + COALESCE(..., TRUE): a loan with NO realized row at all is KEPT, not dropped. So "northpond has fewer realized loans than predicted loans" is NOT sufficient to explain the absence. Something must be actively setting is_active = FALSE.
+
+HYPOTHESIS 1 (leading): northpond's realized chain is stale relative to its own frontier. silver.realized_cashflows_from_origination carries 1,075 northpond loans against 1,310 in the credit slice. If the BEP cohort's latest valid realized rows sit more than a month behind northpond's own MAX(bop_date), every one fails is_active and pred is empty. The frontier is per-platform so it self-normalises — which means this only bites if a few loans sit far ahead of the rest, dragging the frontier past everyone else's newest period.
+
+HYPOTHESIS 2 (worth checking, and it is mine): the realized side does not know the new channel. northpond realized rows are 100% CHANNEL='northpond_loan_fl'; the exp BEP predictions carry CHANNEL='northpond_exp_loan_fl'. canonical_channel_sql only aliases happy_money_loan_td -> happymoney_td, so the `real` CTE's (platform, channel) branch cannot match exp rows. The efp_id branch should still catch them and the final SELECT does COALESCE(r.channel, p.channel), so this should be survivable — but it is the same at_orig/curr_mod channel asymmetry the PR flagged, now showing up one layer deeper, and it deserves ruling out rather than assuming.
+
+CONFIRMING QUERY (staged at dp:~/claude-ws/dev-1498/diag3.py, needs a warehouse that is not saturated): for northpond, compute the frontier and split the loans that have realized rows into is_active TRUE/FALSE. If NOT_ACTIVE is ~everything, hypothesis 1 is confirmed and the fix is upstream in the realized chain, not in DEV-1498's code. Also worth running diag2.py, which additionally reports how many BEP loans have any realized row at all.
