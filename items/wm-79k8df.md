@@ -9,7 +9,7 @@ tags: [northpond, edgex, predictions]
 links: [blocked-by:wm-qs96kd, parent:wm-3sxcre, relates:wm-nyjurp]
 refs: [DEV-1498=https://linear.app/edge-focus/issue/DEV-1498/setup-northpond-cmopbep-and-silvernorthpond-api-credit-attributes]
 created: 2026-07-20T15:25:55Z
-updated: 2026-08-27T13:14:55Z
+updated: 2026-08-31T15:33:26Z
 source: claude-code
 ---
 
@@ -212,3 +212,6 @@ BACKFILL ACCEPTANCE NUMBER REFRESHED against PROD today: 1,310 rows — 715 nort
 TIMING: checked at 13:12Z, the curr_mod cron fires 13:30 UTC daily and best_est 14:00 UTC Sundays.
 
 NOTES REFRESHED (wm-e9bhr2): finding 11's "Branch, not prod ... not merged, not even pushed" paragraph replaced with the merged-and-deployed-but-not-backfilled state, carrying the merge/deploy timestamps, the 1,310 acceptance number and the pre-merge parity result so it is not re-derived. Dated the "1,294 funded loans" measurement since the book has moved. meta.md stamped in the same edit — freshness row, known-stale item 4 rewritten, change log entry. Another session had added a finding 12 in the meantime; patched around it rather than over it. Mirrored to dpx.
+- 2026-08-31T15:33Z [claude-code] CORRECTION to my own earlier statement in this session: I repeatedly told Abhishek the prediction crons run at "13:30 UTC" (curr_mod) and "14:00 UTC Sundays" (best_est), including in the PR description's deployment notes and in the guidance around the 2026-08-27 backfill. They are PACIFIC, not UTC. Evidence from PROD GENERATION_TS: curr_mod generated 2026-08-30 13:30:35 America/Los_Angeles (= 20:30 UTC) and best_est 2026-08-30 14:10:35 America/Los_Angeles (= 21:10 UTC). The crontab lines read `30 13 * * *` and `0 14 * * 0`, and the dumbledore cron host runs on Pacific time.
+
+Consequence at the time: the "backfill before 13:30Z or CMOP waits a day" urgency I gave him was wrong by seven hours — he actually had until 20:30 UTC. No harm done (he ran it at 13:20 UTC and CMOP generated normally at 20:32 UTC that evening), but anyone timing a backfill against these crons should use Pacific.
