@@ -7,7 +7,7 @@ priority: p1
 tags: [openroad, data-quality, datastores]
 links: [relates:wm-jr5bup, relates:wm-skvqac]
 created: 2026-08-24T13:10:59Z
-updated: 2026-08-26T13:10:50Z
+updated: 2026-08-31T15:48:21Z
 source: claude-code
 ---
 
@@ -193,3 +193,10 @@ TWO DEV-ENVIRONMENT GAPS FOUND, both unrelated to the fix but blocking any dev t
 This is the second instance this week of the same failure mode, so it is worth treating as a habit rather than a one-off: undrafting a PR does not request a reviewer, and BLOCKED reads like a merge conflict when it actually means 'no approval yet'.
 
 Linear DEV-1666 is In Progress, Medium, under 'Generic bug fixes'. One action: request reviewers on #6459. See wm-f7egzv for who has offered.
+- 2026-08-31T15:48Z [claude-code] PR #6459 MERGED 2026-08-27T12:51Z — the review gap this item flagged on 2026-08-26 is closed, and closed well.
+
+Scott left three inline comments 2026-08-26 and Abhishek answered all three the same evening: (1) the terraform column was moved to the end of the file rather than mid-file, per Scott's objection that mid-file contradicted the comment at the top of openroad_offers.py; (2) UNIQUE_OFFER_KEY and S3_KEY were added to the dedup ordering for stability where a uuid has multiple approved rows — no change on the current book, deterministic as volume grows; (3) the NULLIF on the JSON-null cast was REMOVED as redundant after Abhishek confirmed Scott's Claude-sourced point that ::VARCHAR on a JSON null already yields SQL NULL, and the misleading comment was rewritten. Scott APPROVED 2026-08-26T20:37Z.
+
+THIS ITEM DOES NOT CLOSE. #6459 fixed only the trailing-gap half — the itd_join_mode='asof' change that repairs MISSING ITD dates. The finding recorded above still stands: asof does not repair WRONG values in rows that do exist, which is the 2026-05-01-onward under-count this item is actually about. Linear DEV-1666 still reads 'In Review' even though the PR merged four days ago.
+
+Also still open from this item's own findings: orchestration/agent_env.py is in neither the June image nor the compose volume list, so Abhishek's local Dagster code location on :13053 may have been dead rather than idle. Never checked.
