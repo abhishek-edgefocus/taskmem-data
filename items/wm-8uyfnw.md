@@ -6,9 +6,9 @@ status: next
 priority: high
 size: m
 tags: [northpond, predictions, dev-1498]
-links: [relates:wm-79k8df]
+links: [relates:wm-79k8df, parent:wm-3sxcre]
 created: 2026-08-31T15:33:08Z
-updated: 2026-08-31T15:33:25Z
+updated: 2026-08-31T15:33:26Z
 source: claude-code
 ---
 
