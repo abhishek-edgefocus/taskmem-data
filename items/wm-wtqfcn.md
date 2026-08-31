@@ -6,6 +6,7 @@ status: next
 priority: high
 due: 2026-09-01
 tags: [northpond, edgex, dashboards, oliv]
+links: [relates:wm-39q8fh]
 created: 2026-08-31T16:46:27Z
 updated: 2026-08-31T16:46:32Z
 source: claude-code
