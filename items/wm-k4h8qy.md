@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-08-31T19:32:34Z
+updated: 2026-08-31T19:44:26Z
 source: claude-code
 ---
 
@@ -193,3 +193,16 @@ NEW CAUSE FOUND — SCHEMA VERSION MISMATCH. Grafana is 12.3.1 and its own dashb
 FIX (dash v7): schemaVersion 39 -> 42; every panel now carries pluginVersion 12.3.1; and the panel option/fieldConfig SHAPE is taken from panels this Grafana already renders correctly (prod panels 12 and 13) with id/title/gridPos/targets/description all replaced by ours. So nothing of prod's content is copied — only the Grafana-12 option schema — and the frontend has nothing left to migrate. ds_check still passes 12/12 after the change.
 
 NOT YET CONFIRMED BY HIM. Three prior 'fixed' claims were wrong, so this one is a hypothesis with a mechanism, not a verified fix. I still do not know the actual symptom he sees — 'No data' in panels vs an error banner vs panels failing to render vs the dashboard not loading. ASK FOR THE SPECIFIC SYMPTOM AND A SCREENSHOT before iterating again; continuing to guess has now cost him four rounds.
+- 2026-08-31T19:44Z [claude-code] 2026-09-01 PR #6491 brought up to date for review.
+
+NUMBERS MOVED AGAIN (as predicted — this is a daily-growing count, not a fixed one): purchase tape 696 -> 797 apps, and v2 owned 324 -> 425. Partition still perfectly clean: 797 = 372 TU(v1) + 425 EXP(v2) + 0 unmatched. v1 stays 372 throughout. The PR description now states the INVARIANT (every tape app matching a v2 offer should count as owned) with a dated snapshot, rather than presenting a moving number as fixed.
+
+Re-ran everything with current data: BEFORE total=275608/approved=0/owned=0, AFTER total=275608/approved=0/owned=425 over 230 day-rows. total and approved unchanged, only owned moves.
+
+BRANCH: merged origin/master in (NOT a rebase — avoids a force-push on a branch others could touch). Was 55 behind, now 0. Diff vs master is still exactly the 4 lines in 2 files. Pushed d74b7e2 -> 1652afd.
+
+GOTCHA WORTH REMEMBERING: refreshing the scratch tables uses CREATE OR REPLACE, which DROPS the Snowflake grants. The dashboard would have silently gone back to 'not authorized' if I had not re-granted SELECT to GRAFANA_READER straight after. Any future refresh of DEV_ABHISHEK.GOLD.*_DEV1510 must re-run ~/claude-ws/dev-1510/bin/grant.sql. Re-verified after: ds_check passes 12/12, v2 owned now reads 425 in Grafana.
+
+DESCRIPTION STYLE FEEDBACK (2026-09-01): my rewrite was too long. He wants PR descriptions kept very small — 2-3 bullets on what changed, then a short validation section with just the runs actually performed, and NO 'Notes for review' section and no mention of CI/test success. Trimmed accordingly. Recorded as a standing preference; see also ~/pr-style.md.
+
+STATE: still draft (he marks it ready himself), mergeable, mergeStateStatus BLOCKED only because REVIEW_REQUIRED with zero reviewers. Run Tests re-running on the new head. Remaining optional gap: no duckdb unit test over the owned join.
