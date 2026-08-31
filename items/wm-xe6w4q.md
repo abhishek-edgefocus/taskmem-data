@@ -10,7 +10,7 @@ tags: [openroad, predictions]
 links: [relates:wm-79k8df, relates:wm-prm54n, relates:wm-85nuv4, parent:wm-jr5bup]
 refs: [DEV-1499=https://linear.app/edge-focus/issue/DEV-1499/setup-openroad-cmopbep]
 created: 2026-07-29T15:33:45Z
-updated: 2026-08-31T15:50:32Z
+updated: 2026-08-31T18:26:32Z
 source: claude-code
 label: OpenRoad CMOP + BEP
 ---
@@ -207,3 +207,23 @@ PR #6496 state as of today: OPEN, **isDraft=true**, ZERO reviewers requested, ZE
 Abhishek told Nakula in DM on 2026-08-27 00:41 IST that #6496 'is still WIP will ping once done' — captured as [[wm-wzhznq]] so the promise does not die with that DM. Nakula is waiting on that ping; he asked for the CMOP/BEP pipeline, and the NorthPond half he reviewed (#6462) merged the same day.
 
 The pattern worth naming, because [[wm-f7egzv]] and [[wm-sn2x5s]] both recorded it independently: on this repo a PR with no requested reviewer gets no review, and draft status hides it entirely. #6459 got Scott's approval within 90 minutes of being visible with reviewers on it; #6454 has had reviewers but no reviews for five days; #6496 and #6491 have neither and are invisible. Whatever is left to finish here, the last step is 'undraft AND request', not 'undraft'.
+- 2026-08-31T18:26Z [claude-code] VALIDATION GAPS CLOSED 2026-08-31, after Abhishek asked whether everything was tested in DEV_ABHISHEK and his local dpx Dagster. Honest answer had been NO; now mostly yes.
+
+REBASED onto master (was 51 behind) -> head ea9b9d35c. PR #6462 (DEV-1498 northpond CMOP/BEP) had MERGED, which is what conflicted: both conflicts were registry additions in run.py and run_test.py, resolved as a UNION so openroad sits alongside northpond_loan_fl and northpond_exp_loan_fl. Gates after rebase: 4,525 passed (uv edgefocus/+orchestration/), 46 conda prediction tests (up from 38, now including northpond's), ruff/mypy/check_definitions clean.
+
+CI FULLY GREEN on the rebased head, and this is the gap that mattered most: 'Run integration tests' PASSED and the log confirms openroad_api_credit_attributes.md::test_snowflake PASSED. So the OBJECT_INSERT SQL and the loan-E NULL case executed against a real ephemeral Snowflake DB for the first time -- previously the md_test had only ever passed on the older column-based version at 6664f14e1.
+
+ISOLATED DAGSTER STACK for this workspace: dagster-{webserver,daemon,postgres}-abhishek-dev1499, webserver port 13099, postgres 15499, launched from ~/claude-ws/dev-1499/efp/orchestration with USERNAME=abhishek-dev1499 for container naming and an override pinning in-container USERNAME=abhishek so DEV_{USERNAME} stays DEV_ABHISHEK. Override at ~/claude-ws/dev-1499/dev1499-override.yml. Base compose mounts are RELATIVE (../edgefocus, ./assets) so running compose from the workspace mounts that branch automatically -- that is the whole trick. It does NOT disturb the ~/repos/efp instance on 13053 or the dev-1498 one on 13098. Base compose does not mount orchestration/agent_env.py or __init__.py and the image copies are stale, so definitions.py fails to import without adding them as mounts (same fix dev-1498 needed).
+
+CHAIN RUN THROUGH DAGSTER IN DEV_ABHISHEK, all RUN_SUCCESS:
+- openroad_api_credit_attributes 5783dc4f-134f-4406-95e0-5ef35cd2f049, 35 deleted/35 inserted, stream consumed clean. First time this asset has ever run through Dagster for openroad.
+- CMOP+BEP via run.py to s3://efp-sandbox/predictions -> 2,507 and 1,067 rows, both on the 'Not overwriting provided maximum LTV' branch.
+- s3_prediction_files b9ba0011-d773-48b6-88ad-b74f36da9374, 2 files found/2 inserted.
+- s3_predictions 2e749409-cb3f-4938-809c-04a709a4f12d, 3,574 rows inserted = 2,507 + 1,067 EXACTLY. Zero loss confirmed in silver.predictions: curr_mod 2,507 rows/35 loans, best_est 1,067/15, source=s3, periods 1-72, 0 null DEFAULT_PROBABILITY, 0 null S3_BASE, model = the current 20260623v1 artifact.
+- predicted_cashflows still running at time of writing.
+
+PREFIX GOTCHA, cost an hour: ingest_prediction_files' PATH_PATTERN is s3://[^/]+/predictions/... -- bucket root then 'predictions/'. Every earlier dev-1499 run wrote to s3://efp-sandbox/abhishek/dev-1499/, which does NOT parse, so those parquets could never have round-tripped no matter what. dev-1498's full_runs.py docstring already documented this. Our files use PATH_PATTERN_NO_DATE (no date folder), valid for curr_mod/best_est only, with AS_OF_DATE derived from generation_ts.
+
+LATENT BUG FOUND in edgefocus/transformations/bronze/ingest_prediction_files.py sync_prediction_files: scan_prefix = s3_prefix then += f'{platform}/', so an s3_prefix WITHOUT a trailing slash silently becomes 's3://efp-sandbox/predictionsopenroad/' and matches zero files. Combined with force=True that is destructive: zero matches still runs DELETE FROM prediction_files WHERE PLATFORM = ..., then calls insert_df on an EMPTY DataFrame which dies with 'syntax error at position 86 unexpected )'. So a mistyped prefix plus --force wipes a platform's file registry and crashes before reinserting. I hit exactly this; verified no damage because openroad had zero rows there (the 9 listed platforms sum to the table's full 1,100). NOT fixed here -- shared file, out of scope for this PR. Worth its own ticket.
+
+ALSO SPOTTED, not mine: DEV_ABHISHEK.BRONZE.PREDICTION_FILES has a corrupt MAX_LOADED of -238106-11-08 on the northpond slice (timestamp overflow).
