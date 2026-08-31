@@ -8,7 +8,7 @@ size: l
 due: 2026-09-04
 people: [Scott, Sean]
 tags: [grafana, data-quality, freshness]
-links: [relates:wm-4s2sad]
+links: [relates:wm-4s2sad, relates:wm-hjbt5a]
 refs: [DEV-freshness=https://linear.app/edge-focus/project/improve-visibility-into-platform-data-freshness-087906c438c6]
 created: 2026-08-31T15:49:24Z
 updated: 2026-08-31T15:50:32Z
