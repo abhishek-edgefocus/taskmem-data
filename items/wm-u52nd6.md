@@ -2,7 +2,7 @@
 id: wm-u52nd6
 type: task
 title: Fix Experian OAuth 401 handling in the northpond gateway (DEV-1478)
-status: waiting
+status: done
 priority: p2
 size: m
 waiting_on: samueli-efp, kabeer0022, nakula-efp (PR #6416 review)
@@ -11,7 +11,7 @@ tags: [northpond, oncall, api-health]
 links: [parent:wm-3y3ckv, relates:wm-9kvv8c, parent:wm-d3qnqe]
 refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-07-29T13:43:02Z
-updated: 2026-08-31T14:36:04Z
+updated: 2026-08-31T15:47:54Z
 source: claude-code
 label: Experian 401 OAuth fix DEV-1478
 ---
