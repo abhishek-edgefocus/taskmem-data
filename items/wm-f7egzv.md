@@ -64,3 +64,11 @@ WHAT IS NEW AND IS NOW THE SHARPER HALF: PR #6459 (DEV-1666, OpenRoad ITD / dedu
 CURRENT PR PICTURE: 6491 (draft, DEV-1510), 6462 (draft, DEV-1498), 6459 (OUT of draft, NO reviewers - act on this), 6454 (still draft, DEV-1638), 6416 (out of draft, 3 reviewers, waiting), 6131 (draft, 26 days, needs base retarget - wm-gp7g82), 5967 (draft since 2026-07-20 - wm-7mtzka). Note 5925 has closed since the last sweep.
 
 REVISED ACTION: request reviewers on #6459, and give Eshan an answer on his offer. #6416 needs nothing further from him.
+- 2026-08-31T15:47Z [claude-code] DONE 2026-08-31 — verified against GitHub, not inferred. The reviewer gap this item was opened for is closed on every PR it named.
+
+- #6416: MERGED 2026-08-27T16:33Z (approved). The 'take it out of draft first' step in this item is now moot.
+- #6459 and #6454 both carry three requested reviewers as of 2026-08-26: eshan-edgefocus, abhijeet-edgefocus, sanjali-efp. Eshan was assigned, which was this item's whole ask.
+- Abhishek chased them directly in DM 2026-08-26 23:20 IST: 'Hya PR aaj / udya madhe baghshil ka? Eshan la pan assign kelyat.' Abhijeet answered 'Sanjali la taak as reviewer, she is familiar with autos' — which is where sanjali-efp came from, and Abhishek +1'd it.
+- #6459 was reviewed by Scott (3 inline comments 08-26, all three answered the same evening) and APPROVED 2026-08-26T20:37Z, then merged 08-27.
+
+WHAT DID NOT GET FIXED BY THIS, and is now carried on [[wm-skvqac]] instead: #6454 has had three reviewers requested for five days and ZERO reviews. Requesting is not reviewing.
