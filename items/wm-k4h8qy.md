@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-08-31T15:50:32Z
+updated: 2026-08-31T19:32:34Z
 source: claude-code
 ---
 
@@ -184,3 +184,12 @@ Also confirmed the frame schema: AS_OF_DATE comes back type=time / time.Time, id
 The v5 scratch dashboard rebuild and the DEV_ABHISHEK validation both landed on 08-26/08-27 per the entries above, so the blocking work is behind us — what is left is that the PR is invisible. Same failure mode as [[wm-xe6w4q]]: draft + no reviewer means no review is coming.
 
 Still outstanding from this item's own history and NOT done: the scratch Grafana dashboard in the 'Abhishek' folder (uid dev1510-npv2-owned) was explicitly created as disposable and is to be DELETED once DEV-1510 is validated. It is still there.
+- 2026-08-31T19:32Z [claude-code] 2026-09-01 'still completely broken'. Checked current state first: dashboard intact at v6 (untouched since 08-27), tables and grant still in place, and ds_check still PASSES all 12 panel/version combos. So the query path was never the remaining problem.
+
+CORRECTION TO AN EARLIER ASSUMPTION: I previously wrote that Grafana's GRAFANA_USER was a service account distinct from Abhishek. WRONG — ~/.grafana.env authenticates as login=abhishek, abhishek@edgefocuspartners.com, Editor in org 1 (the single org). So my /api/ds/query checks were already running as HIS Grafana identity. GRAFANA_USER is separately the SNOWFLAKE username in the datasource jsonData (keyPair auth, warehouse COMPUTE_WH_XS_GRAFANA) — two different things that share a name. Not a permissions/identity problem.
+
+NEW CAUSE FOUND — SCHEMA VERSION MISMATCH. Grafana is 12.3.1 and its own dashboards carry schemaVersion 42. I hand-authored mine with schemaVersion 39 and no pluginVersion on any panel. Grafana's frontend runs migrations from the declared schemaVersion up to current, so it was migrating my panels on every load — which rewrites stat/timeseries option shapes and can leave panels rendering broken even though /api/ds/query returns perfect frames. That is exactly the signature here: API fine, UI broken.
+
+FIX (dash v7): schemaVersion 39 -> 42; every panel now carries pluginVersion 12.3.1; and the panel option/fieldConfig SHAPE is taken from panels this Grafana already renders correctly (prod panels 12 and 13) with id/title/gridPos/targets/description all replaced by ours. So nothing of prod's content is copied — only the Grafana-12 option schema — and the frontend has nothing left to migrate. ds_check still passes 12/12 after the change.
+
+NOT YET CONFIRMED BY HIM. Three prior 'fixed' claims were wrong, so this one is a hypothesis with a mechanism, not a verified fix. I still do not know the actual symptom he sees — 'No data' in panels vs an error banner vs panels failing to render vs the dashboard not loading. ASK FOR THE SPECIFIC SYMPTOM AND A SCREENSHOT before iterating again; continuing to guess has now cost him four rounds.
