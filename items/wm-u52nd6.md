@@ -11,7 +11,7 @@ tags: [northpond, oncall, api-health]
 links: [parent:wm-3y3ckv, relates:wm-9kvv8c, parent:wm-d3qnqe]
 refs: [DEV-1478=https://linear.app/edge-focus/issue/DEV-1478/northpond-experian-credit-pulls-intermittently-fail-with-401-oauth]
 created: 2026-07-29T13:43:02Z
-updated: 2026-08-27T17:17:43Z
+updated: 2026-08-31T14:36:04Z
 source: claude-code
 label: Experian 401 OAuth fix DEV-1478
 ---
@@ -206,3 +206,24 @@ BASELINE (24h pre-deploy, captured 16:36:30Z): Experian 200=13,360 / 400=20 / 40
 STILL TO VERIFY (the actual point of the PR): 401 count should go to ~0 against the 4/day baseline, and the new warning 'discarding the cached token and retrying once' should stay silent. If it fires steadily, a second mechanism retires tokens and the round-trip diagnosis is incomplete. Give it 24h. Also confirm the null-creditGrade rate holds at ~5.30% of scoring (705/day on 2026-08-19) -- a move there would indicate one of the other 413 commits broke something.
 
 REVERT (still valid): same Jenkins job, gateway_branch=622bb331e42037f41439db450da89e3b493887c1, model_tag=model_northpond_exp_20260701_191417_UTC. Both images still in ECR, no lifecycle policy.
+- 2026-08-31T14:36Z [claude-code] POST-DEPLOY VERIFICATION COMPLETE 2026-08-31, four days after the 08-27 deploy. THE FIX WORKS. Safe to close DEV-1478.
+
+401s PER DAY (gateway log group): 08-24=5, 08-25=2, 08-26=8, 08-27=1, then 08-28/29/30/31 = ZERO. Sixteen in the four days before, none in the four days since. The last 401 ever recorded is 2026-08-27 14:01:10Z -- three hours eleven minutes BEFORE the deploy completed at 17:12:35Z.
+
+THE RETRY PATH HAS NEVER FIRED. Zero 'discarding the cached token and retrying once' lines in eight days. That is the ideal result twice over: the anchoring fix closes the window so completely nothing reaches the retry, AND it rules out a second mechanism retiring tokens, which was the open question. The round-trip diagnosis is confirmed complete.
+
+3-day status mix post-deploy: 200=22,305, 400=47, no 401 row, no 5xx row, zero ERROR/Traceback/Exception lines.
+
+TOKEN MINTS: pre-deploy 134/134/146/150, post-deploy 140/133/129. I predicted +3.7% from the 65s buffer; the series varies +-12% day to day so a 3.7% change is not resolvable in this data. Call it unchanged within noise rather than confirmed.
+
+THE 08-28 NULL SPIKE -- INVESTIGATED, NOT OURS. Null creditGrade by day: 08-24=4.37%, 08-25=5.90%, 08-26=6.76%, 08-27=6.91% (deploy day), 08-28=22.77%, 08-29=8.03%, 08-30=5.23%, 08-31=9.64%. One-day excursion that resolved itself.
+Abhishek hypothesised it was Samuel's #6425 (merged and shipped in the same image) changing how incomplete pulls are classified. The missing-feature anatomy disproves that:
+  08-26 (pre):   76 nulls -> both bureaus 50, clarityReport-only 21, creditReport-only 5
+  08-28 (spike): 206 nulls -> clarityReport-only 164, both 35, creditReport-only 7
+  08-30 (post):  48 nulls -> both 31, creditReport-only 9, clarityReport-only 8
+The spike lives almost entirely in ONE bucket (clarityReport-only: 21 -> 164 -> 8) while the other buckets barely move. Every null response carries an identical key shape on all three days (applicationUuid, creditGrade, experianMissingFeatures, requestUuid, timestamp), so there is no classification change. A code-path change would shift all buckets together and would persist; this is an Experian-side Clarity availability problem on 2026-08-28.
+NOTE FOR [[wm-ufw7kj]] / DEV-1490: null rate tripled for a full day and NOTHING alerted -- no exception, no Sentry event, HTTP 200 throughout. That is the strongest argument yet for putting monitoring on this path.
+
+FIRST FULL POST-DEPLOY WEEKDAY sanity: errors 0.00-0.34% across all days, unchanged from the 0.17% pre-deploy baseline. Applications flowing, scores generated across the full grade range.
+
+REMAINING (not blocking DEV-1478): the four CVE dependency bumps may not be in the running image -- Docker Steps 7-16 all came from cache, so the runtime env is byte-identical to the pre-deploy image. Worth a separate check with Victor.
