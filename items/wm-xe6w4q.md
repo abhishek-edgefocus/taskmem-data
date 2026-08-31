@@ -10,7 +10,7 @@ tags: [openroad, predictions]
 links: [relates:wm-79k8df, relates:wm-prm54n, relates:wm-85nuv4, parent:wm-jr5bup]
 refs: [DEV-1499=https://linear.app/edge-focus/issue/DEV-1499/setup-openroad-cmopbep]
 created: 2026-07-29T15:33:45Z
-updated: 2026-08-27T13:32:44Z
+updated: 2026-08-31T15:50:32Z
 source: claude-code
 label: OpenRoad CMOP + BEP
 ---
@@ -200,3 +200,10 @@ BEHAVIOUR-PRESERVING, proven not asserted: dropped MAXIMUM_LTV from the DEV tabl
 MY ERROR WORTH REMEMBERING: I first 'reverted' the terraform with 'git checkout <file>', which restores from HEAD -- and HEAD already carried the column from the earlier commit, so it was a no-op. I then printed the diff vs origin/master, which clearly showed the column still there, and labelled it '(empty = no terraform change)'. Caught it only in the next diffstat. git checkout <path> reverts to the INDEX, not to the base branch; use 'git checkout origin/master -- <path>' to undo a committed change.
 
 Gates: ruff/mypy clean, dagster check_definitions clean, uv edgefocus/+orchestration/ 4,392 passed / 5 skipped, conda predictions 38 passed, md_tests validity 44 passed. PR body rewritten -- no tf-apply step, the two ruled-out options documented, and a new evidence block showing the 0.0-diff refactor proof.
+- 2026-08-31T15:50Z [claude-code] SWEEP 2026-08-31 — no movement in four days, and the reason is a reviewer gap that has now bitten three times this month.
+
+PR #6496 state as of today: OPEN, **isDraft=true**, ZERO reviewers requested, ZERO reviews, last update 2026-08-27T13:32Z. Linear DEV-1499 is 'In Progress'. Nothing has been pushed since the 08-27 review fixes.
+
+Abhishek told Nakula in DM on 2026-08-27 00:41 IST that #6496 'is still WIP will ping once done' — captured as [[wm-wzhznq]] so the promise does not die with that DM. Nakula is waiting on that ping; he asked for the CMOP/BEP pipeline, and the NorthPond half he reviewed (#6462) merged the same day.
+
+The pattern worth naming, because [[wm-f7egzv]] and [[wm-sn2x5s]] both recorded it independently: on this repo a PR with no requested reviewer gets no review, and draft status hides it entirely. #6459 got Scott's approval within 90 minutes of being visible with reviewers on it; #6454 has had reviewers but no reviews for five days; #6496 and #6491 have neither and are invisible. Whatever is left to finish here, the last step is 'undraft AND request', not 'undraft'.
