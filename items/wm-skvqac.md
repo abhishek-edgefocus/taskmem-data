@@ -15,6 +15,7 @@ updated: 2026-08-31T19:28:30Z
 source: claude-code
 effort: <1h
 label: openroad_verified.py
+next: Re-check ANL and EF_SCORE are 35/35 in prod, then run the 123-column comparison against prod, then rebase and merge #6454.
 ---
 
 Split out of [[wm-hecgua]] on 2026-08-14, because that item held two things with opposite urgency:
