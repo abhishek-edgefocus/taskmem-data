@@ -2,13 +2,16 @@
 id: wm-skvqac
 type: task
 title: Write openroad_verified.py and register the by-design OpenRoad positions differences
-status: next
+status: waiting
+priority: p2
 size: s
+waiting_on: eshan-edgefocus, abhijeet-edgefocus, sanjali-efp (PR #6454 review)
+nudge: 2026-09-01
 people: [Frank]
 tags: [openroad, datastores, data-quality]
 links: [follows:wm-hecgua, parent:wm-jr5bup]
 created: 2026-08-14T14:55:14Z
-updated: 2026-08-25T15:40:16Z
+updated: 2026-08-31T15:48:21Z
 source: claude-code
 effort: <1h
 label: openroad_verified.py
