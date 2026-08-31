@@ -139,3 +139,12 @@ good direction.
 
 So the bar for [[wm-skvqac]] now rests on: IS_JOINT ([[wm-cv963k]], rule not reproducible) and
 ANL/ANL_BAND pending the prod ship.
+- 2026-08-31T15:48Z [claude-code] STATUS CORRECTED 2026-08-31 by the sync sweep — this item was still 'next' and its body still said the work was BLOCKED on the OpenRoad silver chain. Both are stale. The file is written, the PR is open, and it has been sitting unreviewed for five days.
+
+GROUND TRUTH FROM GITHUB 2026-08-31: PR #6454 'DEV-1638: Register OpenRoad verified positions differences' is OPEN, NOT a draft, mergeStateStatus UNKNOWN, three reviewers requested since 2026-08-26 (eshan-edgefocus, abhijeet-edgefocus, sanjali-efp) and ZERO reviews submitted — no comments, no approvals, nothing. Linear DEV-1638 is 'In Review' with no comments. Its sibling #6459, requested at the same moment from the same three people, got Scott's review and approval within an hour and merged the next day; this one got nothing.
+
+WHY IT IS WORTH CHASING RATHER THAN WAITING OUT. Abhishek already chased it once, in DM 2026-08-26 23:20 IST: 'Hya PR aaj / udya madhe baghshil ka? ... Scott ni he wali nahi baghitli, maybe idea nasel mhanun' (Scott hasn't looked at this one, maybe because he lacks the context). Abhijeet's reply exposed the real problem — he did not know why the file was wanted at all: 'openroad ingestion jhala hota na' (the OpenRoad ingestion was done, wasn't it?) and 'verified differences kon magtoy' (who is even asking for verified differences?). Abhishek answered 'sahebanni vicharla hota ki he file ka nahi aahe' (Frank asked why this file isn't there). Abhijeet then suggested Sanjali as the reviewer who knows autos, which is why she is on it.
+
+So the reviewers are in place but at least one of them does not have the provenance. The nudge that works here is not 'please review' — it is the one line of context: Frank asked for this on the Datastore Retirement doc 2026-08-12, and PR #5807 is the evidence the validation was already done.
+
+NEXT: nudge the three reviewers with that framing (Sanjali first, per Abhijeet). The remaining 'reply to Frank on the Linear doc pointing at PR #5807' step in Next steps is still open and should follow the merge.
