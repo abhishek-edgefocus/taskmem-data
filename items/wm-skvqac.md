@@ -11,7 +11,7 @@ people: [Frank]
 tags: [openroad, datastores, data-quality]
 links: [follows:wm-hecgua, parent:wm-jr5bup]
 created: 2026-08-14T14:55:14Z
-updated: 2026-08-31T15:48:21Z
+updated: 2026-08-31T19:28:30Z
 source: claude-code
 effort: <1h
 label: openroad_verified.py
@@ -148,3 +148,8 @@ WHY IT IS WORTH CHASING RATHER THAN WAITING OUT. Abhishek already chased it once
 So the reviewers are in place but at least one of them does not have the provenance. The nudge that works here is not 'please review' — it is the one line of context: Frank asked for this on the Datastore Retirement doc 2026-08-12, and PR #5807 is the evidence the validation was already done.
 
 NEXT: nudge the three reviewers with that framing (Sanjali first, per Abhijeet). The remaining 'reply to Frank on the Linear doc pointing at PR #5807' step in Next steps is still open and should follow the merge.
+- 2026-08-31T19:28Z [claude-code] 2026-08-31 PROD REBUILD VERIFIED after #6459 merged. statements_openroad rebuilt with as_of_date all on openroad_stmt_purchase_tapes / openroad_api_predictions / openroad_positions. Purchase tape resolution 34/35 -> 35/35 (loan 5218485 now resolves 3d87a511 / key 20657d3ad71ee41d12d88843e2620681); IS_JOINT TRUE 0 -> 6; IRR, credit_score, application_id, income all 35/35; ITD 2026-06-27..06-30 went 0.00 -> 483,776.60 carried from 06-26, stepping to 484,317.93 on 07-01.
+
+STILL 34/35: ANL and EF_SCORE. These are auto-derived from silver.predicted_cashflows and silver.ef_scores, which had not consumed the new prediction rows yet (openroad_api_predictions finished 18:25 UTC, last ingest_prediction_files tick was 17:31). NOT a defect and NOT to be hand-run: ingest_prediction_files ticks ~every 30 min and openroad_positions runs on the daily statement sensor, so both columns fill in on their own within a day. Abhishek's call: leave it, close the ticket, re-check the next day. Do NOT run the shared predicted_cashflows / ef_scores assets manually, and never with as_of_date all - they are all-platform and would rebuild every platform.
+
+NEXT DAY CHECK: confirm ANL and EF_SCORE read 35/35, then re-run the 123-column comparison against PROD for the final accounting, then rebase #6454 (90 commits behind master) and merge.
