@@ -8,7 +8,7 @@ size: s
 tags: [northpond, dagster, errors]
 links: [relates:wm-3rsskm, parent:wm-btu784, blocks:wm-3rsskm]
 created: 2026-08-10T20:05:48Z
-updated: 2026-08-21T21:48:23Z
+updated: 2026-08-31T15:50:32Z
 source: claude-code
 ---
 
@@ -85,3 +85,8 @@ SIDE OBSERVATION (not this ticket): configs/default_passwords.json has a real
 - northpond_api_predictions SUCCEEDS on every run, so the api at_orig slice is current and 713/715 loans in silver.positions have predictions. The 2 without were purchased 2026-04-16. So this is NOT a total predictions outage - it is the exp slice missing plus a permanently red job.
 - Note for [[wm-vye9hn]]: silver.ef_scores rows for northpond carry PLATFORM = NULL (200,926 NULL-platform rows, covering all 715 northpond efp_ids). Filtering ef_scores by platform='northpond' returns 0 - do not read that as the scores being absent.
 - 2026-08-21T21:48Z [claude-code] CORRECTION 2026-08-22: this item's TITLE cites the wrong Linear ticket. ERROR-1626 is 'statements_northpond failed — Steps failed: [northpond_transfers]' (Low, Done 2026-08-19 13:28) — Abhishek fixed that, and it is unrelated to this defect. The defect described in this body is tracked only by Sentry EFP-ERRORS-1JB; ERROR-1698 (the other candidate, listing northpond_exp_predictions) is also Done as of 2026-08-18. NO open Linear ticket covers it. VERIFIED STILL BROKEN 2026-08-22 against master via the GitHub contents API: orchestration/Dockerfile builder stage copies pyproject.toml, uv.lock, README.md, configs, edgefocus, lib/efp, orchestration — and still does NOT copy .efp_toplevel. The precedent at lib/efp/json_endpoints/platforms/api/northpond/experian/Dockerfile:41-42 does copy it. So the one-line fix is still outstanding.
+- 2026-08-31T15:50Z [claude-code] SWEEP 2026-08-31 — ERROR-1626 flipped to Done in Linear on 2026-08-29T20:27Z. **This does not mean this item is fixed, and the title already warns why.**
+
+The Dockerfile defect this item is actually about (.efp_toplevel missing from orchestration/Dockerfile, Sentry EFP-ERRORS-1JB) is untouched — no PR, no commit. ERROR-1626 is a Sentry-linked ticket of exactly the kind [[wm-u52nd6]] documented on 2026-08-20: they auto-flip Backlog<->Done on every regression, and ERROR-1178 had flipped ~11 times since May. A Done stamp on one of these is a statement about Sentry's last 24 hours, not about the code.
+
+Treat the 08-29 flip as noise. northpond_exp_predictions still fails every run until the one-line Dockerfile fix ships, and [[wm-3rsskm]] is still blocked behind it.
