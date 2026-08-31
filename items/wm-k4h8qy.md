@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-08-27T13:14:34Z
+updated: 2026-08-31T15:50:32Z
 source: claude-code
 ---
 
@@ -179,3 +179,8 @@ VERIFIED PROPERLY THIS TIME via POST /api/ds/query — Grafana's own execution p
   v1: evaluated 246,768 (521 day-points) / bid 0 / owned 372
   v2: evaluated 230,399 (218 day-points) / bid 0 / owned 324
 Also confirmed the frame schema: AS_OF_DATE comes back type=time / time.Time, identical to prod reference panel 13 — so the timeseries panels genuinely plot rather than just returning rows. New script ~/claude-ws/dev-1510/bin/ds_check.py does this and exits non-zero on any failure; it is the check to run before ever telling him a dashboard works.
+- 2026-08-31T15:50Z [claude-code] SWEEP 2026-08-31 — PR #6491 ('DEV-1510: Wire NorthPond EXP (v2) offers to the purchase tape for owned-app counts') has not moved in five days: OPEN, **isDraft=true**, zero reviewers requested, zero reviews, last update 2026-08-26T20:10Z. Linear DEV-1510 is 'In Progress'.
+
+The v5 scratch dashboard rebuild and the DEV_ABHISHEK validation both landed on 08-26/08-27 per the entries above, so the blocking work is behind us — what is left is that the PR is invisible. Same failure mode as [[wm-xe6w4q]]: draft + no reviewer means no review is coming.
+
+Still outstanding from this item's own history and NOT done: the scratch Grafana dashboard in the 'Abhishek' folder (uid dev1510-npv2-owned) was explicitly created as disposable and is to be DELETED once DEV-1510 is validated. It is still there.
