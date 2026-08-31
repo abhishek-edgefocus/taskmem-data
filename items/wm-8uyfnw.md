@@ -8,7 +8,7 @@ size: m
 tags: [northpond, predictions, dev-1498]
 links: [relates:wm-79k8df, parent:wm-3sxcre]
 created: 2026-08-31T15:33:08Z
-updated: 2026-08-31T16:17:43Z
+updated: 2026-08-31T17:09:38Z
 source: claude-code
 ---
 
@@ -76,3 +76,20 @@ HYPOTHESIS 1 (leading): northpond's realized chain is stale relative to its own 
 HYPOTHESIS 2 (worth checking, and it is mine): the realized side does not know the new channel. northpond realized rows are 100% CHANNEL='northpond_loan_fl'; the exp BEP predictions carry CHANNEL='northpond_exp_loan_fl'. canonical_channel_sql only aliases happy_money_loan_td -> happymoney_td, so the `real` CTE's (platform, channel) branch cannot match exp rows. The efp_id branch should still catch them and the final SELECT does COALESCE(r.channel, p.channel), so this should be survivable — but it is the same at_orig/curr_mod channel asymmetry the PR flagged, now showing up one layer deeper, and it deserves ruling out rather than assuming.
 
 CONFIRMING QUERY (staged at dp:~/claude-ws/dev-1498/diag3.py, needs a warehouse that is not saturated): for northpond, compute the frontier and split the loans that have realized rows into is_active TRUE/FALSE. If NOT_ACTIVE is ~everything, hypothesis 1 is confirmed and the fix is upstream in the realized chain, not in DEV-1498's code. Also worth running diag2.py, which additionally reports how many BEP loans have any realized row at all.
+- 2026-08-31T17:09Z [claude-code] ROOT CAUSE FOUND 2026-08-31, and it is NOT northpond-specific and NOT caused by DEV-1498.
+
+silver.best_est_projections_at_orig HAS BEEN A NO-OP IN PROD FOR DAYS. Pulled 120 consecutive materializations from prod Dagster spanning 2026-08-28 09:02 -> 2026-08-31 16:32 UTC: EVERY ONE reports rows_inserted 0, rows_deleted 0, dates "none". The asset records a materialization on each run of ingest_prediction_files but never processes a key, so it never rebuilds.
+
+LAST REAL WRITE: the table itself has MAX(LOADED_AT) = 2026-08-27 03:06:49 PDT (10:06 UTC) and MAX(AS_OF_DATE) = 2026-08-24. So the overlay stopped doing real work on 2026-08-27 around 10:06 UTC.
+
+ATTRIBUTION — it predates this change. The DEV-1498 backfill ran at 2026-08-27 13:20 UTC, THREE HOURS AFTER the overlay's last successful write. The northpond BEP predictions did not exist until 2026-08-30 21:10 UTC. So northpond was never in scope on the last occasion the overlay actually rebuilt; it is absent because the overlay has not rebuilt since, not because anything about northpond is rejected.
+
+WHAT THIS REFUTES, both of my earlier hypotheses:
+- H1 (realized chain stale, is_active drops northpond): REFUTED TWICE. Of northpond loans with realized rows, 622 of 876 are is_active. And directly on the BEP cohort: 1,149 northpond best_est loans in the view, of which 582 have no realized row (kept via COALESCE(ls.is_active, TRUE)) and 567 are is_active — DROPPED = 0, TOTAL_SURVIVING_PRED = 1,149. The gate drops nothing.
+- H2 (realized side does not know northpond_exp_loan_fl): not the cause either; pred is fully populated and the FULL OUTER JOIN would emit pred-only rows regardless.
+
+BLAST RADIUS IS PLATFORM-WIDE, not northpond. gold.predicted_cashflows_mob best_est shows MAX(AS_OF_DATE) = 2026-08-31, i.e. gold is rebuilding daily — but off an upstream frozen at as_of 2026-08-24. So EVERY platform's BEP figures in the gold MOB aggregate have been silently stale since 2026-08-27, presented with a current as_of_date. That is the more serious problem and it is invisible from gold alone.
+
+LIKELY MECHANISM, not yet proven: BestEstProjections sets key_column = "as_of_date", but its stream sources record changed keys under different key columns — PopulatePredictedCashflows keys silver.predicted_cashflows_history on s3_base. get_keys_to_process then finds no as_of_date keys and reports "dates none". The same signature appeared in DEV_ABHISHEK on 2026-08-26 ("Found 35 keys to process" followed by 0 deleted / 0 inserted, dates none).
+
+SUGGESTED NEXT STEP: force one real rebuild in prod with as_of_date: all on best_est_projections_at_orig, then re-run gold predicted_cashflows_mob. That should both surface northpond BEP and un-stale every other platform. Abhishek launches prod jobs. Separately, the key_column mismatch needs a real fix or the asset will go back to no-op immediately.
