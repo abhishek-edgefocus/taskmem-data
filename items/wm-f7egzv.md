@@ -2,7 +2,7 @@
 id: wm-f7egzv
 type: followup
 title: Request Eshan as reviewer on the open PRs he offered to review
-status: next
+status: done
 priority: p1
 size: xs
 due: 2026-08-24
@@ -10,7 +10,7 @@ people: [Eshan]
 tags: [northpond, needs-reply]
 links: [relates:wm-u52nd6, relates:wm-gp7g82]
 created: 2026-08-24T12:28:37Z
-updated: 2026-08-26T13:11:11Z
+updated: 2026-08-31T15:47:54Z
 source: claude-code
 label: Eshan reviewer assignment
 ---
