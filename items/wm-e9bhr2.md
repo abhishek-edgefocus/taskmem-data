@@ -8,7 +8,7 @@ size: s
 tags: [northpond, notes]
 links: [parent:wm-j523sq]
 created: 2026-08-17T11:18:19Z
-updated: 2026-08-24T21:08:32Z
+updated: 2026-08-31T20:16:00Z
 source: claude-code
 ---
 
@@ -35,3 +35,4 @@ same edit.
 
 ## Log
 - 2026-08-24T21:08Z [claude-code] 2026-08-25: added finding 11 to ~/notes/areas/efp/platforms/northpond/findings.md and stamped meta.md in the same edit (freshness row, known-stale item 4, provenance, change log). Covers NorthPond's two bureau generations behind the single northpond_loan_fl gateway channel, the nested-vs-flat application_uuid (request vs response) that caused the [[wm-zy97pd]] mis-diagnosis, the _credit_pull_success semantics, and the TurndownPrep pin-vs-NORTHPOND_MAP collision. Also corrected the README index, which said nine findings with ten present. api_events facts are prod-true; the DEV-1498 half is explicitly marked as an unpushed branch.
+- 2026-08-31T20:16Z [claude-code] 2026-09-01: history pass. Added four 'why' files to ~/notes/areas/efp/platforms/northpond/ — decisions.md (30 design decisions, each with the rejected alternative and what breaks if reversed), incidents.md (20 root-caused failures behind a symptom->cause index), nate-and-oliv.md (the counterparty record: agreed vocabulary, commitments kept/missed, what Oliv refused, what is unanswered both ways), timeline.md (six-phase build log + full PR ledger with states verified via gh). Reconstructed from the whole local Claude session corpus (119 transcripts, ~40 NorthPond-relevant read in full), not from prod — no Snowflake/S3/Slack query was run, and every dated number keeps the pass that originally measured it. Also closed point 1 of this item: #6324 merged 2026-08-18T19:03:49Z (confirmed via gh pr view), so the prod-vs-branch caveats were REMOVED from README.md, standardized-mapping.md, findings.md and edgex-deal-state.md rather than annotated. Registered the four-file shape in platforms/README.md and STRUCTURE.md; meta.md stamped in the same edit; synced to the dpx mirror.
