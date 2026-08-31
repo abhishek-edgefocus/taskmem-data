@@ -10,7 +10,7 @@ tags: [openroad, predictions]
 links: [relates:wm-79k8df, relates:wm-prm54n, relates:wm-85nuv4, parent:wm-jr5bup]
 refs: [DEV-1499=https://linear.app/edge-focus/issue/DEV-1499/setup-openroad-cmopbep]
 created: 2026-07-29T15:33:45Z
-updated: 2026-08-31T18:37:55Z
+updated: 2026-08-31T20:39:08Z
 source: claude-code
 label: OpenRoad CMOP + BEP
 ---
@@ -240,3 +240,10 @@ UNRESOLVED TENSION, stated rather than explained away: anchored's cashflows ARE 
 WHERE A FIX BELONGS, if wanted: not in the openroad predictor. Either the pipeline resolves recovery_fraction_ltv / servicing_fee per loan when embedding (mirroring what openroad_api_predictions.py already does in SQL for at_orig), or _build_config_from_row does that resolution. Both are shared-code changes well outside DEV-1499's scope. Papering over it with a fillna would fabricate a model input -- the at_orig data shows the real values vary per loan (openroad RECOVERY_FRAC 0.32-0.46, anchored 0.226-0.673).
 
 STATE OF THE CHAIN otherwise: everything up to and including silver.predictions works, verified zero-loss. Only the cfframe stage is blocked.
+- 2026-08-31T20:39Z [claude-code] RULED OUT while chasing the anchored/openroad predicted_cashflows tension (2026-09-01), so nobody re-derives these:
+1. Recent regression -- float(row['RECOVERY_FRAC']) dates to #5509 (DEV-1233) and numeric_or_none to #5620; neither is new. Only recent touches to populate_predicted_cashflows.py are #6206 and #6190 (memory batching).
+2. Pandas dtype inference at scale -- ran the real loader over anchored's FULL prod slice, 136,107 rows: dtype=object, nulls=136,107, first=None, float() raises. Not a small-sample artifact.
+3. Dated vs dateless S3_BASE (#6285 made curr_mod/best_est stable-dateless) -- anchored's dated bases .../curr_mod/2026-08-14 and /2026-08-13 are ALSO 100% null on RECOVERY_FRAC, so the layout change is not the discriminator.
+4. A matching prod Sentry error -- EFP-ERRORS-WK '[Dagster] predicted_cashflows failed' is resolved, last seen 12 days ago. The live one, EFP-ERRORS-WQ (700 occurrences, last 2026-08-31 17:01, ERROR-977), is 'ingest_prediction_files failed -- Exceeded maximum runtime of 7080 seconds' -- a TIMEOUT on the umbrella job, not this TypeError.
+
+So prod is not currently throwing this error, yet anchored's prod data plus master's code reproducibly does. Unexplained. Most likely remaining candidate is that prod's deployed revision differs from master, which needs someone with prod Dagster/deploy visibility to confirm. Not pursued further -- it is orthogonal to DEV-1499 and the openroad chain is blocked either way.
