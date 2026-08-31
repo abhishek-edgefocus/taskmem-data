@@ -1,7 +1,7 @@
 ---
 id: wm-8uyfnw
 type: bug
-title: NorthPond BEP stops at predicted_cashflows — no rows in best_est_projections_at_orig or gold MOB
+title: best_est_projections_at_orig has been a prod no-op since 2026-08-27 — all platforms' BEP silently stale in gold
 status: next
 priority: high
 size: m
