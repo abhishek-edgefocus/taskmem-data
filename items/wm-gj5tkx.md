@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [relates:wm-5z3pjt, relates:wm-nwvcg9, parent:wm-d7m3xz]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-17T09:46:57Z
+updated: 2026-08-31T15:50:32Z
 source: claude-code
 ---
 
@@ -360,3 +360,10 @@ TRAP HIT WHILE SPLITTING: the old branch was 15 commits behind master. A naive '
 Also earlier this session: replaced 26 substring-on-SQL assertions with northpond_fund_resolution.md, which runs the real SQL and asserts the resolved fund for 9 loans - including the no-spurious-transfer property (same loan reads edgex20261NN on both 08-11 and 08-13) that nothing tested before.
 
 OPEN: #6277 still points at the old branch and has review history. Repoint vs close-and-reopen is Abhishek's call - not touched.
+- 2026-08-31T15:50Z [claude-code] SWEEP 2026-08-31 — the ingestion's date floor became visible to the business on 2026-08-27, and it reads as missing data rather than as absent source files.
+
+Kevin Hennessy in #data-discussion, 23:16 IST: 'I believe payments are missing from snowflake for some oliv loans', with a gap report (nelnet-payment-feed-gap-2026-08-27.html). Scott escalated it to Abhishek directly. Abhishek diagnosed it the same night and answered publicly: it is a backfill gap, not a pipeline drop — the Nelnet feed only goes back to 2026-07-28, so loans originated before that have no payment history to capture. EDGEX-purchased loans were prioritised in the August backfill and reconcile exactly; what is exposed is Oliv's balance-sheet book originated before the feed starts.
+
+He committed to asking Oliv about backfilling the earlier window — tracked as [[wm-79t74s]], due 2026-09-04.
+
+Worth carrying into the ~/notes NorthPond page ([[wm-e9bhr2]]): the 2026-07-28 floor is a property of what Oliv has sent, not of the code, and it will keep generating 'payments are missing' reports from anyone who looks at pre-August balance-sheet loans until it is either backfilled or documented.
