@@ -10,7 +10,7 @@ tags: [openroad, predictions]
 links: [relates:wm-79k8df, relates:wm-prm54n, relates:wm-85nuv4, parent:wm-jr5bup]
 refs: [DEV-1499=https://linear.app/edge-focus/issue/DEV-1499/setup-openroad-cmopbep]
 created: 2026-07-29T15:33:45Z
-updated: 2026-08-31T18:26:32Z
+updated: 2026-08-31T18:37:55Z
 source: claude-code
 label: OpenRoad CMOP + BEP
 ---
@@ -227,3 +227,16 @@ PREFIX GOTCHA, cost an hour: ingest_prediction_files' PATH_PATTERN is s3://[^/]+
 LATENT BUG FOUND in edgefocus/transformations/bronze/ingest_prediction_files.py sync_prediction_files: scan_prefix = s3_prefix then += f'{platform}/', so an s3_prefix WITHOUT a trailing slash silently becomes 's3://efp-sandbox/predictionsopenroad/' and matches zero files. Combined with force=True that is destructive: zero matches still runs DELETE FROM prediction_files WHERE PLATFORM = ..., then calls insert_df on an EMPTY DataFrame which dies with 'syntax error at position 86 unexpected )'. So a mistyped prefix plus --force wipes a platform's file registry and crashes before reinserting. I hit exactly this; verified no damage because openroad had zero rows there (the 9 listed platforms sum to the table's full 1,100). NOT fixed here -- shared file, out of scope for this PR. Worth its own ticket.
 
 ALSO SPOTTED, not mine: DEV_ABHISHEK.BRONZE.PREDICTION_FILES has a corrupt MAX_LOADED of -238106-11-08 on the northpond slice (timestamp overflow).
+- 2026-08-31T18:37Z [claude-code] BLOCKER FOUND 2026-09-01: predicted_cashflows cannot consume openroad CMOP/BEP, and the blocker is SHARED with anchored -- it is not something to fix in the openroad predictor.
+
+WHAT FAILS: predicted_cashflows asset dies with TypeError: float() argument must be a string or a real number, not 'NoneType' at populate_predicted_cashflows.py:294/297, inside _build_config_from_row -> float(row['RECOVERY_FRAC']) / float(row['SERVICING_FEE']). It processed exactly my two openroad s3_bases, so it is my data.
+
+CAUSE: openroad_auto_refi's cfframe config is ConfigSnapshot('2023-11-02', 'recovery_fraction_ltv', 4, 4, 'servicing_fee') -- recovery_frac and servicing_fee are per-loan COLUMN NAMES resolved from the gateway model response, not scalars. base.numeric_or_none() deliberately drops str to None ('those can't be embedded as scalar DOUBLEs'), so the conda predictor writes NULL. Verified: my curr_mod 2,507/2,507 and best_est 1,067/1,067 rows are NULL on both, while the gateway at_orig slice is 0/2,507 null because openroad_api_predictions.py resolves them in SQL from the model_responses payload (which does carry recovery_fraction and servicing_fee as top-level keys).
+
+NOT OPENROAD-SPECIFIC. Channels with string-sentinel configs: anchored_auto_indirect, anchored_indirect, foursight_auto_indirect, innovate_auto_refi, openroad_auto_refi. PROD anchored curr_mod 163,158 rows and best_est 105,318 rows are 100% NULL on RECOVERY_FRAC and SERVICING_FEE, and calling _build_config_from_row on an anchored PROD row with current master RAISES the identical TypeError. So anchored is in exactly the same state.
+
+UNRESOLVED TENSION, stated rather than explained away: anchored's cashflows ARE being written in prod -- PREDICTED_CASHFLOWS_HISTORY LOADED_AT 2026-08-30 14:39 for best_est and 2026-08-27 14:12 for curr_mod, ~30 min after each prediction generation, so those are real recent writes and not stale rows. Yet the same code path on the same data raises here. float(row['RECOVERY_FRAC']) has been in place since #5509 (DEV-1233), so it is not a fresh regression. I could NOT reconcile this and did not invent an explanation. Either prod runs a revision that differs from master, or there is a resolution path I have not found. Worth an independent look -- if prod is about to pick up master's behaviour, anchored's CMOP/BEP cashflows break too.
+
+WHERE A FIX BELONGS, if wanted: not in the openroad predictor. Either the pipeline resolves recovery_fraction_ltv / servicing_fee per loan when embedding (mirroring what openroad_api_predictions.py already does in SQL for at_orig), or _build_config_from_row does that resolution. Both are shared-code changes well outside DEV-1499's scope. Papering over it with a fillna would fabricate a model input -- the at_orig data shows the real values vary per loan (openroad RECOVERY_FRAC 0.32-0.46, anchored 0.226-0.673).
+
+STATE OF THE CHAIN otherwise: everything up to and including silver.predictions works, verified zero-loss. Only the cfframe stage is blocked.
