@@ -60,3 +60,6 @@ look alive because the FCC tape still updates daily, but the new book is not in 
    without deciding it — that decision is the open question on [[wm-tvjjgw]].
 4. Before quoting him a "correct" number, run the Snowflake count for
    northpond/Oliv originated-to-date so the reply carries a figure, not a shrug.
+
+## Log
+- 2026-09-01T17:37Z [claude-code] Created from reading #data-discussion 2026-09-01. Sean's message is unanswered; panel datasource + point_metrics_none numbers verified same day via Grafana /api/ds/query (basic auth on dpx), not from a Snowflake query.
