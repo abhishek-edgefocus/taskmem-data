@@ -2,7 +2,7 @@
 id: wm-wzhznq
 type: followup
 title: Ping Nakula when OpenRoad PR #6496 comes out of WIP (promised 2026-08-27)
-status: next
+status: done
 priority: p3
 size: xs
 people: [Nakula]
