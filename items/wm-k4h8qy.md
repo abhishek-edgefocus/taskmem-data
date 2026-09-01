@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-01T18:31:37Z
+updated: 2026-09-01T18:36:27Z
 source: claude-code
 ---
 
@@ -237,3 +237,15 @@ SUBTLER TRAP, worth remembering for ANY backfill of this transform family: owned
 SAFETY OF 'all' VERIFIED IN CODE (transform.py on master): every DELETE is built as key_column IN (<dates>) AND target_table_where_clause, and for these two assets that clause is platform='northpond' AND api_version=2. So 'all' structurally cannot touch other platforms in the shared gold tables. Watermarks still advance correctly in all-mode (it explicitly fetches run_max_ts when none was captured). reload_subsequent floor tracking is skipped on explicit runs by design ('user controls the key set'). Precedent: the openroad_offers backfill used as_of_date: all (see [[wm-85nuv4]]).
 
 FINAL HANDOVER: assets northpond_exp_offers_daily and northpond_exp_offers_bucketed, materialized INDIVIDUALLY (never the whole ingest_api_output job — that would rebuild all 14 platforms incl. upgrade's ~735M model_requests rows), config as_of_date: all, warehouse COMPUTE_WH_XS_PROD. 287,043 source rows total, trivial on XS. Deploy already confirmed live: deploy-dagster-prod succeeded 2026-09-01T17:54:29Z on sha 958912c4, the merge commit — and that workflow is workflow_dispatch only, never automatic on merge, so it always needs checking before a backfill.
+- 2026-09-01T18:36Z [claude-code] 2026-09-01 PROD BACKFILL, part 1 of 2 — northpond_exp_offers_daily DONE.
+Run 4d9d9896-978b-4ae8-87fb-054ba2d4a928, job __ASSET_JOB scoped to the single asset, config as_of_date: all / COMPUTE_WH_XS_PROD. SUCCESS in 0.33 min (20s), 1 step, 1 materialization.
+
+PROD.GOLD.OFFERS_DAILY northpond after the run:
+  v1 northpond_loan_fl            246,768 / bid 0 / owned 372   2024-04-17..2026-01-15  521 days  (UNCHANGED — regression guard holds)
+  v2 northpond_loan_fl            286,785 / bid 0 / owned 451   2026-01-16..2026-09-01  224 days  (owned was 0)
+  v2 northpond_loan_fl_dark_mode      241 / bid 0 / owned   0   2025-11-20..2026-07-02   63 days
+Cross-platform sanity, last 90d: no other platform moved (sofi 3,771 owned, upgrade 2,679, happymoney 130, prosper 54, foursight 91, anchored 35, revolut 0, openroad 0). The target_table_where_clause scoping held as predicted.
+
+DARK_MODE owned=0 IS CORRECT, NOT A GAP — verified rather than assumed: all 451 tape-matched v2 applications sit in northpond_loan_fl, and of the 234 distinct dark_mode applications, ZERO appear in silver.northpond_stmt_purchase_tapes. Dark mode is shadow traffic that is never purchased, so 0 owned is the right answer. Running as_of_date: all still mattered — it reprocessed those 63 dates (back to 2025-11-20) under the new code instead of leaving them on the old shape.
+
+STILL TO RUN: northpond_exp_offers_bucketed, same config (as_of_date: all, COMPUTE_WH_XS_PROD), materialized individually. Confirmed still stale — PROD.GOLD.OFFERS_BUCKETED BUCKET_NAME=STATE currently reads v1 372 / v2 0 / dark_mode 0. Until it runs, Applications Owned by State stays blank on the prod dashboard while the stat row and timeseries are already correct.
