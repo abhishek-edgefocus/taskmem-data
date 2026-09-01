@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-08-31T19:44:26Z
+updated: 2026-09-01T17:46:26Z
 source: claude-code
 ---
 
@@ -206,3 +206,10 @@ GOTCHA WORTH REMEMBERING: refreshing the scratch tables uses CREATE OR REPLACE, 
 DESCRIPTION STYLE FEEDBACK (2026-09-01): my rewrite was too long. He wants PR descriptions kept very small — 2-3 bullets on what changed, then a short validation section with just the runs actually performed, and NO 'Notes for review' section and no mention of CI/test success. Trimmed accordingly. Recorded as a standing preference; see also ~/pr-style.md.
 
 STATE: still draft (he marks it ready himself), mergeable, mergeStateStatus BLOCKED only because REVIEW_REQUIRED with zero reviewers. Run Tests re-running on the new head. Remaining optional gap: no duckdb unit test over the owned join.
+- 2026-09-01T17:46Z [claude-code] 2026-09-01 PR #6491 description: added collapsible <details> sections carrying the SQL behind each number, per his ask ('I do not see a collapsible section wherein we show the SQL which shows whatever output we have or the table we have'). Two collapsibles only, top bullets left short: (1) 'The CTE that changes' — the WHERE 1=0 empty owned set vs the real INNER JOIN on the purchase tape, plus why MIN(as_of_date) prevents counting an app on every day it appears; (2) 'Query behind that table' — the DEV_ABHISHEK.GOLD.OFFERS_DAILY_DEV1510 SELECT with its verbatim output, and the matching OFFERS_BUCKETED_DEV1510 result showing daily and by-bucket agree.
+
+COURSE CORRECTION: I had started re-materializing the scratch tables because the tape had grown AGAIN within the hour (797 -> 823 apps, v2 match 425 -> 451) and the gold snapshot no longer matched a freshly-run tape query. He stopped me — 'We need not modify everything. I just need to have the query attached in the description.' Right call: chasing a number that moves hourly is pointless churn. Resolved instead by only attaching the query that backs the table actually shown (the gold read, self-consistent at 372/425), omitting the tape-partition query whose live result would have contradicted it, and stating in the collapsible that owned grows as purchases land so the figures are a snapshot with the invariant being 'owned == tape apps matching v2 offers, none unmatched'.
+
+LESSON: when a validation number drifts between runs, do not re-run everything to make it agree. Publish one internally-consistent snapshot, name the timestamp, and state the invariant rather than the count.
+
+NOT re-materialized, NOT re-granted — DEV_ABHISHEK scratch tables and the dashboard remain as they were at 2026-09-01 ~10:0x (v2 owned 425). Still draft; he flips it to ready himself.
