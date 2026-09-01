@@ -10,7 +10,7 @@ tags: [openroad, predictions]
 links: [relates:wm-79k8df, relates:wm-prm54n, relates:wm-85nuv4, parent:wm-jr5bup]
 refs: [DEV-1499=https://linear.app/edge-focus/issue/DEV-1499/setup-openroad-cmopbep]
 created: 2026-07-29T15:33:45Z
-updated: 2026-08-31T20:39:08Z
+updated: 2026-09-01T18:22:55Z
 source: claude-code
 label: OpenRoad CMOP + BEP
 ---
@@ -247,3 +247,10 @@ STATE OF THE CHAIN otherwise: everything up to and including silver.predictions 
 4. A matching prod Sentry error -- EFP-ERRORS-WK '[Dagster] predicted_cashflows failed' is resolved, last seen 12 days ago. The live one, EFP-ERRORS-WQ (700 occurrences, last 2026-08-31 17:01, ERROR-977), is 'ingest_prediction_files failed -- Exceeded maximum runtime of 7080 seconds' -- a TIMEOUT on the umbrella job, not this TypeError.
 
 So prod is not currently throwing this error, yet anchored's prod data plus master's code reproducibly does. Unexplained. Most likely remaining candidate is that prod's deployed revision differs from master, which needs someone with prod Dagster/deploy visibility to confirm. Not pursued further -- it is orthogonal to DEV-1499 and the openroad chain is blocked either way.
+- 2026-09-01T18:22Z [claude-code] MERGED 2026-09-01T17:36Z as 54c0b969c (PR #6496).
+
+URGENT CONSEQUENCE, checked in prod right after: PROD.SILVER.API_CREDIT_ATTRIBUTES has 35 openroad rows and 0 of them carry the maximum_ltv payload key. The transform is stream-driven off openroad_stmt_purchase_tapes and openroad has had no new purchase since 2024-12-12, so a normal tick will NEVER re-emit those payloads -- only an explicit --date all backfill will. Until that runs, the newly-registered predictor loads 35 loans whose payload lacks ec.maximum_ltv, the model fans each out over its 19 MAXIMUM_LTV_FACTORS rewriting ids to '<id>-<ltv>', and pipeline.run_prep_model raises 'Model output index contains ids with no efp_id mapping'. So openroad_auto_refi will error on the next curr_mod cron (13:30 UTC daily) and the Sunday 14:00 best_est cron.
+
+SEQUENCING RISK the other way: if the backfill DOES run and predictions generate, they land in silver.predictions with NULL RECOVERY_FRAC/SERVICING_FEE and prod's predicted_cashflows then processes those s3_bases -- which is the float(None) blocker. Whether that breaks the shared prod cashflow job is exactly the anchored tension I could not resolve (anchored is in the identical NULL state and its prod cashflows are written fine). So the two orderings are: backfill now and watch the next predicted_cashflows tick, or hold the backfill until the cfframe config resolution lands and accept openroad cron noise meanwhile.
+
+Also still owed: the two checkin rows (curr_mod_openroad_openroad_auto_refi and best_est_openroad_openroad_auto_refi) via checkin.py --create; both runs errored on their absence.
