@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-01T18:25:36Z
+updated: 2026-09-01T18:31:37Z
 source: claude-code
 ---
 
@@ -225,3 +225,15 @@ REMAINING WORK ON DEV-1510 (the ticket is only PARTIALLY addressed):
 3. No duckdb unit test over the owned join was ever added — merged without one.
 
 TEARDOWN, deliberately NOT done yet: keep the scratch dashboard /d/dev1510-npv2-owned and DEV_ABHISHEK.GOLD.OFFERS_DAILY_DEV1510 / OFFERS_BUCKETED_DEV1510 until the PROD backfill is run and prod API Gateway Monitoring is confirmed showing owned for v2. They are the before-picture to compare against. Then: python3 ~/claude-ws/dev-1510/bin/make_dev1510_dashboard.py --delete, DROP both *_DEV1510 tables, and REVOKE SELECT ... FROM ROLE GRAFANA_READER.
+- 2026-09-01T18:31Z [claude-code] 2026-09-02 BACKFILL CONFIG CORRECTED — he asked 'should we not simply do as of date all?' He is right; my hand-computed range 2026-01-16:2026-09-01 was wrong and I should not have offered it.
+
+WHY THE RANGE WAS WRONG. silver.northpond_exp_offers spans 2025-11-20 -> 2026-09-01 across TWO channels, not one:
+  northpond_loan_fl           2026-01-16..2026-09-01  286,787 rows    0 before 2026-01-16
+  northpond_loan_fl_dark_mode 2025-11-20..2026-07-02      256 rows  238 before 2026-01-16
+I derived 2026-01-16 from the loan_fl channel alone and forgot dark_mode entirely, so 238 rows of dark-mode dates would never have been reprocessed and that channel would have kept the pre-fix shape indefinitely.
+
+SUBTLER TRAP, worth remembering for ANY backfill of this transform family: owned_application_ids has NO date filter (it scans the whole source), but the outer join is ald.as_of_date = owned.first_as_of_date, and ald IS date-filtered. So an application whose GLOBAL first appearance falls outside the processed window is silently never counted as owned — a narrow window bakes in a permanent blind spot rather than merely deferring work. Today: 451 owned pairs, earliest first_as_of_date 2026-07-29, so 0 would actually have been missed — but that is a today-fact, not a guarantee, and it would not have shown up as an error.
+
+SAFETY OF 'all' VERIFIED IN CODE (transform.py on master): every DELETE is built as key_column IN (<dates>) AND target_table_where_clause, and for these two assets that clause is platform='northpond' AND api_version=2. So 'all' structurally cannot touch other platforms in the shared gold tables. Watermarks still advance correctly in all-mode (it explicitly fetches run_max_ts when none was captured). reload_subsequent floor tracking is skipped on explicit runs by design ('user controls the key set'). Precedent: the openroad_offers backfill used as_of_date: all (see [[wm-85nuv4]]).
+
+FINAL HANDOVER: assets northpond_exp_offers_daily and northpond_exp_offers_bucketed, materialized INDIVIDUALLY (never the whole ingest_api_output job — that would rebuild all 14 platforms incl. upgrade's ~735M model_requests rows), config as_of_date: all, warehouse COMPUTE_WH_XS_PROD. 287,043 source rows total, trivial on XS. Deploy already confirmed live: deploy-dagster-prod succeeded 2026-09-01T17:54:29Z on sha 958912c4, the merge commit — and that workflow is workflow_dispatch only, never automatic on merge, so it always needs checking before a backfill.
