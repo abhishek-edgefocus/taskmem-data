@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-01T17:46:26Z
+updated: 2026-09-01T18:25:36Z
 source: claude-code
 ---
 
@@ -213,3 +213,15 @@ COURSE CORRECTION: I had started re-materializing the scratch tables because the
 LESSON: when a validation number drifts between runs, do not re-run everything to make it agree. Publish one internally-consistent snapshot, name the timestamp, and state the invariant rather than the count.
 
 NOT re-materialized, NOT re-granted — DEV_ABHISHEK scratch tables and the dashboard remain as they were at 2026-09-01 ~10:0x (v2 owned 425). Still draft; he flips it to ready himself.
+- 2026-09-01T18:25Z [claude-code] 2026-09-01 PR #6491 MERGED (958912c4df, merged by abhishek-edgefocus 17:50Z). Owned/originated half of DEV-1510 is now on master.
+
+NEXT AND CRITICAL: merging changes NOTHING in prod until the two gold assets are re-run over the v2 range. They are stream-driven (StreamSource on silver.northpond_exp_offers with watermarks), so a normal tick only processes new data — history stays at owned=0 until an explicit dated backfill.
+
+BACKFILL HANDOVER (his run, not mine — no agent prod runs). Dagster assets northpond_exp_offers_daily and northpond_exp_offers_bucketed, both group GOLD, both in job ingest_api_output, dep northpond_exp_offers. Config schema is TransformConfig (orchestration/assets/common/asset_factories.py:19): as_of_date str default '' (incremental), accepts 'all', a single YYYY-MM-DD, or a RANGE 'YYYY-MM-DD:YYYY-MM-DD' (range parsing at edgefocus/data_warehouse/snowflake.py:905); warehouse str default COMPUTE_WH_XS_PROD. So the run config per asset is as_of_date: '2026-01-16:<today>' — 2026-01-16 is the first v2 day in gold.offers_daily. Run daily and bucketed both; the by-state geomap comes from bucketed.
+
+REMAINING WORK ON DEV-1510 (the ticket is only PARTIALLY addressed):
+1. Applications Bid still 0 on BOTH v1 and v2 — model_responses.payload:decision is False for every NorthPond offer by design. Needs a product decision from Sean/Nate on what 'bid' should mean (candidate: 'we returned an offer', derivable today) before any code. Should probably be split into its own ticket.
+2. OpenRoad shows the identical approved=0 pattern (39,276 evaluated / 0 approved / 0 owned) and has no ticket.
+3. No duckdb unit test over the owned join was ever added — merged without one.
+
+TEARDOWN, deliberately NOT done yet: keep the scratch dashboard /d/dev1510-npv2-owned and DEV_ABHISHEK.GOLD.OFFERS_DAILY_DEV1510 / OFFERS_BUCKETED_DEV1510 until the PROD backfill is run and prod API Gateway Monitoring is confirmed showing owned for v2. They are the before-picture to compare against. Then: python3 ~/claude-ws/dev-1510/bin/make_dev1510_dashboard.py --delete, DROP both *_DEV1510 tables, and REVOKE SELECT ... FROM ROLE GRAFANA_READER.
