@@ -60,3 +60,4 @@ Why the cutoff is stuck: no transfers into edgex20261NN since 08-28 (Fri). 08-29
 6) Sean's "no-breakdown view stuck at 8/24" is HappyMoney, not Oliv: max as_of_date among EDGEX-tagged rows is northpond 08-31, prosper 08-31, upgrade 08-31, happymoney 08-24. happymoney's obs_date is 08-24 - DEV-1659 behaving as designed.
 
 Scripts on dpx: ~/q_gap.py, ~/q_19.py, ~/q_cutoff.py, ~/q_19b.py, ~/lif_runs.py (run from ~/claude-ws/dev-1490/efp with .env sourced).
+- 2026-09-01T17:37Z [claude-code] Answered in the thread 2026-09-01 18:13 IST: item 4 is the to-be-purchased toggle (Kushagra), item 5 is the same fund-conflict bug Eshan flagged, now fixed under DEV-1711 (Oliv's purchase tape falls back to efhyf when the issuance/investor file lags a day; ~160 loans wrong in silver.transfers since 08-24). Sean acknowledged the dashboard refresh. Remaining thread items (1,2,6) are Eshan/Kushagra's. New separate ask from Sean the same night -> wm-e4nxre.
