@@ -10,7 +10,7 @@ tags: [openroad, predictions, needs-reply]
 links: [relates:wm-xe6w4q]
 refs: [PR6496=https://github.com/edgefocus/efp/pull/6496]
 created: 2026-08-31T15:50:01Z
-updated: 2026-08-31T15:50:31Z
+updated: 2026-09-01T18:36:30Z
 source: slack
 label: Nakula ping PR 6496
 ---
@@ -46,3 +46,6 @@ not the promise.
 - PR #6496 — https://github.com/edgefocus/efp/pull/6496
 - The DM exchange — https://edgefocuspartners.slack.com/archives/D0B1DQ1GRPY/p1787771256945649
 - The work itself — [[wm-xe6w4q]]
+
+## Log
+- 2026-09-01T18:36Z [claude-code] DISCHARGED — no ping needed. Nakula did not just need telling, he reviewed it: nakula-efp APPROVED PR #6496 at 2026-09-01T17:08Z and it merged at 17:36Z. Verified on GitHub. This item outlived its purpose and was still being surfaced as an owed reply afterwards; check the PR's review state before relaying a 'ping X when the PR is ready' commitment.
