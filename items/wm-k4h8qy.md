@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-01T18:36:27Z
+updated: 2026-09-01T18:40:11Z
 source: claude-code
 ---
 
@@ -249,3 +249,23 @@ Cross-platform sanity, last 90d: no other platform moved (sofi 3,771 owned, upgr
 DARK_MODE owned=0 IS CORRECT, NOT A GAP — verified rather than assumed: all 451 tape-matched v2 applications sit in northpond_loan_fl, and of the 234 distinct dark_mode applications, ZERO appear in silver.northpond_stmt_purchase_tapes. Dark mode is shadow traffic that is never purchased, so 0 owned is the right answer. Running as_of_date: all still mattered — it reprocessed those 63 dates (back to 2025-11-20) under the new code instead of leaving them on the old shape.
 
 STILL TO RUN: northpond_exp_offers_bucketed, same config (as_of_date: all, COMPUTE_WH_XS_PROD), materialized individually. Confirmed still stale — PROD.GOLD.OFFERS_BUCKETED BUCKET_NAME=STATE currently reads v1 372 / v2 0 / dark_mode 0. Until it runs, Applications Owned by State stays blank on the prod dashboard while the stat row and timeseries are already correct.
+- 2026-09-01T18:40Z [claude-code] 2026-09-01 PROD BACKFILL COMPLETE — DEV-1510 owned half is live.
+Run 0bec3638-c995-4cb0-968a-2d7dbeb61829 (northpond_exp_offers_bucketed, as_of_date: all, XS) SUCCESS in 0.31 min. Both assets now done.
+
+PROD.GOLD.OFFERS_BUCKETED (STATE) after: v1 loan_fl 372, v2 loan_fl 451, v2 dark_mode 0.
+DAILY vs BUCKETED AGREE on all three (version, channel) pairs — 372/372, 451/451, 0/0. That is the check that matters, since the stat row and the geomap are computed from different tables.
+Owned by state, v2: FL 119, GA 57, MI 57, VA 52, OH 29, TN 27, MO 19, KY 19.
+Cross-platform sanity on bucketed STATE, 90d: unchanged (sofi 3,771, happymoney 131, foursight 91, prosper 54, anchored 35, openroad 0, revolut 0, lendingclub 0).
+
+PROD DASHBOARD VERIFIED through /api/ds/query (not just SQL), platform=northpond channel=northpond_loan_fl:
+  v2 stat Owned 451, geomap Owned/State 15 states, ts Owned 29 day-points. v1 unchanged 372 / 11 states / 180 points.
+
+CORRECTION TO MY OWN EARLIER CLAIM — OWN RATE WILL NOT COME BACK. I told him this fix would restore 'Applications Owned, Look to Book, Own Rate and Owned by State'. Wrong on Own Rate. Panel 9 is SUM(owned_apps)/NULLIF(SUM(approved_apps),0) — the denominator is approved, which is 0 for every NorthPond row, so every value is NULL and the panel stays empty regardless of owned. It is gated on the BID half, not the owned half. Verified by reading the panel SQL.
+What each panel does now on v2:
+  Applications Owned (stat/ts/geomap) — WORKING, 451
+  Look to Book = owned/total                — WORKING (denominator is total, not approved)
+  Own Rate = owned/approved                 — STILL BLANK, blocked by the bid half
+  Applications Bid / Approval Rate          — STILL 0/blank, the unfixed half (Approval Rate also carries HAVING SUM(approved)>0, so it returns zero rows)
+Note the ts panels carry HAVING SUM(owned)>0, so 29 day-points for v2 means 29 days with a purchase — correct, not a gap.
+
+REMAINING: teardown (scratch dashboard /d/dev1510-npv2-owned, DROP the two *_DEV1510 tables, REVOKE SELECT FROM ROLE GRAFANA_READER) — deliberately held until he confirms prod looks right. Then DEV-1510 ticket state: owned half done, bid half needs its own ticket + a product decision from Sean/Nate. OpenRoad has the identical approved=0 pattern and is still unticketed.
