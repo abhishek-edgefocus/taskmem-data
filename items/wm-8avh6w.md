@@ -2,7 +2,7 @@
 id: wm-8avh6w
 type: task
 title: Lead Scott's new 'platform data freshness' project — single pane of glass for stale vs fresh data
-status: next
+status: active
 priority: p2
 size: l
 due: 2026-09-04
@@ -11,7 +11,7 @@ tags: [grafana, data-quality, freshness]
 links: [relates:wm-4s2sad, relates:wm-hjbt5a]
 refs: [DEV-freshness=https://linear.app/edge-focus/project/improve-visibility-into-platform-data-freshness-087906c438c6]
 created: 2026-08-31T15:49:24Z
-updated: 2026-09-02T13:15:41Z
+updated: 2026-09-02T13:15:46Z
 source: slack
 label: platform data freshness
 ---
