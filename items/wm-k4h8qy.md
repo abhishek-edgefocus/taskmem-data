@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-01T18:40:11Z
+updated: 2026-09-02T18:13:32Z
 source: claude-code
 ---
 
@@ -269,3 +269,14 @@ What each panel does now on v2:
 Note the ts panels carry HAVING SUM(owned)>0, so 29 day-points for v2 means 29 days with a purchase — correct, not a gap.
 
 REMAINING: teardown (scratch dashboard /d/dev1510-npv2-owned, DROP the two *_DEV1510 tables, REVOKE SELECT FROM ROLE GRAFANA_READER) — deliberately held until he confirms prod looks right. Then DEV-1510 ticket state: owned half done, bid half needs its own ticket + a product decision from Sean/Nate. OpenRoad has the identical approved=0 pattern and is still unticketed.
+- 2026-09-02T18:13Z [claude-code] 2026-09-02 FALSE-ALARM CHECK — an alert claimed 'northpond: zero approved offers for 14+ consecutive days (2026-08-18..2026-09-01), business/credit-policy signal, may be an unintentional program pause.' REFUTED against PROD.GOLD.OFFERS_DAILY today.
+
+The 14 days is an artifact of the alert's lookback window. approved_apps_count has been 0 on ALL 809 northpond day-rows since 2024-04-17 — v1 loan_fl 246,768/0/372 (2024-04-17..2026-01-15), v2 loan_fl 296,383/0/451 (2026-01-16..2026-09-02), v2 dark_mode 241/0/0. max(approved_apps_count) over the whole platform history = 0. So ~869 days, not 14, and it predates the v1->v2 cutover, which no credit-policy change would.
+
+Root cause is the unfixed BID half of this ticket, re-confirmed live: silver.northpond_exp_offers.DECISION = 273,286 False + 23,355 NULL, ZERO True; northpond_tu_offers.DECISION = 246,769 False, ZERO True. gold's has_approved_offer compares decision = TRUE, so approved is 0 by construction.
+
+Two independent disproofs of the 'credit box closed' reading: (1) openroad shows the identical 38,924 evaluated / 0 approved / 0 owned pattern in the same 90d window — same class of bug, not a NorthPond business event; (2) owned_apps_count is NON-ZERO across the exact window the alert flags (37 apps owned on 2026-08-18, 32 on 08-19, 26 on 08-20 ...), i.e. loans were being APPROVED AND PURCHASED on the very days the alert calls zero-approval. The 0s in owned from 2026-08-29 are purchase-tape lag, not a stop.
+
+The alert's one correct fact: total apps on 2026-09-01 = 11,698, matches exactly.
+
+TAKEAWAY FOR THE TICKET: this is the first time the bid-half bug has generated a downstream false alarm rather than just a blank panel. Worth citing when splitting the bid half into its own ticket — a metric that is 0 by construction will keep being read as a business signal by anything that watches it.
