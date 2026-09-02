@@ -11,7 +11,7 @@ tags: [grafana, data-quality, freshness]
 links: [relates:wm-4s2sad, relates:wm-hjbt5a]
 refs: [DEV-freshness=https://linear.app/edge-focus/project/improve-visibility-into-platform-data-freshness-087906c438c6]
 created: 2026-08-31T15:49:24Z
-updated: 2026-08-31T15:50:32Z
+updated: 2026-09-02T13:15:41Z
 source: slack
 label: platform data freshness
 ---
@@ -77,3 +77,6 @@ architecture doc rather than competing work:
 - Linear project — https://linear.app/edge-focus/project/improve-visibility-into-platform-data-freshness-087906c438c6
 - Scott's DM handing it over — https://edgefocuspartners.slack.com/archives/D0BPKHF65UK/p1787851796623989
 - DEV-1690, the motivating example — https://linear.app/edge-focus/issue/DEV-1690/anchored-api-data-is-not-being-ingested
+
+## Log
+- 2026-09-02T13:15Z [claude-code] Investigated 2026-09-02. The project is no longer greenfield: Scott built the whole thing himself between 2026-08-31 and 2026-09-01 and left it as a 4-PR DRAFT stack — #6586 expectations/registry/lateness (+1182), #6587 gateway backlog probe (+353), #6589 evaluator + results writer + terraform gold.data_freshness (+929), #6590 hourly Dagster asset (+75). Two earlier single PRs (#6559, #6561) were closed and re-split. All four are drafts, zero reviewers requested, empty bodies, no Linear ticket linked. He also built the Grafana dashboard 'Data freshness' (uid d626cb04-fa4d-4d28-bbef-ae9f5fa60f29, Testing Dashboards, v11, created 2026-09-01) reading DEV_SCOTT.GOLD.DATA_FRESHNESS — 145 declared series across 12 platforms, last evaluated 2026-09-01 12:44 (manual, the hourly asset is still in the draft PR). Registry declares anchored, foursight, happymoney, innovate, lc, marlette, northpond, openroad, prosper, sofi, upgrade, upstart — figure and intex are absent. So the lead's job is review + land + promote + document, not design. Abhijeet's dashboard (the one he shared) is the older, weaker prototype: panel 'Snowflake table freshness' on 'Data health' (uid frdwmfh) = max(as_of_date) over 5 silver tables with flat 2/7/8-day thresholds, no per-source cadence, no API coverage, no bronze/file-arrival — it is the same panel as his standalone dashboard uid 638061b6 from 2026-06-26.
