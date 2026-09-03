@@ -2,12 +2,13 @@
 id: wm-ytaxsk
 type: task
 title: Purchase tape lands before the Nelnet positions feed - northpond_transfers fails ~daily until it catches up
-status: inbox
-priority: p2
+status: next
+priority: p1
 size: s
+due: 2026-09-03
 tags: [northpond, edgex]
 created: 2026-09-01T11:35:00Z
-updated: 2026-09-02T19:36:35Z
+updated: 2026-09-03T15:07:20Z
 source: claude-code
 ---
 
