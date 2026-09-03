@@ -11,7 +11,7 @@ tags: [grafana, data-quality, freshness]
 links: [relates:wm-4s2sad, relates:wm-hjbt5a]
 refs: [DEV-freshness=https://linear.app/edge-focus/project/improve-visibility-into-platform-data-freshness-087906c438c6]
 created: 2026-08-31T15:49:24Z
-updated: 2026-09-03T15:56:47Z
+updated: 2026-09-03T16:02:03Z
 source: slack
 label: platform data freshness
 ---
@@ -111,3 +111,28 @@ FIVE SEAMS THE TEARDOWN SURFACES, all from the code, none of them defects in wha
 5. Nothing reconciles registry.py against reality: a statement_type string that does not match bronze.statement_files reads as permanently overdue rather than as a typo. A one-off diff of the registry's 58 statement keys against distinct (PLATFORM, STATEMENT_TYPE) in that table would settle it.
 
 RELEVANCE TO THE OWNERSHIP QUESTION (Q1 of the architecture doc): the stack does NOT cover the producing-job dimension that section 6.6 of the doc argues for - there is no Dagster run-state check anywhere in it, so the [[wm-8uyfnw]] failure mode (green run, zero rows written) is invisible to it. That is the substantive gap between Scott's spike and the documented design, and the concrete thing to raise with him rather than a general build-vs-adopt argument.
+- 2026-09-03T16:02Z [claude-code] 2026-09-03 (2) REWRITE after Abhishek spoke to Scott. The four stacked PRs #6586-#6590 were shared DELIBERATELY, as work Scott started to help him get going, with "feel free to discard any or all of it". So the doc's job changed from "here is my design" to "here is Scott's stack, what I'd keep, what I'd change, what's missing from both". ~/data-freshness-architecture.md rewritten and the artifact republished.
+
+EVERY REVIEW FINDING WAS RE-VERIFIED AGAINST PROD/REPO MYSELF, not taken on trust. Confirmed: the cherry-picked decay chart; the live efp.checkins registry; gateway_last_order.py; the Missing Files Summary panel; Scott's dashboard panels; forward-dated as_of_date; figure's last rows_added; DEV-439 and DEV-1690 histories; no holiday mask; no GRAFANA_READER in terraform; the /d/638061b6 uid.
+
+FIVE PLACES THE REVIEWER WAS WRONG OR IMPRECISE, corrected in the doc with my own numbers:
+1. Parsing rules: total is 230 and ignore is 116, NOT 231/117. Headline 47 of 114 (41%) is right. The reviewer also said to KEEP the per-platform table - but its denominators were the same bad all-rules totals, so I replaced them with monitorable counts (northpond 5/23 -> 5/10, lc 3/20 -> 3/15, intex 1/2 -> 1/1, figure 0/9 -> 0/6, anchored 0/7 -> 0/6).
+2. efp.checkins has NO status column, so "14 in error" cannot come from it. The real analogue I computed: 76 of 182 non-test heartbeats are currently past their declared interval. That is a better argument anyway - it shows a declared list still rots without pruning (case 4.4).
+3. "user is populated" overstates: 108 of 182 (59%).
+4. figure "everything since is rows_added_empty" overstates: there is exactly ONE file after 2024-12-31, a single rows_added_empty on 2025-01-01, then nothing. Stronger conclusion, not weaker.
+5. "sofi weekly and marlette monthly at 9 and 25 days" did not reproduce. My verified worked example: sofi/purchase_tape 7 days (weekly band 9/16 = fresh), marlette/debt_sale 33 days (monthly band 32/40 = late not overdue), sofi/positions 1 day.
+Also pipeline_watermarks read 500/347/66 today vs the reviewer's 500/361/66 - which is itself the point about timestamping it.
+
+TWO DESIGN POSITIONS I DROPPED, both to Scott:
+- Per-series threshold tuning -> his five named SLA bands. ~145 series x 2 numbers = 290 unreviewable magic numbers; five bands fit on a screen and are pinned by a test. EXCEPTION I kept and argued: the gateway, because gateway_last_order.py already carries 8 per-channel thresholds spanning 8 minutes to 16 hours - a 120x spread no single band survives. His API_LATE/MAX_BACKLOG_HOURS are global 2.5/3.5.
+- Blocked-upstream SUPPRESSION -> his cap_for. Suppression produces the false green it was meant to prevent: an unGRADED series hides a silver table broken on its own account. cap_for lowers the expectation, records capped_to, and still grades. He was right.
+
+THREE FALSE-GREEN CASES UNHANDLED IN BOTH DESIGNS, now the core of the doc (§4):
+- Forward-dated as_of_date: happymoney 2026-09-09 (6 days ahead), sofi 2026-09-04. Permanent green that survives the feed stopping. Rule: ahead of expected = unknown, not current.
+- Partial evaluation carry-forward: a cycle that fails on one target leaves yesterday's green. Rule: unreadable = overdue, never carried forward.
+- Stale registration with no end_date (figure, and 76 of the checkins rows).
+
+ACTIONS THIS SURFACED THAT ARE NOT DOC EDITS:
+- lc is a LIVE INCIDENT with no ticket: silver positions AND realized_cashflows_calendar_month both 2026-08-24, 10 days behind, vs <=3 for every other active platform. statements_lc 3 failures / 0 successes in the window. Needs a ticket opened.
+- DEV-439 is a question for FRANK or ESHAN, not Scott - he never touched it. Backlog -> Duplicate -> Canceled two seconds apart on 2026-04-12, created by Frank, assigned Eshan. That is a cleanup pass, not a rejection of Dagster freshness policies.
+- Questions went 8 -> 6: Q1 (are the PRs a spike) deleted as answered, figure answered in §6.1, GRAFANA_READER and DEV-439 resolved out.
