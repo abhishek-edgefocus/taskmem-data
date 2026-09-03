@@ -3,8 +3,9 @@ id: wm-z9qm3h
 type: task
 title: lc silver positions + realized cashflows 10 days stale — no ticket, statements_lc failing every run
 status: open
+links: [relates:wm-8avh6w]
 created: 2026-09-03T16:02:39Z
-updated: 2026-09-03T16:02:39Z
+updated: 2026-09-03T16:02:44Z
 source: claude-code
 ---
 
