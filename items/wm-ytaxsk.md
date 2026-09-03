@@ -8,7 +8,7 @@ size: s
 due: 2026-09-03
 tags: [northpond, edgex]
 created: 2026-09-01T11:35:00Z
-updated: 2026-09-03T15:07:20Z
+updated: 2026-09-03T19:41:06Z
 source: claude-code
 ---
 
@@ -31,3 +31,4 @@ Servicer tape HAS caught up: of the loans on the 09-01/02/03 purchase tapes, 0 a
 SUGGESTED UNBLOCK (untested): materialize northpond_transfers with as_of_date 2026-09-02:2026-09-03 first (should pass), which unblocks northpond_positions; then handle 09-01's 17 separately.
 
 KNOCK-ON THAT MATTERS: loans_in_fund pins EDGEX membership to MAX(transfer_date WHERE to_fund='edgex20261NN'), which is now frozen at 08-31 again. That is exactly the mechanism behind Trishit's item 5 on the EDGEX deployment dashboard. Do NOT tell Sean/Trishit the Oliv issues are fully fixed while this is open. Also failing in the same job, separately and already tracked: northpond_api_predictions and northpond_exp_predictions, both 'no GitHub token / .efp_toplevel not found' - see [[wm-te4cr2]].
+- 2026-09-03T19:41Z [claude-code] SURVEY (2026-09-04, transfers-survey subagent): northpond ALREADY has the fix, on branch abhishek/northpond-transfers-event-type-join at dp:~/claude-ws/northpond-transfers-fund/efp, commit ec08ccaaa 'Fix northpond transfers dropping the origination purchase for same-day sales' (98 insertions, transfers.py only; working tree clean; not on main in that checkout). Three stacked defects fixed: (1) generate_sql now passes tape_event_type_expr='t.TAPE_EVENT_TYPE' (transfers.py:373) so tape/first_pass no longer collapse a same-day purchase+transfer into one row; (2) first_pass AS_OF is now LEAST(positions AS_OF, MIN purchase-tape AS_OF) (transfers.py:245-248, 273-277) so the purchase and its transfer land in the same single-date run scope; (3) NEW tape-derived second arm on _inferred_purchases_leg (transfers.py:286-332) synthesizes the origination purchase straight from silver.northpond_stmt_purchase_tapes (FUNDING_DATE, LOAN_AMOUNT) when the servicer has not reported the loan yet, deduped one-per-loan with the servicer arm preferred via SRC_RANK QUALIFY (transfers.py:334-336). Arm 3 is the reusable pattern other platforms should copy. GAP: transfers_test.py has NO test for any of the three; existing tests only cover the INFERRED_PURCHASE_DATE_EXPR clamp.
