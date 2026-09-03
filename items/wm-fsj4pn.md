@@ -2,7 +2,7 @@
 id: wm-fsj4pn
 type: task
 title: Stop my 4 stale dagster stacks on dpx (Kabeer's ask)
-status: open
+status: done
 created: 2026-09-03T18:52:46Z
 updated: 2026-09-03T19:01:42Z
 source: claude-code
