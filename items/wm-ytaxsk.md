@@ -22,3 +22,12 @@ Last 7d of EFP-ERRORS-1JB events are all Steps failed: ['northpond_transfers'] â
 Cadence matches this item's thesis exactly: ~2-3 failures/day, clearing and recurring rather than failing permanently.
 
 NOTE the ticket will keep auto-reopening until either the ordering is fixed or the alert is tuned â€” so 'is it closed' is not a useful signal for this one. See also [[wm-hjbt5a]] (records northpond_transfers ValueError: Validation failed with 1116 error(s)) and the correction [[wm-85vvgw]] (ERROR-1626 is NOT the .efp_toplevel defect in [[wm-te4cr2]]; that one still has no Linear ticket at all).
+- 2026-09-03T15:07Z [claude-code] LIVE INCIDENT as of 2026-09-03. The northpond STANDARDIZED chain has been down 3 days: silver.positions and silver.transfers both frozen at max 2026-08-31, while the stmt layer is current to 09-03 (nelnet_positions, purchase_tapes, issuance_v2 all 09-03). statements_northpond has failed 7 consecutive runs since 2026-09-01 09:48; last success 2026-08-31 20:19. Failing step is northpond_transfers, ValueError: Validation failed with N errors, N growing 17 -> 17 -> 27.
+
+IT DOES NOT SELF-CLEAR (my earlier call was wrong). northpond_positions lists northpond_transfers in its deps, so a transfers failure SKIPS positions - the chain cannot catch up on its own. Deadlock.
+
+Servicer tape HAS caught up: of the loans on the 09-01/02/03 purchase tapes, 0 are absent from northpond_stmt_nelnet_positions. But for 09-01, 17 loans were first seen by the servicer AFTER the tape date, so a transfers re-run for 09-01 may still fail on event ordering (purchase dated after the transfer). 09-02 and 09-03 tapes are clean - every loan was on the servicer tape by the tape date.
+
+SUGGESTED UNBLOCK (untested): materialize northpond_transfers with as_of_date 2026-09-02:2026-09-03 first (should pass), which unblocks northpond_positions; then handle 09-01's 17 separately.
+
+KNOCK-ON THAT MATTERS: loans_in_fund pins EDGEX membership to MAX(transfer_date WHERE to_fund='edgex20261NN'), which is now frozen at 08-31 again. That is exactly the mechanism behind Trishit's item 5 on the EDGEX deployment dashboard. Do NOT tell Sean/Trishit the Oliv issues are fully fixed while this is open. Also failing in the same job, separately and already tracked: northpond_api_predictions and northpond_exp_predictions, both 'no GitHub token / .efp_toplevel not found' - see [[wm-te4cr2]].
