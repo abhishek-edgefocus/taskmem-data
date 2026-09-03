@@ -4,7 +4,7 @@ type: task
 title: Stop my 4 stale dagster stacks on dpx (Kabeer's ask)
 status: open
 created: 2026-09-03T18:52:46Z
-updated: 2026-09-03T18:52:46Z
+updated: 2026-09-03T18:55:47Z
 source: claude-code
 ---
 
@@ -19,3 +19,6 @@ All four of my stacks are idle:
 No sensors or schedules registered in any of them (instigators table empty, 0 job_ticks), and no established connections to any webserver port. Postgres data is on named volumes, so `docker compose stop` / `down` (without -v) is non-destructive; restart with `docker compose up -d` from each workdir.
 
 dev-1499 is the OpenRoad CMOP/BEP workspace (see the OpenRoad CMOP/BEP item) - stopping it is still cheap, it comes back in seconds.
+
+## Log
+- 2026-09-03T18:55Z [claude-code] Confirmed no job activity: 0 runs and 0 event-log rows in the last 24h in all four stacks, and no dagster execute_run worker process in any container. The only non-terminal run is a zombie STARTED __ephemeral_asset_job__ from 2026-07-24 in the abhishek stack (no events after create). The abhishek daemon is respawning grpc code servers every minute or so - CPU churn, not work.
