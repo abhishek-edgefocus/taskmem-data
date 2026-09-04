@@ -8,7 +8,7 @@ size: s
 tags: [northpond, dagster, errors]
 links: [relates:wm-3rsskm, parent:wm-btu784, blocks:wm-3rsskm]
 created: 2026-08-10T20:05:48Z
-updated: 2026-08-31T15:50:32Z
+updated: 2026-09-04T22:38:45Z
 source: claude-code
 ---
 
@@ -90,3 +90,8 @@ SIDE OBSERVATION (not this ticket): configs/default_passwords.json has a real
 The Dockerfile defect this item is actually about (.efp_toplevel missing from orchestration/Dockerfile, Sentry EFP-ERRORS-1JB) is untouched — no PR, no commit. ERROR-1626 is a Sentry-linked ticket of exactly the kind [[wm-u52nd6]] documented on 2026-08-20: they auto-flip Backlog<->Done on every regression, and ERROR-1178 had flipped ~11 times since May. A Done stamp on one of these is a statement about Sentry's last 24 hours, not about the code.
 
 Treat the 08-29 flip as noise. northpond_exp_predictions still fails every run until the one-line Dockerfile fix ships, and [[wm-3rsskm]] is still blocked behind it.
+- 2026-09-04T22:38Z [claude-code] 2026-09-04: northpond_api_predictions and northpond_exp_predictions are BOTH MATERIALIZING CLEANLY in prod - three successful materializations today (22:01, 14:19, 13:21 UTC). The '.efp_toplevel not found / no GitHub token' failures have stopped.
+
+BUT THE CAUSE IS UNATTRIBUTED, so do not close this yet. Nakula's DEV-1646 commit 3b4077a25 ('drop the sys.path bootstrap from the phase-1 module', 2026-08-25) is NOT merged to master and NOT in the deployed build - verified with git merge-base against prod's 2f6a70b03. So something else fixed it: most likely a GITHUB_TOKEN now present in the ECS task environment, or an unrelated change in the redeploy.
+
+That matters because an environmental fix can regress silently on the next task-definition change. Worth establishing what actually fixed it before closing.
