@@ -10,7 +10,7 @@ tags: [northpond]
 links: [follows:wm-c5jytx, relates:wm-vye9hn, relates:wm-btu784, parent:wm-btu784]
 refs: [DEV-1445=https://linear.app/edge-focus/issue/DEV-1445/retarget-northpond-at-orig-cashflows-to-olivs-anl]
 created: 2026-07-28T17:38:16Z
-updated: 2026-08-22T09:57:48Z
+updated: 2026-09-04T13:35:53Z
 source: claude-code
 label: Nate 1.36 ANL gross-vs-net
 ---
@@ -60,3 +60,4 @@ On edgex20261NN, 265 loans carry both models (silver.positions.ANL joined to sil
 Reading: if our "ANL" is numerically a cumulative net loss, and Oliv's ANL sits within 10bps of ours, then Oliv's ANL is most likely cumulative too — and the 1.36 is their gross-to-net assumption, not an annualisation. That would make the CGL gap (EF 12.77% vs Oliv 14.91%, -213bps) the real disagreement: recoveries, not loss level.
 
 Still needs Nate to confirm. The question to ask him is now sharper: "is the 1.36 your recovery assumption (CGL to CNL), or is it a WAL-based annualisation?"
+- 2026-09-04T13:35Z [claude-code] 2026-09-04 Slack sweep: confirmed still UNSENT. The Oliv group DM (C0BJ1M304BU) has had no message since Nate's 2026-08-08 update; the ANL/1.36 question was never posted.
