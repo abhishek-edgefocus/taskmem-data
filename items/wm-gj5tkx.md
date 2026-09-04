@@ -10,7 +10,7 @@ tags: [northpond, edgex]
 links: [relates:wm-5z3pjt, relates:wm-nwvcg9, parent:wm-d7m3xz]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-07-28T11:49:54Z
-updated: 2026-08-31T15:50:32Z
+updated: 2026-09-04T14:27:01Z
 source: claude-code
 ---
 
@@ -367,3 +367,17 @@ Kevin Hennessy in #data-discussion, 23:16 IST: 'I believe payments are missing f
 He committed to asking Oliv about backfilling the earlier window — tracked as [[wm-79t74s]], due 2026-09-04.
 
 Worth carrying into the ~/notes NorthPond page ([[wm-e9bhr2]]): the 2026-07-28 floor is a property of what Oliv has sent, not of the code, and it will keep generating 'payments are missing' reports from anyone who looks at pre-August balance-sheet loans until it is either backfilled or documented.
+- 2026-09-04T14:27Z [claude-code] NELNET BACKFILL PILOT — PROVEN END TO END 2026-09-04. Nate dropped two files (olivfinancial_loan_20260731.csv, olivfinancial_transaction_20260731.csv) into nelnet/backfill_2026/ on the SFTP; full chain verified into silver.
+
+CHAIN THAT WORKS: SFTP -> EFS -> copy_from_efs (asset, S3SyncConfig{dry_run}) -> s3://efp-raw/statements/northpond/nelnet/backfill_2026/ -> aws s3 cp into daily_loan|daily_transaction/YYYY/MM/ -> statement_files in BACKFILL mode -> statement_rows (platforms:[northpond]) -> northpond_stmt_nelnet_positions / _transactions with as_of_date.
+
+RESULT: silver.northpond_stmt_nelnet_positions 2026-07-31 = 161 rows / 161 loans, min origination 2026-05-14. silver.northpond_stmt_nelnet_transactions 2026-07-31 = 29 rows / 29 distinct transactionid, effdate 07-23..07-30. Both now the earliest date in their table (was 2026-08-01). Joins cleanly to 08-01: same 161 loans, 0 amount_paid_to_date regressions, transaction ids disjoint (July 1948-1979, Aug starts 1981).
+
+DATA VALIDATION vs the 32 Aug loan / 27 Aug transaction files: headers IDENTICAL (56 and 13 cols). file_date single-valued = filename. rptdate single-valued = filename minus 1 day (held 27/27 in Aug). Two benign deltas: (a) July strips trailing decimals (0.0 vs 0.00) - all affected cols are FLOAT in silver so cosmetic; (b) the flag columns (communcation_suppression, cease_and_desist, scra, death, disability) are populated ONLY in the 08-01..08-17 files and empty on 07-31 AND from 08-18 onward - so July matches CURRENT behaviour and mid-August is the outlier (those 17 files were Nate's 08-18 backfill). current_investor_number empty on 07-31 is correct - Oliv began populating it 2026-08-13.
+
+THREE LESSONS FOR THE FULL BATCH:
+1. statement_files must run in mode=backfill (platform=northpond, backfill_environment=prod, filter_pattern=olivfinancial). SQS mode does NOT see server-side aws s3 cp copies - a 35-minute sqs run saw zero events and was cancelled with no side effects.
+2. DO NOT delete the backfill_2026 sources. Deleted at 13:15, reappeared 13:37 because the files are still on EFS and copy_from_efs re-uploads any key missing from S3. backfill_2026/ matches no parsing rule so leftovers are inert; deleting only churns bronze.statement_files between unknown and deleted.
+3. Route by the FILENAME date, not file_date - filename was consistent across all 33 files, file_date disagreed on 1 (olivfinancial_loan_20260816.csv carries 2026-08-15). Assert file_date as a check, not as the routing key.
+
+ALSO CORRECTED: the SFTP->EFS hop IS triggerable - sftp_sync_<platform>_job / asset sftp_sync_northpond exist in orchestration/. My earlier claim that nothing in the repo does that hop was wrong.
