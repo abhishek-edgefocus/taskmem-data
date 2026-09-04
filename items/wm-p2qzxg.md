@@ -7,7 +7,7 @@ priority: high
 tags: [efp, dagster, northpond, blocker]
 links: [blocks:wm-ytaxsk]
 created: 2026-09-04T19:38:14Z
-updated: 2026-09-04T19:38:20Z
+updated: 2026-09-04T20:02:17Z
 source: claude-code
 estimate: <1h
 ---
@@ -46,3 +46,6 @@ are undeployed. ECS retries ~every 80s and will churn until master is fixed or
 the service is pinned back to :316.
 
 Blocks: the northpond_transfers 09-01 replay for the 17 EDGEX loans (wm-ytaxsk).
+
+## Log
+- 2026-09-04T20:02Z [claude-code] Opened PR #6673 (branch abhishek/fix-6646-jobname-collision, commit 99c7258dc): 2-line rename to *_job plus orchestration/tests/definitions_test.py which constructs the real repository. Verified the test fails on the unfixed tree with the exact prod error and passes with the rename in 11s; Scott's sensor tests still pass; ruff clean. Not yet reviewed - Scott not pinged yet, Slack draft ready. https://github.com/edgefocus/efp/pull/6673
