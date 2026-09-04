@@ -5,8 +5,9 @@ title: Prod Dagster deploys blocked: PR #6646 asset-job names collide with their
 status: next
 priority: high
 tags: [efp, dagster, northpond, blocker]
+links: [blocks:wm-ytaxsk]
 created: 2026-09-04T19:38:14Z
-updated: 2026-09-04T19:38:14Z
+updated: 2026-09-04T19:38:20Z
 source: claude-code
 estimate: <1h
 ---
