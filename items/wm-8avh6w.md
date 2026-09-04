@@ -11,7 +11,7 @@ tags: [grafana, data-quality, freshness]
 links: [relates:wm-4s2sad, relates:wm-hjbt5a]
 refs: [DEV-freshness=https://linear.app/edge-focus/project/improve-visibility-into-platform-data-freshness-087906c438c6]
 created: 2026-08-31T15:49:24Z
-updated: 2026-09-03T20:03:44Z
+updated: 2026-09-04T13:35:53Z
 source: slack
 label: platform data freshness
 ---
@@ -140,3 +140,4 @@ ACTIONS THIS SURFACED THAT ARE NOT DOC EDITS:
 - 2026-09-03T20:03Z [claude-code] 2026-09-04: Added a business-view section to the freshness teardown artifact (same URL, https://claude.ai/code/artifact/024b72cd-d632-4c49-a7ed-7b64a094b358) after Abhishek said the page gave him no executive summary and no clear place to focus. New closing section, plus a jump link from the masthead: a four-point exec summary (the question needs a person today -> declare the schedule -> compare hourly and record the passes too -> three states not two), a non-technical architecture figure showing the two routes into the numbers people act on with three numbered watch points on them, a 'what a red cell means and who owes the fix' table routing each layer to an owner (arrival = the platform, ingestion = us/gateway job, transform = us/pipeline, production = nobody, uncovered), and four 'where to focus' cards: the 120 declarations are the asset not the 2,584 lines; nothing watches the jobs; two ways the pane can lie green; and whose stack this is.
 
 FRAMING WORTH REUSING WITH SCOTT: the value of splitting the three watch points is that it turns a red light into an action - one combined 'platform is stale' indicator says something is wrong, three say who owes the fix. That is the argument for the layered series model in the architecture doc, stated in a form a non-engineer can act on.
+- 2026-09-04T13:35Z [claude-code] 2026-09-04 Slack sweep: Scott DM'd 2026-09-03 20:58 IST with https://github.com/edgefocus/efp/pull/6586 — 'This is a PR stack for the data freshness work. Feel free to take any or none of this.' Not yet acknowledged. Decide what to take from it before building more of the freshness pane independently.
