@@ -2,7 +2,7 @@
 id: wm-p2qzxg
 type: next
 title: Prod Dagster deploys blocked: PR #6646 asset-job names collide with their asset names
-status: next
+status: done
 priority: high
 tags: [efp, dagster, northpond, blocker]
 links: [blocks:wm-ytaxsk]
