@@ -8,7 +8,7 @@ size: s
 due: 2026-09-03
 tags: [northpond, edgex]
 created: 2026-09-01T11:35:00Z
-updated: 2026-09-04T22:07:08Z
+updated: 2026-09-04T22:38:45Z
 source: claude-code
 ---
 
@@ -39,3 +39,8 @@ KNOCK-ON THAT MATTERS: loans_in_fund pins EDGEX membership to MAX(transfer_date 
 - 2026-09-04T19:38Z [claude-code] PR #6645 merged (6854e0d15) but the prod deploy did NOT land: code-server crash-loops on a definitions conflict from PR #6646, unrelated to this fix. Prod still runs TD 316 / old code. The 09-01 replay for the 17 EDGEX loans is blocked until #6646 is fixed. See wm-p2qzxg.
 - 2026-09-04T21:51Z [claude-code] Prod replay done. Run 81288089-321a-4650-bd4d-3016aa94da21 (__ASSET_JOB, northpond_transfers only, as_of_date 2026-09-01:2026-09-04, warehouse COMPUTE_WH_M_ETL, dagster/priority 10) SUCCESS in 0.4 min. Verified in prod silver.transfers: all 17 loans OLV12563992-OLV12564011 now carry purchase -> northpond_balancesheet AND transfer -> edgex20261NN, both stamped AS_OF_DATE 2026-09-01 (17 loans / 17 purchase rows / 17 edgex transfer rows). Lifecycle well-formed. Still to do: northpond_positions same range to fill *_AT_PURCHASE and pool_id.
 - 2026-09-04T22:07Z [claude-code] Chain fully repaired. Three prod runs, all SUCCESS, all __ASSET_JOB single-asset with as_of_date 2026-09-01:2026-09-04 / COMPUTE_WH_M_ETL / dagster-priority 10: northpond_transfers (81288089, 24s), northpond_positions (ebf9184d, 0.9m), northpond_to_be_purchased_positions (e674541d, 24s). Verified silver.positions fund counts now continuous 08-30..09-04: edgex20261NN 406/406/425/451/495/511, efhyf 372 flat, northpond_balancesheet 641/641/622/663/643/657, to_be_purchased_edgex20261NN 163/175/174/176/159/169. The 17 loans have full *_AT_PURCHASE + POOL_ID on 09-02/03/04; they have NO 09-01 positions row because Nelnet's 09-01 file was the stalled 08-28 book - correct, not a gap. Learning: northpond_to_be_purchased_positions is a separate asset downstream of northpond_positions and must be replayed too; northpond_positions excludes to_be_purchased rows from its delete scope (positions.py:247) so it never restores them.
+- 2026-09-04T22:38Z [claude-code] RESOLVED 2026-09-04. The standardized chain is unfrozen: silver.transfers and silver.positions both current to 2026-09-04 (were stuck at 08-31 for four days).
+
+Fixed in CODE, not worked around: commit 6854e0d15 'ERROR-1739: Fix northpond transfers dropping the origination purchase for same-day sales' (#6645, merged 2026-09-05 00:38 IST) is in the deployed build (prod runs prod-2f6a70b03). A northpond_transfers run over as_of_date 2026-09-01:2026-09-04 succeeded INCLUDING the 09-01 batch - the 17 loans whose servicer records postdated their tape date, which had failed validation every run since 09-01, went through cleanly.
+
+CORRECTION TO MY OWN EARLIER ADVICE: I recommended narrowing the range to 2026-09-02:2026-09-04 to skip those 17. That was wrong - I reasoned from the data without checking whether the code computing it had changed. Abhishek's original 09-01:09-04 range was correct.
