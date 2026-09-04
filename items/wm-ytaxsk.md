@@ -8,7 +8,7 @@ size: s
 due: 2026-09-03
 tags: [northpond, edgex]
 created: 2026-09-01T11:35:00Z
-updated: 2026-09-04T21:51:43Z
+updated: 2026-09-04T22:07:08Z
 source: claude-code
 ---
 
@@ -38,3 +38,4 @@ KNOCK-ON THAT MATTERS: loans_in_fund pins EDGEX membership to MAX(transfer_date 
 - 2026-09-04T13:35Z [claude-code] 2026-09-04 Slack sweep: two people chased this today. Abhijeet DM 2026-09-03 20:35 IST 'Northpond positions is stale... Please fix' + told him to post in #edgex-tech (Abhishek did, 20:36: 'Northpond data is stale for the last couple of days - looking into it'). Kabeer DM 2026-09-04 18:45 IST 'northpond transfers is failing'; Abhishek replied 'Yes, bug fix is in progress'. Scott separately asked whether the transfer-lifecycle-is-well-formed validation failure is real ([[wm-qbrvd4]]). Three people now waiting on the same fix.
 - 2026-09-04T19:38Z [claude-code] PR #6645 merged (6854e0d15) but the prod deploy did NOT land: code-server crash-loops on a definitions conflict from PR #6646, unrelated to this fix. Prod still runs TD 316 / old code. The 09-01 replay for the 17 EDGEX loans is blocked until #6646 is fixed. See wm-p2qzxg.
 - 2026-09-04T21:51Z [claude-code] Prod replay done. Run 81288089-321a-4650-bd4d-3016aa94da21 (__ASSET_JOB, northpond_transfers only, as_of_date 2026-09-01:2026-09-04, warehouse COMPUTE_WH_M_ETL, dagster/priority 10) SUCCESS in 0.4 min. Verified in prod silver.transfers: all 17 loans OLV12563992-OLV12564011 now carry purchase -> northpond_balancesheet AND transfer -> edgex20261NN, both stamped AS_OF_DATE 2026-09-01 (17 loans / 17 purchase rows / 17 edgex transfer rows). Lifecycle well-formed. Still to do: northpond_positions same range to fill *_AT_PURCHASE and pool_id.
+- 2026-09-04T22:07Z [claude-code] Chain fully repaired. Three prod runs, all SUCCESS, all __ASSET_JOB single-asset with as_of_date 2026-09-01:2026-09-04 / COMPUTE_WH_M_ETL / dagster-priority 10: northpond_transfers (81288089, 24s), northpond_positions (ebf9184d, 0.9m), northpond_to_be_purchased_positions (e674541d, 24s). Verified silver.positions fund counts now continuous 08-30..09-04: edgex20261NN 406/406/425/451/495/511, efhyf 372 flat, northpond_balancesheet 641/641/622/663/643/657, to_be_purchased_edgex20261NN 163/175/174/176/159/169. The 17 loans have full *_AT_PURCHASE + POOL_ID on 09-02/03/04; they have NO 09-01 positions row because Nelnet's 09-01 file was the stalled 08-28 book - correct, not a gap. Learning: northpond_to_be_purchased_positions is a separate asset downstream of northpond_positions and must be replayed too; northpond_positions excludes to_be_purchased rows from its delete scope (positions.py:247) so it never restores them.
