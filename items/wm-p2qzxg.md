@@ -7,7 +7,7 @@ priority: high
 tags: [efp, dagster, northpond, blocker]
 links: [blocks:wm-ytaxsk]
 created: 2026-09-04T19:38:14Z
-updated: 2026-09-04T20:02:17Z
+updated: 2026-09-04T21:02:39Z
 source: claude-code
 estimate: <1h
 ---
@@ -49,3 +49,4 @@ Blocks: the northpond_transfers 09-01 replay for the 17 EDGEX loans (wm-ytaxsk).
 
 ## Log
 - 2026-09-04T20:02Z [claude-code] Opened PR #6673 (branch abhishek/fix-6646-jobname-collision, commit 99c7258dc): 2-line rename to *_job plus orchestration/tests/definitions_test.py which constructs the real repository. Verified the test fails on the unfixed tree with the exact prod error and passes with the rename in 11s; Scott's sensor tests still pass; ruff clean. Not yet reviewed - Scott not pinged yet, Slack draft ready. https://github.com/edgefocus/efp/pull/6673
+- 2026-09-04T21:02Z [claude-code] RESOLVED. PR #6673 merged as 6fa3af5fa; deploy run 33918090004 on sha 2f6a70b03 shipped it (deploy/deploy success, only the chronic snowflake-tf-apply red). Verified: code-server TD 318 = image prod-2f6a70b03, single PRIMARY deployment rolloutState COMPLETED, 1 running / 0 failed. Prod GraphQL now loads 52 jobs including positions_transfer_data_quality_job and transactions_transfer_data_quality_job. Deploys unblocked.
