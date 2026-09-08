@@ -6,6 +6,7 @@ status: next
 priority: p1
 size: s
 tags: [openroad, predictions, errors]
+refs: [ERROR-1747=https://linear.app/edge-focus/issue/ERROR-1747, ERROR-1748=https://linear.app/edge-focus/issue/ERROR-1748, ERROR-1749=https://linear.app/edge-focus/issue/ERROR-1749, ERROR-1778=https://linear.app/edge-focus/issue/ERROR-1778, ERROR-1779=https://linear.app/edge-focus/issue/ERROR-1779, ERROR-1780=https://linear.app/edge-focus/issue/ERROR-1780]
 created: 2026-09-01T18:23:19Z
 updated: 2026-09-08T14:55:53Z
 source: claude-code
