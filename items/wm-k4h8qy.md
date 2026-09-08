@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-02T18:13:32Z
+updated: 2026-09-08T18:48:50Z
 source: claude-code
 ---
 
@@ -280,3 +280,12 @@ Two independent disproofs of the 'credit box closed' reading: (1) openroad shows
 The alert's one correct fact: total apps on 2026-09-01 = 11,698, matches exactly.
 
 TAKEAWAY FOR THE TICKET: this is the first time the bid-half bug has generated a downstream false alarm rather than just a blank panel. Worth citing when splitting the bid half into its own ticket — a metric that is 0 by construction will keep being read as a business signal by anything that watches it.
+- 2026-09-08T18:48Z [claude-code] 2026-09-09 Abhishek revisited the dashboard and asked why the Bid charts are still blank for NorthPond, hunching that it is because 'we do not really provide offers, we just provide a score to Oliv and they calculate offers at their end'. THAT HUNCH IS WRONG, and it matters for how the bid half gets specified.
+
+EVIDENCE (read-only, prod, last 7 days). bronze.api_events model_responses for northpond carry a full PRICED OFFER, not a bare score: top-level payload keys include offer_uuid, apr, rate, credit_grade, priority, internal_fund_name, gateway_transaction_id, plus 36 monthly efp_default_monthly_N and full_prepay_monthly_N curves. 68,669 responses in 7 days, and decision is literally false on ALL 68,669.
+
+silver.northpond_exp_offers, same window: 74,036 rows, exactly ONE offer per application (74,036 apps, all offers_per_app=1). APR present on 68,669 (92.7%), credit_grade on 68,679, ANL on 68,392. Only 157 rows carry error_messages, and those are all Experian credit-pull INFRASTRUCTURE failures (HTTP 400 no credit profile, Experian read timeouts, connection aborted) — not credit declines.
+
+So the ~5,367 applications with no APR are NOT explained by errors (only 157) — roughly 5,210 got neither a price nor an error. Those are plausibly genuine knockouts/declines, i.e. exactly the population a real 'bid' metric would exclude. Priced-vs-unpriced is therefore a usable, already-present signal: ~93% bid rate on the last 7 days. This strengthens the earlier candidate definition ('we returned an offer') from a guess to something with a concrete split in the data — but the 5,210 have NOT been characterised yet, so confirm what they are before specifying the metric.
+
+RESTATED CAUSE for the blank panels: approved_apps_count counts applications where decision = TRUE (offers_daily_utils.py:256/274). decision is false on 100% of NorthPond rows on BOTH api versions (v1 TU 246,769 all false; v2 exp 173,082 false + 13,867 null), so the count is 0 by construction. Documented in-tree at northpond/positions.py:110 — the decision field 'is not a funded-loan signal'. Knock-on: Approval Rate carries HAVING SUM(approved)>0 so it returns zero rows, and Own Rate is owned/NULLIF(approved,0) so every value is NULL — both blank for reasons that have nothing to do with the owned fix that shipped.
