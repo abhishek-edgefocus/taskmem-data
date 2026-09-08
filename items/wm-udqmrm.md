@@ -2,9 +2,12 @@
 id: wm-udqmrm
 type: task
 title: Backfill openroad api_credit_attributes in PROD before the CMOP cron, or hold it deliberately
-status: open
+status: next
+priority: p1
+size: s
+tags: [openroad, predictions, errors]
 created: 2026-09-01T18:23:19Z
-updated: 2026-09-08T14:55:39Z
+updated: 2026-09-08T14:55:53Z
 source: claude-code
 ---
 
