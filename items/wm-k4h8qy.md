@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-09T18:35:31Z
+updated: 2026-09-09T18:45:54Z
 source: claude-code
 ---
 
@@ -319,3 +319,15 @@ Look to Book, by contrast, WORKS on both versions — 180/180 and 30/30 non-null
 AFFECTS V1 TOO, which sharpens the story: on v1 we genuinely did bid (one offer per application, 246,769 of them), yet Own Rate has never worked there either, because decision was never TRUE on any TU row. So Own Rate has been blank for NorthPond for its entire history on both APIs.
 
 FOR SEAN: Own Rate is defined as owned/bid. If 'bid' is not a meaningful concept for NorthPond v2 (we return a grade, Oliv prices), then Own Rate inherits that and is equally meaningless — it should be retired for this platform alongside Applications Bid, not fixed. The working analogue already on the dashboard is Look to Book (owned/evaluated). If a conversion rate off the scored population is wanted, owned/graded is the v2-appropriate definition and is derivable today.
+- 2026-09-09T18:45Z [claude-code] 2026-09-10 'Days from Offer to Purchase-Tape Date' and 'Days from Offer to Funding' (panels 53, 54) — blank for a DIFFERENT reason than the Bid/Own Rate family, and NOT because we do not provide an offer.
+
+CAUSE: northpond has ZERO rows in PROD.GOLD.FUNDING_LAG. The platform is simply absent from the table. Present: upgrade 16,502 / sofi 8,525 / anchored 356 / prosper 303 / happymoney 82 / foursight 81. northpond 0.
+Root of that: there is no NorthpondFundingLag transform. edgefocus/transformations/gold/funding_lag.py defines exactly six subclasses — Upgrade, Sofi, Prosper, Happymoney, Anchored, Foursight — and the funding_lag assets are registered in those six platforms' asset files only.  on master returns NOTHING. It was never built for this platform.
+Note both panels filter on platform only, no api_version and no channel, so flipping the api_version selector has no effect on them.
+
+HIS HYPOTHESIS (blank because we do not provide an offer) DOES NOT HOLD, and the metric is fully computable today. Proved it in prod: joining silver.northpond_stmt_purchase_tapes to MIN(as_of_date) per application in silver.northpond_exp_offers gives 646 owned applications, ALL 646 with a computable lag. Min 2 days, median 4, max 18. Histogram: 2d=116, 3d=114, 4d=155, 5d=160, 6d=43, 7d=15, then a thin tail to 18. That is a clean, useful distribution — arguably one of the better EDGEX operational metrics we are currently not showing.
+The purchase tape also carries PURCHASE_DATE and FUNDING_DATE as distinct columns, so BOTH panels are satisfiable: offer->tape uses tape AS_OF_DATE, offer->funding uses FUNDING_DATE.
+
+SEMANTIC POINT worth carrying into the Sean conversation: for v2 the 'offer date' is really the date we SCORED the application, so the panel would honestly read 'days from scoring to purchase'. That is still meaningful — it measures how long Oliv takes to buy after we grade — it just wants renaming, unlike Applications Bid / Approval Rate / Own Rate which want retiring.
+
+So the three-way split for Sean is now: (1) RETIRE or REDEFINE — Applications Bid, Approval Rate, Own Rate (we grade, we do not bid). (2) BUILD — Days from Offer to Purchase-Tape / to Funding, needs a NorthpondFundingLag transform, data is all there. (3) DONE — Applications Owned and Look to Book, both live since the 2026-09-01 backfill.
