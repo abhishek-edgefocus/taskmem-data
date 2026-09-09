@@ -2,7 +2,7 @@
 id: wm-qbrvd4
 type: followup
 title: Answer Scott: is the northpond transfer-lifecycle-is-well-formed validation failure a real issue?
-status: next
+status: done
 priority: p1
 size: s
 due: 2026-09-05
@@ -10,7 +10,7 @@ people: [Scott]
 tags: [northpond, needs-reply]
 refs: [dm=https://edgefocuspartners.slack.com/archives/D0BPKHF65UK/p1788450699950239]
 created: 2026-09-04T13:35:31Z
-updated: 2026-09-04T13:35:31Z
+updated: 2026-09-09T13:16:47Z
 source: claude-code
 ---
 
