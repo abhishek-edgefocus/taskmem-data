@@ -26,3 +26,6 @@ chased on 2026-09-03/04 (purchase tape landing before the Nelnet positions feed 
 ## Next steps
 1. Confirm whether the rule is firing on the known transfer/fund-lag bug or on something else.
 2. Reply to Scott in DM: real issue vs mis-calibrated rule, and which ticket covers it.
+
+## Log
+- 2026-09-09T13:16Z [claude-code] Already answered — memory was stale, not a drop. Abhishek replied in Scott's DM 2026-09-03 22:10 IST: 'Its a real issue and not a noisy rule. Oliv sells us a loan the same day it's disbursed, but the servicer tape doesn't list it until the next day, so the transfer out gets booked before the purchase in. The rule is correctly refusing a malformed ledger. I will be soon raising a PR with the fix.' Scott's calibration question is settled. The fix he promised is the real remaining thread — carried by wm-7mtzka / wm-tvjjgw.
