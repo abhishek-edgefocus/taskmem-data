@@ -5,7 +5,7 @@ title: Review Scott's PII-hash PR #6541 for the NorthPond + OpenRoad API endpoin
 status: next
 priority: p1
 size: s
-due: 2026-09-05
+due: 2026-09-11
 people: [Scott]
 tags: [northpond, openroad, needs-reply, api-health]
 refs: [thread=https://edgefocuspartners.slack.com/archives/G01LRBTFG4U/p1788525464625349?thread_ts=1788375642.243529]
