@@ -8,9 +8,10 @@ size: s
 due: 2026-09-09
 people: [kabeer, nakula]
 tags: [needs-reply, slack, openroad, errors, oncall]
+links: [related:wm-jr5bup]
 refs: [dm=https://edgefocuspartners.slack.com/archives/C0C08E97EDC/p1788870172899589]
 created: 2026-09-09T13:12:38Z
-updated: 2026-09-09T13:12:38Z
+updated: 2026-09-09T13:13:23Z
 source: slack group DM C0C08E97EDC
 label: Kabeer openroad error tickets
 ---
