@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-09T19:54:21Z
+updated: 2026-09-09T19:59:50Z
 source: claude-code
 ---
 
@@ -400,3 +400,12 @@ Dead zone gone: 08-28 8->20, 08-29 0->14, 08-30 0->12, 08-31 0->18, 09-01 0->21,
 Note M_ETL took 25s vs XS's 20s on the same work, i.e. the warehouse size made no difference here as expected.
 STILL TO RUN: northpond_exp_offers_bucketed, same config — it feeds Owned by State plus the four Breakdown-row panels (31, 35, 38, 44), which remain stale until it runs.
 AND THIS WILL DECAY AGAIN within days. The manual re-run is a snapshot; the durable fix is still the reload_all_on_change tape source (+ M_ETL_ON_REBUILD tier, mirroring upgrade) on the four northpond transforms. Not started.
+- 2026-09-09T19:59Z [claude-code] 2026-09-10 BOTH ASSETS RE-RUN, dashboard fully current. Run b634b7e2-6e2d-4dc7-81ca-9627a4acae29 (northpond_exp_offers_bucketed, as_of_date: all, COMPUTE_WH_M_ETL, dagster/priority 10) SUCCESS in 0.63 min.
+Daily and bucketed now AGREE on both versions: v1 372/372, v2 646/646. That is the cross-table check that matters since the geomap and the stat row are computed independently.
+Panel sweep re-run: the 9 fixed panels all render with more data than before (timeseries 30 -> 39 day-points, breakdown panels 209 -> 293 rows). The 4 known-blank remain blank for their own documented reasons: 9 and 32 Own Rate (owned/approved, approved=0), 53 and 54 Days-from-Offer (gold.funding_lag has no northpond rows).
+
+DEV-1510 IS NOW OPERATIONALLY COMPLETE for the owned half. Remaining open threads, none of them started:
+1. DURABLE FIX for the decay — reload_all_on_change tape source + M_ETL_ON_REBUILD tier on the four northpond offers transforms. Without it this whole exercise repeats in ~2 weeks.
+2. TEARDOWN — dashboard /d/dev1510-npv2-owned, DROP DEV_ABHISHEK.GOLD.OFFERS_DAILY_DEV1510 and OFFERS_BUCKETED_DEV1510, REVOKE SELECT FROM ROLE GRAFANA_READER. Prod is verified so the before/after comparison has served its purpose.
+3. NOTE TO SEAN — retire or redefine Applications Bid / Approval Rate / Own Rate (we grade, we do not bid on v2); build NorthpondFundingLag for the two Days-from-Offer panels (data all present, median lag 4 days).
+4. Confirm with Nate that Oliv prices off our grade, closing the one caveat on the we-do-not-bid finding.
