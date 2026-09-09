@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-09T19:01:03Z
+updated: 2026-09-09T19:36:19Z
 source: claude-code
 ---
 
@@ -358,3 +358,20 @@ STILL BLANK — 4 panels, two distinct causes:
       Both read gold.funding_lag, which has zero northpond rows because no NorthpondFundingLag transform exists.
 
 The Bid family (7 Approval Rate, 11 stat Bid, 14 ts Bid, 19 geomap Bid, 25 Avg Bid, 30, 34, 37, 43) was never in scope for this PR and is unchanged.
+- 2026-09-09T19:36Z [claude-code] 2026-09-10 REAL DEFECT FOUND — Applications Owned under-reports by 28% and has a permanent dead zone at the leading edge. Abhishek spotted it visually ('no data points in the last ten days, just one on some random day'); he was right.
+
+MEASURED. gold owned total 465 vs live truth 646 = 181 owned applications MISSING (28%). Per offer-date, gold vs truth: 08-28 8 vs 20 | 08-29 0 vs 14 | 08-30 0 vs 12 | 08-31 0 vs 18 | 09-01 0 vs 21 | 09-02 14 vs 32 | 09-03 0 vs 28 | 09-04 0 vs 23 | 09-05 0 vs 14 | 09-06 0 vs 8 | 09-07 0 vs 7. Older dates are slightly short too (08-20 26 vs 27, 08-24 15 vs 16, 08-25 18 vs 20) because purchases keep landing against old offer dates. The lone 09-02 spike he noticed is a date that happened to get reprocessed later, when late-arriving OFFER rows for 09-02 triggered a rebuild of that key and the tape was by then populated.
+
+MECHANISM. owned is attributed to the application's FIRST OFFER date, but the transform only reprocesses a date when new OFFER rows arrive for that date. A purchase tape landing does not trigger a rebuild of the older offer date it belongs to. Offer->purchase lag is 2-18 days (median 4), so by the time a purchase is known the offer date is long out of the incremental window. Result: the last ~2-3 weeks are always understated and drift down permanently until someone runs as_of_date: all again.
+
+ROOT CAUSE IS A MISSING StreamSource, AND NORTHPOND IS THE ONLY PLATFORM WITHOUT IT:
+  upgrade_offers_daily/_bucketed:    silver.upgrade_stmt_purchase_tapes  reload_all_on_change=True (+ allocations)
+  sofi_offers_daily/_bucketed:       silver.sofi_stmt_purchase_tapes + initial_purchase_tapes, both reload_all_on_change=True
+  prosper_offers_daily:              silver.prosper_stmt_accepted_report reload_all_on_change=True
+  happymoney_offers_daily:           silver.happymoney_stmt_originations reload_all_on_change=True
+  northpond_tu_offers_daily/_bucketed  and northpond_exp_offers_daily/_bucketed: OFFERS TABLE ONLY. No tape source.
+Upgrade's own in-code comment describes this exact failure: 'an allocation AS_OF_DATE is the origination day but it marks owned at the earlier offer date, so an incremental reload keyed off its own dates would rebuild the wrong rows and never fill the leading edge.'
+
+I CALLED THIS WRONG IN PR #6491. I noted the missing source_tables entry and wrote it off as 'pre-existing v1 behaviour, deliberately left alone'. It is not benign — it is a 28% undercount and a visibly broken chart. It should have been in scope.
+
+FIX (follow-up PR, 4 files): add StreamSource(table='silver.northpond_stmt_purchase_tapes', reload_all_on_change=True) to northpond_exp_offers_daily, northpond_exp_offers_bucketed, northpond_tu_offers_daily, northpond_tu_offers_bucketed — mirroring the other five platforms exactly. Then one as_of_date: all backfill of all four assets to fill the current hole. Same no-shared-code, platform-file-only shape as #6491. NOT STARTED — his call whether I open it.
