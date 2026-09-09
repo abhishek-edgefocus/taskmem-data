@@ -10,7 +10,7 @@ people: [Scott]
 tags: [northpond, openroad, needs-reply, api-health]
 refs: [thread=https://edgefocuspartners.slack.com/archives/G01LRBTFG4U/p1788525464625349?thread_ts=1788375642.243529]
 created: 2026-09-04T13:35:31Z
-updated: 2026-09-04T19:22:48Z
+updated: 2026-09-09T13:13:23Z
 source: claude-code
 ---
 
@@ -40,3 +40,4 @@ ONE BUG FOUND (northpond v2 / Experian only): dob will never hash. v2 sends MMDD
 Suggested fix for Scott: accept MMDDYYYY in _DOB_PATTERNS, disambiguated from YYYYMMDD by which end holds a plausible year (a month can never be 19/20), and change the northpond v2 test fixture to a real MMDDYYYY dob.
 
 Reply drafted for the #team-devs thread; Abhishek posts it.
+- 2026-09-09T13:13Z [claude-code] Slack sweep 2026-09-09: Scott MERGED #6541 on 2026-09-04 without waiting for Abhishek. Thread record (#team-devs 1788375642.243529): Scott reminded Kabeer/Nakula/Sanjali/Kushagra/Abhishek on 09-04; Kushagra confirmed for HM, Sanjali confirmed for Foursight, Abhishek never replied. Scott then: 'Just merged this. No need to rush to deploy your APIs, but try to find a time to do so within the next week or so if appropriate.' So the ask has changed shape — it is no longer a pre-merge review gate, it is: deploy the northpond + openroad APIs carrying the PII-hash change, deadline ~2026-09-11, and say so in the thread. Reviewing the northpond_loan_fl / northpond_exp_loan_fl endpoints is still worth doing, but as pre-deploy verification, not as a merge blocker.
