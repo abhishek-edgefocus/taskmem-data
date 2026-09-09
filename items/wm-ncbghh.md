@@ -8,9 +8,10 @@ size: xs
 due: 2026-09-10
 people: [abhijeet, scott, nakula]
 tags: [needs-reply, slack, data-freshness]
+links: [related:wm-8avh6w]
 refs: [thread=https://edgefocuspartners.slack.com/archives/G01LRBTFG4U/p1788536318600199]
 created: 2026-09-09T13:12:38Z
-updated: 2026-09-09T13:12:38Z
+updated: 2026-09-09T13:13:23Z
 source: slack #team-devs
 label: freshness SLO threshold
 ---
