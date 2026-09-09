@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-09T19:45:29Z
+updated: 2026-09-09T19:47:54Z
 source: claude-code
 ---
 
@@ -383,3 +383,14 @@ WAREHOUSES ACTUALLY AVAILABLE (SHOW WAREHOUSES, 2026-09-10): COMPUTE_WH_L (Large
 Note the [[snowflake-warehouse-naming]] rule (only _DEV/_PROD suffixed, narrow rather than size up) governs AGENT queries, not a prod job Abhishek launches himself — COMPUTE_WH_L is legitimate there.
 
 FOR THIS PARTICULAR JOB IT IS UNNECESSARY: the northpond_exp_offers_daily / _bucketed as_of_date=all runs took 20s and 19s on COMPUTE_WH_XS_PROD (287,043 source rows). A Large warehouse buys nothing on a 20-second job. The priority tag IS worth setting if the queue is saturated. Recommended handover config from here on: as_of_date: all + warehouse COMPUTE_WH_XS_PROD in the config box, dagster/priority: 10 in the tag editor.
+- 2026-09-09T19:47Z [claude-code] 2026-09-10 WAREHOUSE ROUTING — master has moved since my earlier handovers and my advice needs updating. Abhishek pasted the Launchpad config showing an event_types field I had not seen.
+
+event_types: [] — new field on TransformConfig (asset_factories.py:29). 'Restrict the run to these bronze event types; empty means all. Honoured only by transformations whose constructor accepts event_types (today, api_field_presence).' The factory passes it as a kwarg only when non-empty, so setting it on a transform that does not accept it raises TypeError. For the northpond offers assets: LEAVE IT EMPTY.
+
+warehouse_tier / resolve_warehouse — edgefocus/transformations/warehouse_routing.py, new since I last read this code. WarehouseTier enum: XS_PROD (default), M_ETL, M_ETL_ON_REBUILD. DEFAULT_WAREHOUSE=COMPUTE_WH_XS_PROD, DEFAULT_ETL_WAREHOUSE=COMPUTE_WH_M_ETL, overridable by the ETL_WAREHOUSE env var (blanking it is the documented rollback). routing_enabled() only when ENVIRONMENT=prod, because COMPUTE_WH_M_ETL grants USAGE to PROD_WRITER only. REBUILD_KEY_THRESHOLD=32 — a date range or comma list of >=32 keys counts as a rebuild for routing.
+
+PRECEDENCE, and this is the counter-intuitive bit: resolve_warehouse overrides the configured warehouse ONLY when it equals the shared default COMPUTE_WH_XS_PROD. Any other explicit value WINS and disables routing. So typing COMPUTE_WH_L in the config box does not 'add' a big warehouse on top of the tier system — it PINS the run and bypasses it. Leaving COMPUTE_WH_XS_PROD is what lets a transform's own tier promote it.
+
+APPLIED TO THESE ASSETS: northpond_exp_offers_daily, _bucketed and northpond_tu_offers_daily declare NO warehouse_tier, so they default to XS_PROD and stay on COMPUTE_WH_XS_PROD whatever routing does. upgrade_offers_daily and upgrade_offers_bucketed declare warehouse_tier = WarehouseTier.M_ETL_ON_REBUILD.
+
+CONSEQUENCE FOR THE PLANNED FIX — the follow-up PR is probably not 12 lines but 12 + 4. Upgrade pairs its reload_all_on_change tape sources WITH M_ETL_ON_REBUILD routing, precisely because reload_all makes every tape landing a full rebuild. If we add reload_all_on_change to the four northpond transforms without the tier, every daily tape landing triggers a full-range rebuild on XS. Today that is ~20s so it is genuinely fine, but the upgrade precedent is to tag the tier at the same time. Decide deliberately rather than by omission.
