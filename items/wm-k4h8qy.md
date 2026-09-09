@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-09T18:45:54Z
+updated: 2026-09-09T19:01:03Z
 source: claude-code
 ---
 
@@ -331,3 +331,30 @@ The purchase tape also carries PURCHASE_DATE and FUNDING_DATE as distinct column
 SEMANTIC POINT worth carrying into the Sean conversation: for v2 the 'offer date' is really the date we SCORED the application, so the panel would honestly read 'days from scoring to purchase'. That is still meaningful — it measures how long Oliv takes to buy after we grade — it just wants renaming, unlike Applications Bid / Approval Rate / Own Rate which want retiring.
 
 So the three-way split for Sean is now: (1) RETIRE or REDEFINE — Applications Bid, Approval Rate, Own Rate (we grade, we do not bid). (2) BUILD — Days from Offer to Purchase-Tape / to Funding, needs a NorthpondFundingLag transform, data is all there. (3) DONE — Applications Owned and Look to Book, both live since the 2026-09-01 backfill.
+- 2026-09-09T19:01Z [claude-code] 2026-09-10 DEFINITIVE INVENTORY of what PR #6491 + the 2026-09-01 backfill actually fixed on API Gateway Monitoring. Measured every owned-touching panel through /api/ds/query, then re-ran the identical set against channel=northpond_loan_fl_dark_mode, which still has owned=0 and therefore reproduces the PRE-FIX state exactly. That control is what makes this an inventory rather than an inference.
+
+MEASUREMENT BUG I CAUGHT MID-CHECK: my first pass reported panels 31/32/35/44 as RENDERS because I counted non-nulls in column index 1, which on the breakdown panels is the bucket LABEL (a string, never null), not the value. Corrected to count only fields with schema type 'number'. Panel 32 flipped from 'RENDERS' to 'BLANK' once fixed. Anyone re-running this must inspect numeric fields only.
+
+FIXED — 9 panels (owned=0 control -> BLANK, live loan_fl -> RENDERS):
+   8  Look to Book                         30 rows, 60/60 numeric non-null
+  15  Applications Owned (timeseries)      30 rows, 60/60
+  20  Applications Owned by State (geomap) 15 rows, 15/15
+  26  Applications Owned :: Avg. (Averages row)          30 rows, 60/60
+  31  Look to Book by breakdown            209 rows, 209/209
+  35  % of Applications Owned :: breakdown 209 rows, 209/209
+  38  Applications Owned :: breakdown (barchart)  15 rows, 15/15
+  44  Applications Owned :: Avg. by breakdown     209 rows, 209/209
+  12  stat Applications Owned — DIFFERENT CASE: it never went blank, it rendered a WRONG 0. Now 451.
+So 8 panels went blank->rendering and 1 went wrong-value->right-value.
+Mechanism for the 8: they all carry HAVING SUM(owned_apps_...) > 0, so with owned=0 every row was eliminated and Grafana got zero rows. Panel 26 additionally needed AVERAGES:<metric>:owned, which was literal NULL before because owned_join_table='' forced NULL as avg_*_owned.
+Note 4 of the 9 (26, 31, 35, 38, 44) live inside the COLLAPSED Averages / Breakdown rows — easy to miss when eyeballing the dashboard.
+
+STILL BLANK — 4 panels, two distinct causes:
+   9  Own Rate            = owned/NULLIF(approved,0)  -> 30 rows, 0/60 numeric non-null
+  32  Own Rate by breakdown, same formula             -> 209 rows, 0/209 non-null
+      Both blocked on the bid half; blank on v1 too, and no owned backfill can help them.
+  53  Days from Offer to Purchase-Tape Date           -> 0 rows
+  54  Days from Offer to Funding                      -> 0 rows
+      Both read gold.funding_lag, which has zero northpond rows because no NorthpondFundingLag transform exists.
+
+The Bid family (7 Approval Rate, 11 stat Bid, 14 ts Bid, 19 geomap Bid, 25 Avg Bid, 30, 34, 37, 43) was never in scope for this PR and is unchanged.
