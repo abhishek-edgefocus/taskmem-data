@@ -11,7 +11,7 @@ tags: [northpond, needs-reply, api-health]
 links: [relates:wm-u52nd6, parent:wm-3y3ckv, parent:wm-d3qnqe, blocks:wm-u52nd6]
 refs: [thread=https://edgefocuspartners.slack.com/archives/C04474NRLP6/p1785434540555299]
 created: 2026-07-31T12:55:10Z
-updated: 2026-08-20T19:53:22Z
+updated: 2026-09-09T13:13:23Z
 source: claude-code
 label: Nate spot-check token errors
 ---
@@ -61,3 +61,4 @@ STILL OWED TO NATE: the reply itself, plus his second question on error-message 
 - Errors spread across 14 of 24 hours, no single burst -- steady low-rate leak, consistent with per-worker token invalidation rather than an incident.
 - The 836 nulls break down: 440 missing BOTH clarityReport and creditReport features, 184 clarityReport only, 81 creditReport only, and 131 with NO missing-feature list at all (unexplained sub-case, worth its own look under DEV-1490 / [[wm-ufw7kj]]).
 Raw evidence retained on dpx at /tmp/ab_np/day (13,432 files) and scripts /tmp/ab_day.py, /tmp/ab_scan3.py -- /tmp is not durable, re-derive from s3://efp-raw/gateway/northpond/northpond_loan_fl/<date>/v2/endpoint_transactions/ if needed later.
+- 2026-09-09T13:13Z [claude-code] Slack sweep 2026-09-09: confirmed STILL unanswered and it is the last message in the thread. Nate's exact ask (#team-devops 2026-07-30 23:32 IST, thread 1785434540.555299, msg 1785442467.851169): 'is there a way to spot check a few requests to confirm if they are indeed from the token issue?' — asked directly after Abhishek pointed him at the OAuth-token explanation. 40 days open to an external partner. Note the OAuth 401 handling fix itself is done (wm-u52nd6), which should make the spot-check answerable now.
