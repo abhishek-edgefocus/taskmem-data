@@ -2,7 +2,7 @@
 id: wm-e4nxre
 type: followup
 title: Reply to Sean: legacy MOB-curves dashboard undercounts Oliv (MySQL/datastore-backed, 372 loans vs ~8.9k on Nelnet tape)
-status: next
+status: done
 priority: p1
 size: s
 due: 2026-09-02
@@ -10,7 +10,7 @@ people: [sean-edgefocus]
 tags: [northpond, oliv, datastores, needs-reply, grafana]
 links: [related:wm-tvjjgw]
 created: 2026-09-01T17:37:13Z
-updated: 2026-09-01T17:37:29Z
+updated: 2026-09-09T13:13:04Z
 source: claude-code
 label: Sean MOB curves Oliv
 ---
