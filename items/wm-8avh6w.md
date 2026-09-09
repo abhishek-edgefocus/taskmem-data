@@ -11,7 +11,7 @@ tags: [grafana, data-quality, freshness]
 links: [relates:wm-4s2sad, relates:wm-hjbt5a]
 refs: [DEV-freshness=https://linear.app/edge-focus/project/improve-visibility-into-platform-data-freshness-087906c438c6]
 created: 2026-08-31T15:49:24Z
-updated: 2026-09-04T13:35:53Z
+updated: 2026-09-09T15:24:23Z
 source: slack
 label: platform data freshness
 ---
@@ -141,3 +141,4 @@ ACTIONS THIS SURFACED THAT ARE NOT DOC EDITS:
 
 FRAMING WORTH REUSING WITH SCOTT: the value of splitting the three watch points is that it turns a red light into an action - one combined 'platform is stale' indicator says something is wrong, three say who owes the fix. That is the argument for the layered series model in the architecture doc, stated in a form a non-engineer can act on.
 - 2026-09-04T13:35Z [claude-code] 2026-09-04 Slack sweep: Scott DM'd 2026-09-03 20:58 IST with https://github.com/edgefocus/efp/pull/6586 — 'This is a PR stack for the data freshness work. Feel free to take any or none of this.' Not yet acknowledged. Decide what to take from it before building more of the freshness pane independently.
+- 2026-09-09T15:24Z [claude-code] 2026-09-09: drafted the three outstanding actions into ~/data-freshness-next-actions.md — (1) the #team-devs SLO reply for [[wm-ncbghh]], (2) the DM handing Scott the doc, unsent since 09-03, (3) the Linear plan: four target dates (project 2026-09-25, M1 09-11, M2 09-19, M3 09-25) and seven issues to create. The seven: land the #6586-6590 stack; the three false-green cases open in both designs (forward-dated as_of_date, partial evaluation, end_date for retired series); populate MonitoringSchedule for the 67 unscheduled monitorable rules (47/114 today, the bulk of the week); carry gateway_last_order.py's per-channel thresholds into the registry; promote the dashboard off DEV_SCOTT into a real folder. Nothing sent or applied — all three need Abhishek. Note the forward-dated as_of_date case is live right now: bronze.statement_files has happymoney at 2026-09-09 and sofi at 2026-09-04 on initial_purchase_tape, which any MAX(as_of_date) check reads as maximally fresh indefinitely.
