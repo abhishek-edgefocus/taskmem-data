@@ -2,14 +2,14 @@
 id: wm-cn9ebp
 type: followup
 title: Add OpenAI + Anthropic to the Ramp vendor exception, as promised to Brittney
-status: next
+status: dropped
 size: xs
 people: [Brittney]
 tags: [ai-billing, needs-reply]
 links: [parent:wm-gcdq6k]
 refs: [PR-6223=https://github.com/edgefocus/efp/pull/6223]
 created: 2026-08-12T13:30:57Z
-updated: 2026-09-09T13:13:38Z
+updated: 2026-09-09T13:16:47Z
 source: claude-code
 label: Ramp vendor exception
 ---
