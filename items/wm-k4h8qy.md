@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-09T18:12:48Z
+updated: 2026-09-09T18:35:31Z
 source: claude-code
 ---
 
@@ -308,3 +308,14 @@ So no grade is produced because the EXPERIAN CREDIT-REPORT FEATURES ARE MISSING 
 CONSEQUENCE FOR SEAN / DEV-1510: the bid half is a DEFINITION change, not a fix. On v2 the honest funnel is Evaluated -> Graded -> Owned. 'Applications Bid' should be retired or redefined as 'Graded' (creditGrade non-null), which is already derivable with no upstream change. The ungraded ~7-9% is arguably the more useful middle column — it is a live Experian data-quality signal, not lost business.
 
 CAVEAT NOT YET CLOSED: this is all from endpoint_transactions. If Oliv receives pricing through some other channel or a later call, this would not show it. The v1-vs-v2 contrast within the same event type is strong but worth one sentence of confirmation from Nate.
+- 2026-09-09T18:35Z [claude-code] 2026-09-10 Own Rate panel confirmed blank, verified through /api/ds/query rather than restated. It is NOT a separate bug and NOT something the owned backfill could have fixed.
+
+Panel 9 Own Rate = SUM(owned_apps)/NULLIF(SUM(approved_apps),0). approved is 0 for northpond, so NULLIF(0,0) makes the denominator NULL and every row divides to NULL.
+Measured: v1 returns 180 rows / 0 non-null; v2 returns 30 rows / 0 non-null. First values literally [None, None, None, None, None]. So Grafana receives rows but has nothing to plot — the panel draws empty rather than erroring.
+DISTINCT FAILURE MODE from the Bid panels, worth keeping straight: Applications Bid returns rows with the value 0; Approval Rate returns ZERO rows (it carries HAVING SUM(approved)>0); Own Rate returns rows whose values are all NULL. Three different-looking blanks, one root cause.
+
+Look to Book, by contrast, WORKS on both versions — 180/180 and 30/30 non-null (v2 first values 0.000894, 0.000461, 0.000544...). Because its denominator is total_apps, not approved.
+
+AFFECTS V1 TOO, which sharpens the story: on v1 we genuinely did bid (one offer per application, 246,769 of them), yet Own Rate has never worked there either, because decision was never TRUE on any TU row. So Own Rate has been blank for NorthPond for its entire history on both APIs.
+
+FOR SEAN: Own Rate is defined as owned/bid. If 'bid' is not a meaningful concept for NorthPond v2 (we return a grade, Oliv prices), then Own Rate inherits that and is equally meaningless — it should be retired for this platform alongside Applications Bid, not fixed. The working analogue already on the dashboard is Look to Book (owned/evaluated). If a conversion rate off the scored population is wanted, owned/graded is the v2-appropriate definition and is derivable today.
