@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-09T19:36:19Z
+updated: 2026-09-09T19:45:29Z
 source: claude-code
 ---
 
@@ -375,3 +375,11 @@ Upgrade's own in-code comment describes this exact failure: 'an allocation AS_OF
 I CALLED THIS WRONG IN PR #6491. I noted the missing source_tables entry and wrote it off as 'pre-existing v1 behaviour, deliberately left alone'. It is not benign — it is a 28% undercount and a visibly broken chart. It should have been in scope.
 
 FIX (follow-up PR, 4 files): add StreamSource(table='silver.northpond_stmt_purchase_tapes', reload_all_on_change=True) to northpond_exp_offers_daily, northpond_exp_offers_bucketed, northpond_tu_offers_daily, northpond_tu_offers_bucketed — mirroring the other five platforms exactly. Then one as_of_date: all backfill of all four assets to fill the current hole. Same no-shared-code, platform-file-only shape as #6491. NOT STARTED — his call whether I open it.
+- 2026-09-09T19:45Z [claude-code] 2026-09-10 Run-config conventions checked against the docs he pointed at, for future handovers.
+
+PRIORITY IS A TAG, NOT RUN CONFIG — the gotcha. notes/areas/efp/runbooks/dagster-prod-run-queue.md: set dagster/priority (integer, default 0, higher first) in the Launchpad TAG EDITOR, not the YAML box. Verified empirically 2026-09-04 in that runbook: a pri=10 copy_from_efs run jumped nine runs queued 21 minutes longer. Priority REORDERS, it does not preempt — you still wait for a slot. And it CANNOT be added to an already-queued run; cancel and relaunch. Instance runs QueuedRunCoordinator with max_concurrent_runs: 10; the queue saturates at top-of-hour when six statements_* jobs launch together and run 60-90 min.
+
+WAREHOUSES ACTUALLY AVAILABLE (SHOW WAREHOUSES, 2026-09-10): COMPUTE_WH_L (Large), COMPUTE_WH_M_ETL (Medium), COMPUTE_WH_S (Small), COMPUTE_WH_XS_PROD, COMPUTE_WH_XS_DEV, COMPUTE_WH_XS_GRAFANA, COMPUTE_WH_CI (all X-Small). So the 'large warehouse' is COMPUTE_WH_L — there is NO _PROD-suffixed larger option. Precedent: statements_lc runs as_of_date=all on COMPUTE_WH_L.
+Note the [[snowflake-warehouse-naming]] rule (only _DEV/_PROD suffixed, narrow rather than size up) governs AGENT queries, not a prod job Abhishek launches himself — COMPUTE_WH_L is legitimate there.
+
+FOR THIS PARTICULAR JOB IT IS UNNECESSARY: the northpond_exp_offers_daily / _bucketed as_of_date=all runs took 20s and 19s on COMPUTE_WH_XS_PROD (287,043 source rows). A Large warehouse buys nothing on a 20-second job. The priority tag IS worth setting if the queue is saturated. Recommended handover config from here on: as_of_date: all + warehouse COMPUTE_WH_XS_PROD in the config box, dagster/priority: 10 in the tag editor.
