@@ -2,7 +2,7 @@
 id: wm-rrvgdr
 type: followup
 title: Answer Nate: spot-check Oliv credit-pull errors to confirm they are the OAuth token issue
-status: next
+status: dropped
 priority: p1
 size: s
 due: 2026-08-03
@@ -11,7 +11,7 @@ tags: [northpond, needs-reply, api-health]
 links: [relates:wm-u52nd6, parent:wm-3y3ckv, parent:wm-d3qnqe, blocks:wm-u52nd6]
 refs: [thread=https://edgefocuspartners.slack.com/archives/C04474NRLP6/p1785434540555299]
 created: 2026-07-31T12:55:10Z
-updated: 2026-09-09T13:13:23Z
+updated: 2026-09-09T13:16:47Z
 source: claude-code
 label: Nate spot-check token errors
 ---
