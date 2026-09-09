@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-08T18:48:50Z
+updated: 2026-09-09T18:12:48Z
 source: claude-code
 ---
 
@@ -289,3 +289,22 @@ silver.northpond_exp_offers, same window: 74,036 rows, exactly ONE offer per app
 So the ~5,367 applications with no APR are NOT explained by errors (only 157) — roughly 5,210 got neither a price nor an error. Those are plausibly genuine knockouts/declines, i.e. exactly the population a real 'bid' metric would exclude. Priced-vs-unpriced is therefore a usable, already-present signal: ~93% bid rate on the last 7 days. This strengthens the earlier candidate definition ('we returned an offer') from a guess to something with a concrete split in the data — but the 5,210 have NOT been characterised yet, so confirm what they are before specifying the metric.
 
 RESTATED CAUSE for the blank panels: approved_apps_count counts applications where decision = TRUE (offers_daily_utils.py:256/274). decision is false on 100% of NorthPond rows on BOTH api versions (v1 TU 246,769 all false; v2 exp 173,082 false + 13,867 null), so the count is 0 by construction. Documented in-tree at northpond/positions.py:110 — the decision field 'is not a funded-loan signal'. Knock-on: Approval Rate carries HAVING SUM(approved)>0 so it returns zero rows, and Own Rate is owned/NULLIF(approved,0) so every value is NULL — both blank for reasons that have nothing to do with the owned fix that shipped.
+- 2026-09-09T18:12Z [claude-code] 2026-09-09 CORRECTION TO MY OWN 2026-09-09 ENTRY — I logged 'THAT HUNCH IS WRONG'. It was MY reading that was wrong. Abhishek is right: on v2 we do NOT bid, we return a credit grade only.
+
+WHERE I WENT WRONG: I read offer_uuid / apr / rate / credit_grade / priority off bronze.api_events EVENT_TYPE='model_responses' and concluded we return priced offers. model_responses is our INTERNAL model output event. What we actually send Oliv is endpoint_transactions payload:response, and that is a different, much smaller object.
+
+WHAT WE ACTUALLY RETURN (v2, endpoint_transactions payload:response, 30 days):
+  timestamp 280,589 | requestUuid 280,589 | applicationUuid 279,851 | experianMissingFeatures 276,716 | creditGrade 276,716 | errorMessages 738
+  There is NO offers key. Zero occurrences in 30 days. No apr, no rate, no term.
+v1 (TU, legacy) BY CONTRAST: offers present on 246,769 events, array size exactly 1 each (plus 29,727 with no offers key). So v1 DID bid, one offer per application.
+upgrade, a genuine bidding platform, for contrast: offers, adverseActionReasons, modelName, policyVersion, testCell.
+=> The v1->v2 cutover changed us from an offer-returning API to a grade-returning API. 'Applications Bid' is meaningful for v1 and conceptually inapplicable to v2.
+
+THE ~5,091/week UNPRICED COHORT ARE NOT DECLINES OR KNOCKOUTS. Two concrete responses, same shape:
+  PRICED   {applicationUuid, creditGrade: 28, experianMissingFeatures: null, requestUuid, timestamp}
+  UNPRICED {applicationUuid, creditGrade: null, experianMissingFeatures: {creditReport: [p13_alj8120, p13_all0437, ... dozens of attributes]}, requestUuid, timestamp}
+So no grade is produced because the EXPERIAN CREDIT-REPORT FEATURES ARE MISSING — a data-availability failure, not a credit decision. result=SUCCESS on all of them. Of 2,369 such events in 3 days only 342 have any model_response at all, so ~86% never reached the model. Split of the cohort: 2,024 missing-features / 56 Experian pull errors (HTTP 400, read timeouts). Steady 7-9% of daily volume, single channel northpond_loan_fl, no date burst. Directly related to [[wm-ufw7kj]] (DEV-1490 missing Clarity/Experian attributes).
+
+CONSEQUENCE FOR SEAN / DEV-1510: the bid half is a DEFINITION change, not a fix. On v2 the honest funnel is Evaluated -> Graded -> Owned. 'Applications Bid' should be retired or redefined as 'Graded' (creditGrade non-null), which is already derivable with no upstream change. The ungraded ~7-9% is arguably the more useful middle column — it is a live Experian data-quality signal, not lost business.
+
+CAVEAT NOT YET CLOSED: this is all from endpoint_transactions. If Oliv receives pricing through some other channel or a later call, this would not show it. The v1-vs-v2 contrast within the same event type is strong but worth one sentence of confirmation from Nate.
