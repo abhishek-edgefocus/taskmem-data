@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-09T19:59:50Z
+updated: 2026-09-09T20:43:25Z
 source: claude-code
 ---
 
@@ -409,3 +409,9 @@ DEV-1510 IS NOW OPERATIONALLY COMPLETE for the owned half. Remaining open thread
 2. TEARDOWN — dashboard /d/dev1510-npv2-owned, DROP DEV_ABHISHEK.GOLD.OFFERS_DAILY_DEV1510 and OFFERS_BUCKETED_DEV1510, REVOKE SELECT FROM ROLE GRAFANA_READER. Prod is verified so the before/after comparison has served its purpose.
 3. NOTE TO SEAN — retire or redefine Applications Bid / Approval Rate / Own Rate (we grade, we do not bid on v2); build NorthpondFundingLag for the two Days-from-Offer panels (data all present, median lag 4 days).
 4. Confirm with Nate that Oliv prices off our grade, closing the one caveat on the we-do-not-bid finding.
+- 2026-09-09T20:43Z [claude-code] 2026-09-10 DURABLE FIX RAISED — PR #6755 (DRAFT) https://github.com/edgefocus/efp/pull/6755, branch abhishek/dev-1510-northpond-offers-tape-reload off current master (d47cbc31b).
+Adds StreamSource(silver.northpond_stmt_purchase_tapes, reload_all_on_change=True) to all FOUR northpond offers transforms (exp+tu, daily+bucketed), with a comment explaining why reload_all rather than incremental. 4 files, +24 lines, platform-specific only, no shared code.
+Local checks before pushing: ruff clean, ruff format clean, mypy clean, 76 tests pass (offers_bucketed_utils_test + asset_factories_test).
+PR body carries the before-numbers in a collapsible (query + result), the 465 vs 646 gap, and a precedent table showing upgrade/sofi/prosper/happymoney all already do this and northpond was the only holdout.
+DELIBERATE OMISSION, stated in the PR: did NOT add warehouse_tier = M_ETL_ON_REBUILD even though upgrade pairs it with this flag. Measured justification — a full northpond rebuild is 20s on XS_PROD and 25s on M_ETL, so the tier (which exists to keep heavy rebuilds off XS) buys nothing here. Flagged as worth revisiting if volume grows.
+AFTER MERGE: deploy-dagster-prod is workflow_dispatch only, then one as_of_date: all run of the four assets to clear the current backlog; self-healing from then on.
