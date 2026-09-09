@@ -9,7 +9,7 @@ tags: [ai-billing, needs-reply]
 links: [parent:wm-gcdq6k]
 refs: [PR-6223=https://github.com/edgefocus/efp/pull/6223]
 created: 2026-08-12T13:30:57Z
-updated: 2026-08-26T13:10:30Z
+updated: 2026-09-09T13:13:38Z
 source: claude-code
 label: Ramp vendor exception
 ---
@@ -70,3 +70,4 @@ THREE THINGS LEFT, in the order that unblocks fastest: (1) add 'OpenAI' and 'Ant
 WHAT THIS MEANS FOR THE ITEM: the code half is probably CORRECT AS SHIPPED and should not be changed without a reason. The reply half is the entire remaining obligation, and it is now a better message than the one drafted on 2026-08-12: tell Brittney the two vendors did not need adding after all, because the memo tags she applied are doing exactly that job (18 charges recovered in prod), and thank her for it. Do NOT send the older 'keep the vendor list, we still need it' framing — that was about Cursor and would read as if her memo work was wasted.
 
 STILL GENUINELY OPEN AND WORTH INCLUDING IN THE REPLY: per the DEV-970 prod log, Brittney was also going to re-code the Jan-Feb OpenAI (3) + Anthropic (7) charges in Ramp, which would move ~10 rows off the memo rule onto the GL rule. Worth telling her that is now optional rather than needed, so she does not spend time on it.
+- 2026-09-09T13:13Z [claude-code] Slack sweep 2026-09-09: re-read the group DM (C0B6ZBZG61M, Frank + Brittney). The last message in that DM is Abhishek's own, 2026-08-11: 'We get the memo field via the API. We can have something like #efp-ai anywhere in the memo. Brittney - is this feasible?' Brittney never answered. So there are two threads here, not one: (a) the promise Abhishek made — 'Oh ok - I can do that' — to add OpenAI + Anthropic to the vendor exception like Cursor, which is his to ship and needs no answer from her; (b) Frank's cheaper alternative, a #efp-ai memo tag, which is stalled waiting on Brittney and needs a nudge. Do (a) regardless; it works whether or not the memo tag ever happens.
