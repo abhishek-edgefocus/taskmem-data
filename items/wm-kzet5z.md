@@ -2,14 +2,14 @@
 id: wm-kzet5z
 type: followup
 title: Answer Kabeer in #north-pond-tech: are the frequent northpond_loan_fl WARNING logs expected?
-status: next
+status: dropped
 priority: p2
 size: s
 people: [Kabeer]
 tags: [northpond, needs-reply, api-health]
 refs: [msg=https://edgefocuspartners.slack.com/archives/C06RMEK095G/p1787593370465809]
 created: 2026-09-04T13:35:32Z
-updated: 2026-09-09T13:13:23Z
+updated: 2026-09-09T13:16:47Z
 source: claude-code
 ---
 
