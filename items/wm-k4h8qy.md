@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-09T19:47:54Z
+updated: 2026-09-09T19:54:21Z
 source: claude-code
 ---
 
@@ -394,3 +394,9 @@ PRECEDENCE, and this is the counter-intuitive bit: resolve_warehouse overrides t
 APPLIED TO THESE ASSETS: northpond_exp_offers_daily, _bucketed and northpond_tu_offers_daily declare NO warehouse_tier, so they default to XS_PROD and stay on COMPUTE_WH_XS_PROD whatever routing does. upgrade_offers_daily and upgrade_offers_bucketed declare warehouse_tier = WarehouseTier.M_ETL_ON_REBUILD.
 
 CONSEQUENCE FOR THE PLANNED FIX — the follow-up PR is probably not 12 lines but 12 + 4. Upgrade pairs its reload_all_on_change tape sources WITH M_ETL_ON_REBUILD routing, precisely because reload_all makes every tape landing a full rebuild. If we add reload_all_on_change to the four northpond transforms without the tier, every daily tape landing triggers a full-range rebuild on XS. Today that is ~20s so it is genuinely fine, but the upgrade precedent is to tag the tier at the same time. Decide deliberately rather than by omission.
+- 2026-09-09T19:54Z [claude-code] 2026-09-10 Leading-edge hole filled by a manual re-run. Run 94f651d4-6854-4b8c-a582-5be24b1c73dd, northpond_exp_offers_daily alone, as_of_date: all on COMPUTE_WH_M_ETL, SUCCESS in 0.42 min.
+PROD gold now: v2 owned 465 -> 646, exactly matching the live truth computed from silver. v1 unchanged at 372.
+Dead zone gone: 08-28 8->20, 08-29 0->14, 08-30 0->12, 08-31 0->18, 09-01 0->21, 09-02 14->32, 09-03 0->28, 09-04 0->23, 09-05 0->14, 09-06 0->8, 09-07 0->7. 09-08 and 09-09 read 0, which is CORRECT not stale — minimum offer->purchase lag is 2 days, so those offer dates have no purchases yet.
+Note M_ETL took 25s vs XS's 20s on the same work, i.e. the warehouse size made no difference here as expected.
+STILL TO RUN: northpond_exp_offers_bucketed, same config — it feeds Owned by State plus the four Breakdown-row panels (31, 35, 38, 44), which remain stale until it runs.
+AND THIS WILL DECAY AGAIN within days. The manual re-run is a snapshot; the durable fix is still the reload_all_on_change tape source (+ M_ETL_ON_REBUILD tier, mirroring upgrade) on the four northpond transforms. Not started.
