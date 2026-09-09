@@ -8,9 +8,10 @@ size: xs
 due: 2026-09-10
 people: [nakula]
 tags: [needs-reply, slack, northpond, openroad, grafana]
+links: [related:wm-e4nxre]
 refs: [thread=https://edgefocuspartners.slack.com/archives/C0B6M0AQKB5]
 created: 2026-09-09T13:12:16Z
-updated: 2026-09-09T13:12:16Z
+updated: 2026-09-09T13:13:23Z
 source: slack #platform-data-owners
 label: Nakula MOB curves signoff
 ---
