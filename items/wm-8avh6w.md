@@ -11,7 +11,7 @@ tags: [grafana, data-quality, freshness]
 links: [relates:wm-4s2sad, relates:wm-hjbt5a]
 refs: [DEV-freshness=https://linear.app/edge-focus/project/improve-visibility-into-platform-data-freshness-087906c438c6]
 created: 2026-08-31T15:49:24Z
-updated: 2026-09-09T22:17:26Z
+updated: 2026-09-10T07:44:20Z
 source: slack
 label: platform data freshness
 ---
@@ -165,3 +165,4 @@ ALSO ACCEPTED: 4.3's fix reshaped — zero @asset_check/AssetCheckResult exist a
 
 I PUSHED BACK ON ONE: the review said numpy counts FRIDAY 2026-09-05 as a missed business day in the happymoney Labor Day example. 09-05 is a SATURDAY, which np.busday already excludes. The single false business day is Monday 2026-09-07, Labor Day. The example is clean and I used it — the reviewer's arithmetic was not. Second review running where the reviewer miscounted while correcting my counts.
 - 2026-09-09T22:17Z [claude-code] Extracted the decision list (keep/change/add/withdrawn), false-green cases, verified numbers, open questions, plan, teardown facts and a cold-reader glossary from ~/data-freshness-architecture.md (3rd review) + the Freshness Stack Teardown artifact, as structured input for a new diagram-first architecture doc. Noted: ~/data-freshness-next-actions.md (2026-09-09) is behind the 3rd-review doc on several points (largely-done, 6 vs 8 questions, cap_for/blocked-upstream, gateway thresholds, issue #3 wording).
+- 2026-09-10T07:44Z [claude-code] Extracted the decision list from ~/data-freshness-architecture.md (rev 2026-09-10, third review) + the Freshness Stack Teardown artifact + ~/data-freshness-next-actions.md, as structured facts for a new diagram-first architecture doc. Noted: next-actions.md (2026-09-09) is partly stale vs the 09-10 revision (partial-evaluation and figure end_date are withdrawn, gateway thresholds are now two checks not a fold-in, sofi not happymoney is the forward-dated feed); and s11 Q3 still proposes the rows_written==0 asset check that s4.3 withdrew.
