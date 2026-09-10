@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-09T20:43:25Z
+updated: 2026-09-10T13:03:25Z
 source: claude-code
 ---
 
@@ -415,3 +415,19 @@ Local checks before pushing: ruff clean, ruff format clean, mypy clean, 76 tests
 PR body carries the before-numbers in a collapsible (query + result), the 465 vs 646 gap, and a precedent table showing upgrade/sofi/prosper/happymoney all already do this and northpond was the only holdout.
 DELIBERATE OMISSION, stated in the PR: did NOT add warehouse_tier = M_ETL_ON_REBUILD even though upgrade pairs it with this flag. Measured justification — a full northpond rebuild is 20s on XS_PROD and 25s on M_ETL, so the tier (which exists to keep heavy rebuilds off XS) buys nothing here. Flagged as worth revisiting if volume grows.
 AFTER MERGE: deploy-dagster-prod is workflow_dispatch only, then one as_of_date: all run of the four assets to clear the current backlog; self-healing from then on.
+- 2026-09-10T13:03Z [claude-code] 2026-09-10 REVIEW FINDING ON PR #6755 WAS REAL — a reviewing agent flagged watermark starvation on the new tape source. Verified and fixed in commit 5af01c518.
+
+THE BUG. The watermark key is SOURCE -> TARGET (StreamPipeline._get_composite_pipeline_name). NorthpondTuOffersDaily and NorthpondExpOffersDaily both write gold.offers_daily; the two bucketed ones both write gold.offers_bucketed. My first commit gave all four the SAME new source, silver.northpond_stmt_purchase_tapes. So each pair resolved to ONE cursor — whichever transform ran first would advance it, the other would find no changed keys and skip the very rebuild the PR exists to trigger. The reviewer described the mechanism correctly.
+
+The codebase already names this hazard verbatim. StreamSource.scoped_watermark docstring: 'Set it only when multiple transforms write the same target and would otherwise share (and starve on) one cursor for this source.' And _get_composite_pipeline_name: 'without it they resolve to one name, share one cursor, and the first to run advances it past the others rows so they starve.' Existing users: the tu standardized_loans strict/loose siblings.
+
+WHY NO OTHER PLATFORM HITS IT: upgrade/sofi/prosper/happymoney each own a platform-specific tape table, so even though they share gold.offers_daily, only one transform consumes each tape. NorthPond is the only platform where TWO transforms (TU and EXP) read ONE tape into ONE target. My precedent table was right about the pattern and blind to this difference.
+
+FIX: scoped_watermark=True on the tape source in all four files. PROVED it works by instantiating all four transforms and comparing _get_composite_pipeline_name — 4 transforms, 4 distinct cursors:
+  ... -> GOLD.OFFERS_DAILY[PLATFORM=NORTHPONDANDAPI_VERSION=2] / [=1]
+  ... -> GOLD.OFFERS_BUCKETED[PLATFORM=NORTHPONDANDAPI_VERSION=2] / [=1]
+
+PRECONDITION CHECKED, not assumed. scoped_watermark must only go on a NEW source edge or it replays the whole backlog. Queried PROD.OPS.PIPELINE_WATERMARKS (columns are PIPELINE, LAST_PROCESSED, UPDATED_TS): there is NO SILVER.NORTHPOND_STMT_PURCHASE_TAPES -> GOLD.OFFERS_* row, so the edge is new and the default epoch start is correct. Other platforms tape edges DO exist there unscoped, e.g. SILVER.ANCHORED_STMT_PURCHASE_TAPES -> GOLD.OFFERS_DAILY.
+
+Checks after the fix: ruff, ruff format, mypy clean; 176 tests pass (offers_bucketed_utils, asset_factories, and the whole edgefocus/data_warehouse suite which covers stream_pipeline).
+PR body updated with a 'Why scoped_watermark=True' section. NOTE the PR is no longer draft — Abhishek marked it ready while I was working; commit 5af01c518 landed on the ready PR.
