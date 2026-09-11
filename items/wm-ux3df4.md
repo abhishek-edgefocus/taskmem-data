@@ -23,3 +23,6 @@ Abhijeet, 2026-09-09 22:19 IST: "agdi end la chalu nako karus, ek don diwsat sam
 ## Links
 - Work item wm-uwncjv
 - Abhijeet DM https://edgefocuspartners.slack.com/archives/D0B2A3WSJ5N/p1788972660168659
+
+## Log
+- 2026-09-11T14:26Z [claude-code] Body and links rewritten 2026-09-11 right after creation: the first version had a whole JSON blob pasted where the parent id should be (shell captured `taskmem new`'s full JSON output as the id). Content is otherwise unchanged.
