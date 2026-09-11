@@ -10,7 +10,7 @@ tags: [northpond, edgex, oliv]
 links: [parent:wm-j523sq]
 refs: [DEV-1481=https://linear.app/edge-focus/issue/DEV-1481/ingest-olivs-nelnet-servicer-files-loan-transaction]
 created: 2026-08-14T19:56:08Z
-updated: 2026-08-24T15:00:38Z
+updated: 2026-09-11T14:26:12Z
 source: claude-code
 label: EDGEX deal readiness
 ---
@@ -74,3 +74,4 @@ CURRENT STATE OF THE THREE SUB-THREADS, as of this sweep:
 
 So the umbrella's centre of gravity has shifted entirely to sub-thread 3; whoever picks this up next should start there, not at Nelnet.
 - 2026-08-24T15:00Z [claude-code] Rewrote the ## Next steps section (the Log is untouched). All three prior steps were stale and the first one — 'get PR #6277 reviewed today' — was being surfaced verbatim in every SessionStart digest, so the memory was actively pointing Abhishek at a closed PR and an expired deadline several times a day. Replaced with the three live prediction-chain steps and an explicit 'landed, no action' line so the closed sub-threads stay visible rather than looking forgotten.
+- 2026-09-11T14:26Z [claude-code] Sync 2026-09-11: Nate + Abhishek huddle in DM D0BAD46CT27 on 2026-09-10 19:01 IST (rescheduled from Nate's ask 'can we do 30min later tomorrow?'). Abhishek's stated agenda: 'discuss the overall integration plan and what all things are we looking forward to from the dev perspective'. Huddle — no transcript, outcome unknown; ask Abhishek what was agreed before treating any Oliv integration item as moved. Possibly overlaps wm-xmufr2 (the Trishit + Nate call) — unverified.
