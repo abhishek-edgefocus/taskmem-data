@@ -10,7 +10,7 @@ people: [Scott]
 tags: [northpond, openroad, needs-reply, api-health]
 refs: [thread=https://edgefocuspartners.slack.com/archives/G01LRBTFG4U/p1788525464625349?thread_ts=1788375642.243529]
 created: 2026-09-04T13:35:31Z
-updated: 2026-09-09T13:13:23Z
+updated: 2026-09-11T14:26:12Z
 source: claude-code
 ---
 
@@ -41,3 +41,4 @@ Suggested fix for Scott: accept MMDDYYYY in _DOB_PATTERNS, disambiguated from YY
 
 Reply drafted for the #team-devs thread; Abhishek posts it.
 - 2026-09-09T13:13Z [claude-code] Slack sweep 2026-09-09: Scott MERGED #6541 on 2026-09-04 without waiting for Abhishek. Thread record (#team-devs 1788375642.243529): Scott reminded Kabeer/Nakula/Sanjali/Kushagra/Abhishek on 09-04; Kushagra confirmed for HM, Sanjali confirmed for Foursight, Abhishek never replied. Scott then: 'Just merged this. No need to rush to deploy your APIs, but try to find a time to do so within the next week or so if appropriate.' So the ask has changed shape — it is no longer a pre-merge review gate, it is: deploy the northpond + openroad APIs carrying the PII-hash change, deadline ~2026-09-11, and say so in the thread. Reviewing the northpond_loan_fl / northpond_exp_loan_fl endpoints is still worth doing, but as pre-deploy verification, not as a merge blocker.
+- 2026-09-11T14:26Z [claude-code] Sync 2026-09-11: no change in the #team-devs thread since 09-04 (Kushagra HM, Sanjali Foursight, Scott merged). Abhishek still has not replied and the 'within the next week or so' window Scott gave ends about today. UNVERIFIED whether the northpond + openroad APIs have been redeployed with the PII-hash change — I did not check the deployed image. New related: dependabot PR #6767 bumps gitpython in the northpond/experian endpoint and should ride the same deploy.
