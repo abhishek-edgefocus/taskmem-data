@@ -10,7 +10,7 @@ people: [abhijeet]
 tags: [northpond, grafana, fund-monitoring, demise-datastores, linear]
 refs: [DEV-1715=https://linear.app/edge-focus/issue/DEV-1715/add-ef-alpha-to-fund-performance-monitoring, DEV-1716=https://linear.app/edge-focus/issue/DEV-1716/add-efhyf-to-fund-performance-monitoring, dm=https://edgefocuspartners.slack.com/archives/D0B2A3WSJ5N/p1788968937117249]
 created: 2026-09-11T14:26:11Z
-updated: 2026-09-11T14:26:11Z
+updated: 2026-09-11T14:26:45Z
 source: slack DM D0B2A3WSJ5N + Linear
 label: EF Alpha EFHYF fund monitoring
 ---
@@ -32,3 +32,6 @@ Prior art worth reusing: the NorthPond Fund Monitoring migration (wm-rgwdyu, DEV
 - DEV-1716 https://linear.app/edge-focus/issue/DEV-1716/add-efhyf-to-fund-performance-monitoring
 - Deadline negotiation (Abhijeet DM) https://edgefocuspartners.slack.com/archives/D0B2A3WSJ5N/p1788968937117249
 - Related: wm-rgwdyu (NorthPond FPM migration, done), wm-hz3hm9 (efhyf FUND_KEY gap), wm-j523sq (NorthPond Data Ingestion project)
+
+## Log
+- 2026-09-11T14:26Z [claude-code] Captured in the 2026-09-11 sync from the Abhijeet DM of 2026-09-09 21:18-22:21 IST ('Hya donhi la due date takaychi ahe' → 29th set) and Linear (both tickets dueDate 2026-09-29, assigned to Abhishek, project Demise datastores, blocking DEV-1031).
