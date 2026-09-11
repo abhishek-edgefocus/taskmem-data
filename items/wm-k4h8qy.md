@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-10T13:03:25Z
+updated: 2026-09-11T14:26:11Z
 source: claude-code
 ---
 
@@ -431,3 +431,4 @@ PRECONDITION CHECKED, not assumed. scoped_watermark must only go on a NEW source
 
 Checks after the fix: ruff, ruff format, mypy clean; 176 tests pass (offers_bucketed_utils, asset_factories, and the whole edgefocus/data_warehouse suite which covers stream_pipeline).
 PR body updated with a 'Why scoped_watermark=True' section. NOTE the PR is no longer draft — Abhishek marked it ready while I was working; commit 5af01c518 landed on the ready PR.
+- 2026-09-11T14:26Z [claude-code] Sync 2026-09-11: PR #6755 is APPROVED (Abhijeet, 2026-09-10 19:31 IST 'approved with one comment'), mergeStateStatus CLEAN, all checks green, NOT merged. His inline comment on northpond_exp_offers_daily.py:26: 'I don't understand what "leading edge" is here, but approving since the change is low risk. As an FYI, we also have reload_subsequent_on_change that you can use if appropriate.' Worth a one-line reply explaining leading edge (the newest as_of dates rebuilt on each tape landing) and whether reload_subsequent_on_change was considered. DEV-1510 is Done in Linear (2026-09-09 19:54Z) — Sean confirmed in the group DM C0C0KSANW05 2026-09-10 01:20 IST: 'You can close the ticket as completed now. In the future we will be providing the approval for the loans ... but for now we can leave it empty.' Remaining on this item: merge #6755 (Abhishek's click), then confirm the next purchase-tape landing rebuilds all four offers transforms.
