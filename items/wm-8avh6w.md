@@ -11,7 +11,7 @@ tags: [grafana, data-quality, freshness]
 links: [relates:wm-4s2sad, relates:wm-hjbt5a]
 refs: [DEV-freshness=https://linear.app/edge-focus/project/improve-visibility-into-platform-data-freshness-087906c438c6]
 created: 2026-08-31T15:49:24Z
-updated: 2026-09-10T19:50:28Z
+updated: 2026-09-11T14:26:12Z
 source: slack
 label: platform data freshness
 ---
@@ -184,3 +184,4 @@ PARKED, not dropped: two systems declare cadence (MonitoringSchedule on parsing 
 NEXT, item 1 — MONITORING COVERAGE. Reconcile registry.py against the parsing rules so we can state what is monitored versus what we intend to ingest. The parsing rules are an independent statement of intent (which files we ingest, which we deliberately ignore), so every non-ignored rule should have a monitored series behind it. Open question is HOW to surface the difference — a panel, a counter, a check, or something else. Undecided.
 
 NEXT, item 2 — SERIES RETIREMENT. FreshnessExpectation has no end_date, so a wound-down platform either disappears from the page or sits permanently red (figure would be ~620 days red from day one). Options discussed with Scott: (a) a terminated/retired value on the status field, (b) a separately maintained terminated list, (c) simply removing the asset from the registry and accepting the loss of history. Undecided — needs a decision before the registry grows.
+- 2026-09-11T14:26Z [claude-code] Sync 2026-09-11: two Slack touches. (1) Scott DM 2026-09-09 23:49 IST 'Any updates on the data freshness project?' — answered by Abhishek at 23:51 (architecture doc by tomorrow, discuss in catchup; the meeting then happened, see the 2026-09-11 01:20 entry). (2) #errors 2026-09-10 22:12 IST, Scott on the Sentry 'monitoring_daily failed' thread (EFP-ERRORS-ZK, regressed): 'this is failing on your dashboard not being in the Testing Dashboards folder' — Abhishek replied 'Moved' 23:05 IST. So the dev freshness dashboard had been sitting outside Testing Dashboards and broke monitoring_daily's dashboard check; the next 16:00 UTC run should confirm it is clean.
