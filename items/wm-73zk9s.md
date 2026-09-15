@@ -6,7 +6,7 @@ status: active
 priority: high
 tags: [northpond, pr-review]
 created: 2026-09-15T10:10:04Z
-updated: 2026-09-15T14:56:53Z
+updated: 2026-09-15T16:20:09Z
 source: claude-code
 effort: <1h
 next: Abhishek compares #6836 vs #6802, sends Scott the line-133 comment + link; close #6836 after
@@ -18,3 +18,4 @@ next: Abhishek compares #6836 vs #6802, sends Scott the line-133 comment + link;
 - 2026-09-15T13:58Z [claude-code] Nate answered 2026-09-15 19:27 IST: purchase happens 'early in the morning', a payment on the effective date is EdgeX's. So buyer owns purchase-day cash → PR #6802 as written misbooks 20 rows/$811 to balancesheet for post-08-25 purchases. Ask Scott to read the D+1 snapshot (AS_OF_DATE <= EFFDATE + 1) or resolve off transfers, and pin with an md-test row where EFFDATE = purchase date.
 - 2026-09-15T14:27Z [claude-code] Proposed fix validated on prod (temp tables, XS_DEV — DB_CREATOR has no USAGE on COMPUTE_WH_L/S): tape-first FUND (MAX_BY(pt.FUND, PURCHASE_DATE) where PURCHASE_DATE <= EFFDATE, else northpond_fund_expr at EFFDATE) changes exactly the 14 failing rows ($76.58 → balancesheet, all pass after) and keeps the 20 purchase-day rows ($811.64) in EDGEX. 0 nelnet rows fail the rule afterwards. Code handed to Abhishek to send to Scott.
 - 2026-09-15T14:56Z [claude-code] Opened draft comparison PR #6836 (branch abhishek/pr6802-fund-from-purchase-tape, base = Scott's branch) with the tape-first FUND + md-test row OLV88803. Locally: unit tests pass, ruff clean, md integration test passes (101s, ephemeral CI_PR db) and fails against Scott's transform on row 3014 (balancesheet vs edgex). Worktree dp:~/claude-ws/pr6802-tape-fund/efp. Close #6836 once folded into #6802.
+- 2026-09-15T16:20Z [claude-code] #6836 retargeted to master, rebased (clean), Scott's 3 commits preserved with his authorship + mine on top; lint/unit (211)/md integration all green after rebase; body rewritten as the superseding PR; marked ready for review. Scott needs to review/approve; #6802 to be closed in favour of it.
