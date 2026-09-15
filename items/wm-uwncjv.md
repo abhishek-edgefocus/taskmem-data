@@ -11,9 +11,10 @@ tags: [northpond, grafana, fund-monitoring, demise-datastores, linear]
 links: [related:wm-hz3hm9, parent:wm-j523sq]
 refs: [DEV-1715=https://linear.app/edge-focus/issue/DEV-1715/add-ef-alpha-to-fund-performance-monitoring, DEV-1716=https://linear.app/edge-focus/issue/DEV-1716/add-efhyf-to-fund-performance-monitoring, dm=https://edgefocuspartners.slack.com/archives/D0B2A3WSJ5N/p1788968937117249]
 created: 2026-09-11T14:26:11Z
-updated: 2026-09-15T14:32:23Z
+updated: 2026-09-15T14:56:56Z
 source: slack DM D0B2A3WSJ5N + Linear
 label: EF Alpha EFHYF fund monitoring
+next: DEV-1716 plan: 1 snapshot rewrite on copy (per-platform latest) + re-run 164 queries; 2 FUND_NAME_TO_KEY one-line PR (draft) → merge → confirm Annualized Net Return renders; 3 cross-check UPB/loan count/DPD vs legacy datastore EFHYF dashboard for same date; 4 decide warehouse/PA rows (leave empty, Castlelake precedent) + flag POSITIONS_DAILY tail dip as separate item; 5 Abhijeet review of copy; 6 promote to prod FPM (fund var + rewritten panels) and confirm JV funds unchanged; 7 Linear DEV-1716 done w/ link, then repeat for EF Alpha DEV-1715
 ---
 
 Two Linear tickets Abhijeet filed 2026-09-01 under the "Demise datastores" project, milestone "Port old dashboards to snowflake": add the EF Alpha fund and the EFHYF fund to the Fund Performance Monitoring dashboard and validate what each shows. Both are marked "a blocker for demising datastores" and both block DEV-1031 (Ingestion of roll rates into edgefocus/). Branch names Linear reserved: abhishek/dev-1715-… and abhishek/dev-1716-….
