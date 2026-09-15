@@ -9,7 +9,7 @@ created: 2026-09-15T10:10:04Z
 updated: 2026-09-15T16:20:09Z
 source: claude-code
 effort: <1h
-next: Abhishek compares #6836 vs #6802, sends Scott the line-133 comment + link; close #6836 after
+next: Ping Scott: #6836 supersedes #6802 (his commits intact) — ask him to review/approve and close #6802; then backfill with as_of_date: all
 ---
 
 ## Log
