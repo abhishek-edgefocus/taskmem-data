@@ -2,14 +2,15 @@
 id: wm-73zk9s
 type: task
 title: Review Scott's PR #6802 (DEV-1850): Nelnet payment FUND resolved at EFFDATE
-status: active
+status: waiting
 priority: high
+waiting_on: scott-edgefocus
 tags: [northpond, pr-review]
 created: 2026-09-15T10:10:04Z
-updated: 2026-09-15T17:52:43Z
+updated: 2026-09-15T17:57:02Z
 source: claude-code
 effort: <1h
-next: Ping Scott: #6836 supersedes #6802 (his commits intact) — ask him to review/approve and close #6802; then backfill with as_of_date: all
+next: When Scott approves #6836: merge, close #6802, then backfill northpond_nelnet_transactions in prod with as_of_date: all (Abhishek launches) and rerun northpond cashflows; drop DEV_ABHISHEK.public.pr6802_before / pr6802_scott
 ---
 
 ## Log
