@@ -9,7 +9,7 @@ created: 2026-09-15T10:10:04Z
 updated: 2026-09-15T14:56:53Z
 source: claude-code
 effort: <1h
-next: Abhishek posts the review; then follow-up items for the FCC leg + service-fee rows if he agrees
+next: Abhishek compares #6836 vs #6802, sends Scott the line-133 comment + link; close #6836 after
 ---
 
 ## Log
