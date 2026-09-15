@@ -2,7 +2,7 @@
 id: wm-uwncjv
 type: task
 title: Add EF Alpha + EFHYF to the Fund Performance Monitoring dashboard (DEV-1715, DEV-1716) — due 2026-09-29
-status: next
+status: active
 priority: p2
 size: l
 due: 2026-09-29
@@ -11,7 +11,7 @@ tags: [northpond, grafana, fund-monitoring, demise-datastores, linear]
 links: [related:wm-hz3hm9, parent:wm-j523sq]
 refs: [DEV-1715=https://linear.app/edge-focus/issue/DEV-1715/add-ef-alpha-to-fund-performance-monitoring, DEV-1716=https://linear.app/edge-focus/issue/DEV-1716/add-efhyf-to-fund-performance-monitoring, dm=https://edgefocuspartners.slack.com/archives/D0B2A3WSJ5N/p1788968937117249]
 created: 2026-09-11T14:26:11Z
-updated: 2026-09-11T14:26:45Z
+updated: 2026-09-15T14:24:48Z
 source: slack DM D0B2A3WSJ5N + Linear
 label: EF Alpha EFHYF fund monitoring
 ---
