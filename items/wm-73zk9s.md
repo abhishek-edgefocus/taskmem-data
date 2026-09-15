@@ -6,7 +6,7 @@ status: active
 priority: high
 tags: [northpond, pr-review]
 created: 2026-09-15T10:10:04Z
-updated: 2026-09-15T16:20:09Z
+updated: 2026-09-15T16:37:20Z
 source: claude-code
 effort: <1h
 next: Ping Scott: #6836 supersedes #6802 (his commits intact) — ask him to review/approve and close #6802; then backfill with as_of_date: all
@@ -19,3 +19,4 @@ next: Ping Scott: #6836 supersedes #6802 (his commits intact) — ask him to rev
 - 2026-09-15T14:27Z [claude-code] Proposed fix validated on prod (temp tables, XS_DEV — DB_CREATOR has no USAGE on COMPUTE_WH_L/S): tape-first FUND (MAX_BY(pt.FUND, PURCHASE_DATE) where PURCHASE_DATE <= EFFDATE, else northpond_fund_expr at EFFDATE) changes exactly the 14 failing rows ($76.58 → balancesheet, all pass after) and keeps the 20 purchase-day rows ($811.64) in EDGEX. 0 nelnet rows fail the rule afterwards. Code handed to Abhishek to send to Scott.
 - 2026-09-15T14:56Z [claude-code] Opened draft comparison PR #6836 (branch abhishek/pr6802-fund-from-purchase-tape, base = Scott's branch) with the tape-first FUND + md-test row OLV88803. Locally: unit tests pass, ruff clean, md integration test passes (101s, ephemeral CI_PR db) and fails against Scott's transform on row 3014 (balancesheet vs edgex). Worktree dp:~/claude-ws/pr6802-tape-fund/efp. Close #6836 once folded into #6802.
 - 2026-09-15T16:20Z [claude-code] #6836 retargeted to master, rebased (clean), Scott's 3 commits preserved with his authorship + mine on top; lint/unit (211)/md integration all green after rebase; body rewritten as the superseding PR; marked ready for review. Scott needs to review/approve; #6802 to be closed in favour of it.
+- 2026-09-15T16:37Z [claude-code] DEV_ABHISHEK verification done by running the transform CLI directly (--date all) from the worktree, three ways: master → Scott #6802 → #6836. Sources match PROD through 09-09 (hash). Result: 12 day-before rows ($76.56) fail on master, pass on both; 14 same-day rows ($595.91) Scott flips to balancesheet, #6836 keeps edgex; 1,734 rows identical; 0 failing after. Scratch tables DEV_ABHISHEK.public.pr6802_before / pr6802_scott left for him to inspect. No Dagster instance touched, ~/repos/efp untouched.
