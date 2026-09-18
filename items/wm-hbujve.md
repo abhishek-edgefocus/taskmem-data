@@ -5,12 +5,12 @@ title: Ask Nate for the remaining 2026-08-04 Oliv files (payment_configuration c
 status: next
 priority: normal
 size: ~15m
-due: 2026-08-21
+due: 2026-09-19
 tags: [northpond, oliv, nate, statements]
 created: 2026-08-19T19:37:08Z
-updated: 2026-09-18T11:27:36Z
+updated: 2026-09-18T11:27:41Z
 source: claude-code
-next: Recheck after 2026-08-21 16:00 UTC (21:30 IST): missing_rows should drop 4->2 and ERROR-1529/1530 should close themselves.
+next: Land payment_configuration_20260804.csv (copy of 08-03) — ask Nate (he offered a file on 08-21) or drop it in S3 ourselves; then check the 01:00 PT cron log the following morning for a clean run
 ---
 
 Follow-up to the 2026-08-04 Oliv file gap. On 2026-08-13 Abhishek asked Nate
