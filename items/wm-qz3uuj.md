@@ -11,7 +11,7 @@ tags: [needs-reply, northpond, oliv, nelnet, github, dqm]
 links: [related:wm-gj5tkx, related:wm-7mtzka, parent:wm-j523sq]
 refs: [PR=https://github.com/edgefocus/efp/pull/6802, DEV-1850=https://linear.app/edge-focus/review/dev-1850-attribute-nelnet-payments-to-the-fund-that-owned-the-loan-34166c55059d]
 created: 2026-09-15T10:10:11Z
-updated: 2026-09-15T10:10:11Z
+updated: 2026-09-21T11:03:08Z
 source: github PR #6802 review request
 label: Scott Nelnet payment fund PR
 ---
@@ -31,3 +31,15 @@ This is squarely in the NorthPond/Nelnet ingestion Abhishek owns (wm-gj5tkx) and
 - Linear review https://linear.app/edge-focus/review/dev-1850-attribute-nelnet-payments-to-the-fund-that-owned-the-loan-34166c55059d
 - DQM alert https://grafana.edgefocuspartners.com/d/dqprod4fb883e41daf449cb6/data-quality-e28094-validation-results-prod?var-platform=northpond&var-rule=transactions-fund-matches-transfer-ownership
 - Related: wm-gj5tkx (Nelnet ingestion), wm-7mtzka (transactions ACCOUNT_ID from fund)
+
+## Log
+- 2026-09-21T11:03Z [claude-code] 2026-09-21 POST-MERGE VERIFICATION of the Nelnet FUND fix (#6836, merged 09-18 17:36Z, deployed 19:45Z in 82968900) — all three of Abhishek's checks pass in PROD:
+1. DQM rule transactions-fund-matches-transfer-ownership, northpond: latest evaluation 2026-09-21 02:54 PASSED, VIOLATION_COUNT 0, 1,105 rows evaluated, phase post_insert, scope 09-14..09-21. Previous three evaluations (09-20) also 0. Note the rule evaluates a rolling 7-day window, so 0 is within that scope.
+2. The new edge from #6836 exists and runs: watermark SILVER.NORTHPOND_STMT_PURCHASE_TAPES -> SILVER.TRANSACTIONS last processed 2026-09-21 02:51. NELNET_TRANSACTIONS -> TRANSACTIONS last 09-20 05:47.
+3. Attribution over ALL Nelnet payment rows (not date-limited), EFFDATE vs tape PURCHASE_DATE:
+     same-day as purchase   -> edgex20261NN            33 rows  1,522.32
+     day-before purchase    -> northpond_balancesheet  23 rows  5,676.00
+     earlier                -> northpond_balancesheet  12 rows  2,782.47
+     after purchase         -> edgex20261NN          1307 rows 64,832.12
+   Each relation maps to exactly ONE fund — no same-day rows in balancesheet, no day-before rows in edgex. That is Nate's 09-15 ruling (buyer owns purchase-day cash) implemented correctly, and it covers full history, so the backfill (or the reload_all first run) has landed.
+This item and wm-73zk9s can move to done once Abhishek confirms; #6802 is CLOSED in favour of #6836.
