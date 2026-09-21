@@ -6,7 +6,7 @@ status: next
 priority: p2
 links: [relates:wm-unb6pr]
 created: 2026-08-22T08:15:32Z
-updated: 2026-09-11T14:26:11Z
+updated: 2026-09-21T11:03:08Z
 source: claude-code
 ---
 
@@ -432,3 +432,11 @@ PRECONDITION CHECKED, not assumed. scoped_watermark must only go on a NEW source
 Checks after the fix: ruff, ruff format, mypy clean; 176 tests pass (offers_bucketed_utils, asset_factories, and the whole edgefocus/data_warehouse suite which covers stream_pipeline).
 PR body updated with a 'Why scoped_watermark=True' section. NOTE the PR is no longer draft — Abhishek marked it ready while I was working; commit 5af01c518 landed on the ready PR.
 - 2026-09-11T14:26Z [claude-code] Sync 2026-09-11: PR #6755 is APPROVED (Abhijeet, 2026-09-10 19:31 IST 'approved with one comment'), mergeStateStatus CLEAN, all checks green, NOT merged. His inline comment on northpond_exp_offers_daily.py:26: 'I don't understand what "leading edge" is here, but approving since the change is low risk. As an FYI, we also have reload_subsequent_on_change that you can use if appropriate.' Worth a one-line reply explaining leading edge (the newest as_of dates rebuilt on each tape landing) and whether reload_subsequent_on_change was considered. DEV-1510 is Done in Linear (2026-09-09 19:54Z) — Sean confirmed in the group DM C0C0KSANW05 2026-09-10 01:20 IST: 'You can close the ticket as completed now. In the future we will be providing the approval for the loans ... but for now we can leave it empty.' Remaining on this item: merge #6755 (Abhishek's click), then confirm the next purchase-tape landing rebuilds all four offers transforms.
+- 2026-09-21T11:03Z [claude-code] 2026-09-21 Abhishek verifying the backfills: owned populated through 09-10, 0 from 09-11 despite tapes landing 09-11 (27), 09-14 (29), 09-15 (17), 09-16 (5), 09-17 (2). Asked: real absence or rebuild cutoff?
+
+REAL ABSENCE. Checked the first-offer date of every loan on those tapes (plus a 09-21 tape of 1): all 81 match a v2 offer, and ALL have first-offer date <= 2026-09-10. OFFER_ON_OR_AFTER_0911 = 0 for every tape. Ranges: 09-11 tape -> offers 09-03..09-09; 09-14 -> 09-01..09-10; 09-15 -> 09-03..09-10; 09-16 -> 09-02..09-09; 09-17 -> 09-05..09-10; 09-21 -> 09-04. So gold reading 0 from 09-11 is correct: no purchased loan has been first-seen after 09-10 yet.
+Gold vs truth: 761 / 761 total, and per offer-date 09-05..09-10 agree exactly (19/15/20/35/29/11). GOLD_LAST_OWNED_DATE = 2026-09-10 = truth.
+
+THE SELF-HEAL IS WORKING. PR #6755 merged 2026-09-18 17:36Z (7bfbe8dd) and deployed in the 19:45Z deploy-dagster-prod run (82968900, SUCCESS). Gold matching truth exactly at 761 on 09-21 with no manual re-run since 09-10 is the proof the reload_all_on_change tape source is doing its job. Note a LATER deploy (09-19 14:09Z, d09ade40) FAILED — someone else's commit; prod stays on 82968900 which contains both #6755 and #6836.
+
+LAG HAS STRETCHED, which is why his median-4-day intuition misled: tapes landing 09-11..09-21 carry offers 5-17 days old, not 2-4. Earlier measurement (2-18, median 4) was on the 07-29..08-21 cohort. Worth watching but not a data problem.
