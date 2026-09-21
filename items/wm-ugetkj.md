@@ -7,7 +7,7 @@ priority: p1
 tags: [grafana, fund-monitoring, prod-incident, marlette]
 links: [relates:wm-uwncjv]
 created: 2026-09-21T12:09:08Z
-updated: 2026-09-21T12:09:08Z
+updated: 2026-09-21T12:44:45Z
 source: claude-code
 label: PROD FPM sources broken 2026-09-21
 ---
@@ -19,3 +19,6 @@ Found 2026-09-21 while re-running DEV-1716 panel validation through /api/ds/quer
 - reported by: claude-code
 - host: ip-192-168-1-3.ap-south-1.compute.internal
 - when: 2026-09-21T12:09:08Z
+
+## Log
+- 2026-09-21T12:44Z [claude-code-critic] 2026-09-21 Abhishek's call: out of scope for DEV-1716 — not chasing; leave for whoever owns prod data. Do not resurface under the dashboard ticket.
