@@ -2,13 +2,13 @@
 id: wm-hz3hm9
 type: task
 title: NorthPond fund-returns panel copies FPM's JV-keyed query; efhyf (Evergreen) has no FUND_KEY
-status: open
+status: done
 priority: p3
 size: s
 tags: [northpond]
 links: [parent:wm-3sxcre]
 created: 2026-07-17T09:33:20Z
-updated: 2026-09-15T14:30:04Z
+updated: 2026-09-21T13:33:38Z
 source: claude-code
 next: Fold into DEV-1716: one-line PR adding 'Edge Focus High Yield Fund, LP': 'efhyf' to FUND_NAME_TO_KEY in edgefocus/transformations/silver/fund_returns.py (castlelake_auto precedent, code comment sanctions it)
 ---
