@@ -8,9 +8,10 @@ size: ~1 day
 due: 2026-09-29
 tags: [oncall, pagerduty]
 created: 2026-09-22T17:26:27Z
-updated: 2026-09-22T17:26:44Z
+updated: 2026-09-22T18:05:52Z
 source: claude-code
 ---
 
 ## Log
 - 2026-09-22T17:26Z [claude-code] Baseline from PD REST API 2026-09-22T17:15Z: 20 open (13 triggered all auto-assigned to Abhishek as efp-coder dev-primary until 2026-09-29T13:30Z; 7 acked — 6 Nakula, 1 Rishabh/devops). All P3/low. 679 incidents resolved 09-08..09-22 (~45/day) — the open set is the tail of a high-volume recurring stream, not 20 distinct problems. 8 of the 20 are duplicate pairs: dumbledore fires generate_datastores_ubuntu AND populate_efp_stats_ubuntu as separate incidents for the same root failure, same second. Real distinct problems open: ~12.
+- 2026-09-22T18:05Z [claude-code] 2026-09-22T17:40Z: Abhishek merged the 4 confirmed duplicate pairs manually. Verified via API — sources #1382/#1384/#1389/#1369 all resolved with resolve_reason=merge_resolve_reason, targets #1383/#1385/#1390/#1370 each now hold 2 alerts, and #1370 kept Nakula's acknowledged state. Separately #1395 (RDS CPU, grafana-mariadb) was resolved by devops at 17:22Z. Open count 20 -> 17, not 16, because a new pair arrived at 17:36:30Z.
