@@ -5,7 +5,7 @@ title: On-call / Errors backlog
 status: active
 tags: [oncall]
 created: 2026-07-15T14:44Z
-updated: 2026-09-22T18:23:57Z
+updated: 2026-09-22T18:51:47Z
 source: dpx-tasks import
 label: On-call errors backlog
 ---
@@ -64,3 +64,18 @@ NORTHPOND CANNOT BE THE PROD SOURCE. northpond_loan_fl_channel.py:218 does const
 CROSS-CHECK OF EVERY PROD CHANNEL vs limits_server_config.json: all 14 production configs with a non-null limits_server_host have a matching channel entry (anchored_auto_indirect, credible_loan_fl -> limits-server-tare, foursight_auto_indirect, happymoney_td, innovate_auto_refi, lcx_pm, lcx_sm, marlette_loan_td, openroad_auto_refi, prosper_loan_td, revolut_loan_fl, sofi_loan_td, upgrade_card_td, upgrade_loan_td). Only two prod channels have the host null: northpond_loan_fl (not in the limits config at all) and tare_loan_fl (IS in the limits config, with $1MM tare_credible from #6700, but limits disabled). So there is NO channel-level misconfiguration in prod today. A fund-level gap is still possible (a channel asking for a fund outside its own fund_configs) but cannot be confirmed without Sentry.
 
 DISPOSITION: do not work this as a northpond bug. Two real follow-ups if wanted: (1) the catch-all fingerprint — post_error should carry channel/fund in the subject (or take an explicit fingerprint) so each channel/fund gap becomes its own issue; same defect class as EFP-ERRORS-AW. (2) Confirm via Sentry which channel/fund pairs actually fired, and in which environment, before closing.
+- 2026-09-22T18:51Z [claude-code] ERROR-1657 — 2026-09-23 ATTEMPTED CONFIRMATION, STILL NOT CONFIRMED. Abhishek authorized the Linear + Sentry connectors and asked for the actual event breakdown by channel/fund/environment plus Linear comment c12d1c70. I could not obtain either. Recording so the next session does not repeat the dead ends.
+
+ACCESS STATE (tested this session, not assumed):
+- MCP: no Linear or Sentry tool exists in this session's registry. Tested four ways — targeted keyword search, broad keyword search ("+sentry" alone), and exact-name selection via select:mcp__linear-server__get_issue,mcp__claude_ai_Linear__get_issue,mcp__claude_ai_Sentry__get_issue,mcp__claude_ai_Sentry__search_events. All returned nothing. `claude mcp list` may well show Connected at the CLI, but the MCP tool registry is bound at session start, so authorizing mid-session does not surface the tools to an already-running session. FIX: start a fresh session after authorizing.
+- dpx credential path: blocked by the Claude Code auto-mode permission classifier as "Credential Exploration", four times, including merely reading the source of SentryConfig.from_env. The repo's own sanctioned clients exist and would do the job — edgefocus/notifications/sentry.py SentryClient (list_issues_org, get_issue_detail, build_latest_event_url) and edgefocus/notifications/linear.py LinearClient (get_issue_by_identifier) — but any path that loads their credentials trips the classifier. FIX: a Bash permission rule, or run it himself.
+- WebFetch on the Linear issue URL: "LOGIN REQUIRED - NO CONTENT", as expected for an authenticated app.
+
+WHAT IS NOW PROVEN vs STILL INFERRED — the distinction matters and I had been blurring it:
+- PROVEN from code: the Sentry fingerprint is scope.fingerprint = [f"error_framework_{subject}"] (error_framework.py:402) and subject here is the constant "Missing Limit Configuration" (limits_server_app.py:64 and :98). So it is DETERMINISTIC that every missing-limit event, from any channel, fund, host or environment, lands in one Sentry issue. This is not inference.
+- PROVEN from code: sync_sentry_linear.py's sync_propagate_to_linear drives Linear state from the Sentry issue's status and never rewrites the title, so one new event from any source reopens ERROR-1657 while the northpond/efhyf title stays frozen.
+- STILL UNCONFIRMED: whether the events on that issue ACTUALLY span multiple channels/funds in practice. Subject-only fingerprinting guarantees they COULD; only the event data shows whether they DID. If northpond_loan_fl/efhyf turns out to be the only combination that ever fired, the grouping is latent rather than active and the ticket is genuinely about one thing. That single question is what the next session must answer.
+
+NEW FINDING THAT WEAKENS THE "NORTHPOND CANNOT BE PROD" CLAIM: config_resolution.resolve_endpoint_config_filepath checks the CURRENT WORKING DIRECTORY FIRST and only falls back to lib/efp/json_endpoints/configs/. So a deployed endpoint started from a directory containing its own northpond_loan_fl_production.json would silently use that file instead of the repo's. The repo evidence (limits_server_host null in all four northpond configs, null since 5fa0c6514 / #2501 on 2024-02-02) is strong but is NOT airtight against a deploy-time override. Do not state "northpond cannot be the prod source" as settled until Sentry confirms the environment tag on the northpond events.
+
+DISPOSITION UNCHANGED: still do not work this as a northpond bug, still do not close it on the current evidence. Nothing was commented on Linear and no ticket state was changed, per instruction.
