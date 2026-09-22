@@ -3,8 +3,9 @@ id: wm-xd886y
 type: task
 title: Exclude dexterplus from the 'Fleet host CPU high' Grafana rule
 status: open
+links: [relates:wm-qtsgmv]
 created: 2026-09-22T17:57:05Z
-updated: 2026-09-22T17:57:05Z
+updated: 2026-09-22T17:57:17Z
 source: claude-code
 ---
 
