@@ -3,8 +3,9 @@ id: wm-g8mcv2
 type: task
 title: Get a sterling Grafana API token for dpx
 status: open
+links: [relates:wm-qtsgmv]
 created: 2026-09-22T17:57:05Z
-updated: 2026-09-22T17:57:05Z
+updated: 2026-09-22T17:57:17Z
 source: claude-code
 ---
 
