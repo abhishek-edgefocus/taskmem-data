@@ -8,7 +8,7 @@ size: <1 day
 tags: [pagerduty, alerting, grafana, oncall]
 links: [relates:wm-w98jug]
 created: 2026-09-22T17:34:49Z
-updated: 2026-09-22T17:57:17Z
+updated: 2026-09-22T18:05:52Z
 source: claude-code
 ---
 
@@ -46,3 +46,4 @@ COST OF (a), stated: merged groups have empty CommonLabels.app, so the PD title 
 DRAFTED NOT APPLIED: both diffs are in the notes file. Need validating against the provisioning API before merge (file header warns an unknown enum fails the whole alerting reload; Grafana 12.3.1).
 
 FOLLOW-UPS RAISED: (i) exclude dexterplus from Fleet host CPU high (29 dup incidents); (ii) STAGING-gateway-ingest-dlq stuck 186h, alert fix only hides it; (iii) under (a) the reconcile pair becomes one incident — behaviour change, on-call should sign off; (iv) ACCESS GAP: dp:~/.grafana.env creds are for the LEGACY grafana.edgefocuspartners.com (zero alert rules) and are rejected by sterling — no way to read sterling's live alert state; (v) pagerduty MCP server was down all session (502 Bad Gateway), used the REST key instead.
+- 2026-09-22T18:05Z [claude-code] LIVE CONFIRMATION of the treadmill, 29 minutes after the merges: PD #1396 (populate_efp_stats_ubuntu) and #1397 (populate_grafana_tables_ubuntu), both created 2026-09-22T17:36:30Z, byte-identical error 'Failed to populate grafana tables for datastores', distinct alert keys 973de5ec / 4e2886a3. This is the second pair variant from the history (populate_efp_stats + populate_grafana_tables, 3x in 15d). NARROWING LEAD: populate_efp_stats_ubuntu is the common member of BOTH pair variants — 23 pairs with generate_datastores_ubuntu emitting 'Failed to generate datastore', and 3+1 pairs with populate_grafana_tables_ubuntu emitting 'Failed to populate grafana tables for datastores'. In each case it re-emits the other script's error verbatim. Strong hypothesis: populate_efp_stats_ubuntu is a wrapper/orchestrator that calls the other scripts' code paths and re-logs their failures, so the Grafana log-scrape rule sees the same ERROR line under two app labels. Read that script FIRST on dumbledore — it likely explains the whole fan-out.
