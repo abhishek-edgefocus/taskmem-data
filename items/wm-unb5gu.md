@@ -3,8 +3,9 @@ id: wm-unb5gu
 type: task
 title: Land the PagerDuty fan-out fix: drop `app` from group_by + missing-series hold on AWS rules
 status: open
+links: [relates:wm-qtsgmv]
 created: 2026-09-22T17:57:05Z
-updated: 2026-09-22T17:57:05Z
+updated: 2026-09-22T17:57:17Z
 source: claude-code
 ---
 
