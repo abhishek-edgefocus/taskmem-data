@@ -6,6 +6,7 @@ status: next
 priority: p2
 size: <1 day
 tags: [pagerduty, alerting, grafana, oncall]
+links: [relates:wm-w98jug]
 created: 2026-09-22T17:34:49Z
 updated: 2026-09-22T17:34:49Z
 source: claude-code
