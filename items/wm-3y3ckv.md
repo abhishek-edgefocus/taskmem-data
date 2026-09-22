@@ -5,7 +5,7 @@ title: On-call / Errors backlog
 status: active
 tags: [oncall]
 created: 2026-07-15T14:44Z
-updated: 2026-08-14T13:53:48Z
+updated: 2026-09-22T18:23:57Z
 source: dpx-tasks import
 label: On-call errors backlog
 ---
@@ -53,3 +53,14 @@ STILL OPEN AND MINE:
   rebuilt cleanly (verified 2026-08-14), so it is a candidate to close as recovered rather than to
   fix. https://linear.app/edge-focus/issue/ERROR-1668/
 - ERROR-400 [northpond_loan_fl] Experian Credit Pull Failed (low, Backlog).
+- 2026-09-22T18:23Z [claude-code] ERROR-1657 ("Missing Limit Configuration / No limits configured for channel_name [northpond_loan_fl] fund_name [efhyf]") investigated 2026-09-22 FROM THE CODE ONLY — the Linear and Sentry connectors are both unauthorized in this session, so the ticket body and the linked comment c12d1c70 were never read. Everything below is from efp master 79549bf0c on dpx.
+
+MECHANISM: the message is emitted by bin/limits_server/limits_server_app.py:64 (check_allowed_and_increment) and :98 (update_declined_app_limits), on a KeyError from limits[channel_name].get_limit_for_fund(fund_name). It fires when EITHER the channel is absent from lib/efp/limits_server/limits_server_config.json or the fund is absent from that channel's fund_configs. The server returns uuids_allowed=[] with the message in .errors, i.e. every offer is rejected for that fund.
+
+FINGERPRINT IS THE SUBJECT, NOT THE MESSAGE. error_framework._post_error_impl sets scope.fingerprint = [f"error_framework_{subject}"], and the in-code comment states it outright: "subject still drives fingerprint/resolve, so titles change without regrouping". The subject here is the constant "Missing Limit Configuration". So ONE Sentry issue aggregates every missing-limit event across every channel, fund, host and environment, and the Linear title only ever reflects whichever event happened to be latest. ERROR-1657's northpond_loan_fl/efhyf title is therefore NOT a statement about northpond — it is the same stale-title / catch-all pattern already recorded for ERROR-1367 and EFP-ERRORS-AW.
+
+NORTHPOND CANNOT BE THE PROD SOURCE. northpond_loan_fl_channel.py:218 does construct a LimitsContainer, but limits_server_host is null in ALL FOUR northpond configs (production, sandbox, northpond_exp sandbox, unittest), and LimitsContainer.check_application_for_limits short-circuits and returns every offer when _check_limits_url is None — no HTTP call is made, so no error can be raised. git log on northpond_loan_fl_production.json: the host went null in 5fa0c6514 (#2501, 2024-02-02) and the file has not been touched since. Prod northpond has not spoken to a limits server in ~2.5 years. Consistent with the 2026-08-05 finding that the latest event was environment=test from a GitHub Actions runner (error_framework sets environment="prod" only when post_to_prod is True).
+
+CROSS-CHECK OF EVERY PROD CHANNEL vs limits_server_config.json: all 14 production configs with a non-null limits_server_host have a matching channel entry (anchored_auto_indirect, credible_loan_fl -> limits-server-tare, foursight_auto_indirect, happymoney_td, innovate_auto_refi, lcx_pm, lcx_sm, marlette_loan_td, openroad_auto_refi, prosper_loan_td, revolut_loan_fl, sofi_loan_td, upgrade_card_td, upgrade_loan_td). Only two prod channels have the host null: northpond_loan_fl (not in the limits config at all) and tare_loan_fl (IS in the limits config, with $1MM tare_credible from #6700, but limits disabled). So there is NO channel-level misconfiguration in prod today. A fund-level gap is still possible (a channel asking for a fund outside its own fund_configs) but cannot be confirmed without Sentry.
+
+DISPOSITION: do not work this as a northpond bug. Two real follow-ups if wanted: (1) the catch-all fingerprint — post_error should carry channel/fund in the subject (or take an explicit fingerprint) so each channel/fund gap becomes its own issue; same defect class as EFP-ERRORS-AW. (2) Confirm via Sentry which channel/fund pairs actually fired, and in which environment, before closing.
