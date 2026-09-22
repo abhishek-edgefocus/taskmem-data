@@ -3,8 +3,9 @@ id: wm-8mur32
 type: task
 title: Drain or retire STAGING-gateway-ingest-dlq — stuck 186h
 status: open
+links: [relates:wm-qtsgmv]
 created: 2026-09-22T17:57:05Z
-updated: 2026-09-22T17:57:05Z
+updated: 2026-09-22T17:57:17Z
 source: claude-code
 ---
 
