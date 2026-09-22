@@ -6,6 +6,7 @@ status: open
 priority: p2
 size: xs
 tags: [oncall, pagerduty, process]
+links: [relates:wm-w98jug]
 created: 2026-09-22T17:26:27Z
 updated: 2026-09-22T17:26:27Z
 source: claude-code
