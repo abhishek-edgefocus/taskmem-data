@@ -8,10 +8,11 @@ size: ~1 day
 due: 2026-09-29
 tags: [oncall, pagerduty]
 created: 2026-09-22T17:26:27Z
-updated: 2026-09-22T18:05:52Z
+updated: 2026-09-23T10:42:23Z
 source: claude-code
 ---
 
 ## Log
 - 2026-09-22T17:26Z [claude-code] Baseline from PD REST API 2026-09-22T17:15Z: 20 open (13 triggered all auto-assigned to Abhishek as efp-coder dev-primary until 2026-09-29T13:30Z; 7 acked — 6 Nakula, 1 Rishabh/devops). All P3/low. 679 incidents resolved 09-08..09-22 (~45/day) — the open set is the tail of a high-volume recurring stream, not 20 distinct problems. 8 of the 20 are duplicate pairs: dumbledore fires generate_datastores_ubuntu AND populate_efp_stats_ubuntu as separate incidents for the same root failure, same second. Real distinct problems open: ~12.
 - 2026-09-22T18:05Z [claude-code] 2026-09-22T17:40Z: Abhishek merged the 4 confirmed duplicate pairs manually. Verified via API — sources #1382/#1384/#1389/#1369 all resolved with resolve_reason=merge_resolve_reason, targets #1383/#1385/#1390/#1370 each now hold 2 alerts, and #1370 kept Nakula's acknowledged state. Separately #1395 (RDS CPU, grafana-mariadb) was resolved by devops at 17:22Z. Open count 20 -> 17, not 16, because a new pair arrived at 17:36:30Z.
+- 2026-09-23T10:42Z [pd-alert-manager] 2026-09-23 16:10 IST board: still 20 open, all acknowledged, all efp-coder, 18 assigned to Abhishek / 2 to Nakula (#1253, #1370). Composition has rotated since 09-22 — the reconcile x4 + collate_parquets + grafana-populate pair re-fired on the 09-22 evening cron at the same clock times as 09-16. Verified on dpx /efs/logs/dumbledore: last ERROR line for reconcile_upgrade_loan_secondary/prosper/sofi/anchored, collate_parquets, populate_grafana_tables, populate_efp_stats(grafana subject) and historical_model_inputs_gateway_platforms is all 2026-09-22; the apps have run since (collate_parquets mtime 09-23 10:33) with no new lines. Those 8 have stopped. Still live: #1370 DatastoreStandardizedPositions/marlette recurred 09-23 03:25; #1390 WarehousePredPositions batch job attempt 3 RUNNING (started 08:56Z, 103min vs ~42min normal). Historical comparison: identical signatures left in triggered auto-resolved at a uniform ~12h25m (14+ pairs on 09-16/09-17); the current ones are 15h+ old, acknowledged, and have not. Session coverage: only 3 tabs touch PD at all (c00d7b89 on #1390, 2107f70c on the dedup meta-fix and blocked on a sterling token, 44b2e047 on ERROR-1657 which is adjacent to but not #1421). 17 of 20 incidents have no tab on them.
