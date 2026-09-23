@@ -5,7 +5,7 @@ title: On-call / Errors backlog
 status: active
 tags: [oncall]
 created: 2026-07-15T14:44Z
-updated: 2026-09-23T10:42:38Z
+updated: 2026-09-23T17:18:51Z
 source: dpx-tasks import
 label: On-call errors backlog
 ---
@@ -111,3 +111,13 @@ SWEEP OF EVERY CHANNEL AGAINST ITS OWN ENFORCING SERVER (each production endpoin
 EVIDENCE THAT THE STALE-CONFIG PROBLEM IS REAL AND SYSTEMIC, NOT A ONE-OFF: limits-server-happymoney serves ALL channels from one config (create_app loads the whole file), and its copy is months out of date for channels it does not enforce - anchored castlelake_auto live=850,000 vs repo 4,500,000, foursight castlelake_auto live=5,000,000 vs repo 10,000,000, tare_credible absent entirely. Since it DOES carry happymoney's $11M from #6171 (2026-08-06) but NOT anchored's raise from #6163 (2026-08-19), that process last restarted between those two dates. Restart-after-config-change is clearly not reliable discipline; it only became visible here because a MISSING KEY raises and alerts, whereas a STALE VALUE does not.
 
 DISPOSITION: ERROR-1657 -> CLOSE as recovered (evidence = the happymoney /limit-status response). Separately worth raising: (1) revolut fortress_revolut=0, (2) no reload route + no startup cross-check that every bookable channel/fund is loaded, (3) the subject-only Sentry fingerprint. Nothing was posted to Linear and no state changed, per instruction.
+- 2026-09-23T17:18Z [claude-code] ERROR-1657 restart window PINNED 2026-09-23 by fingerprinting limits-server-happymoney's in-memory config against the git history of limits_server_config.json (no prod shell used; the /limit-status response IS the fingerprint).
+
+Markers: (a) it HAS happymoney edgex20261NN=11,000,000, which only exists from #6171 / 0416919b2, 2026-08-06 -> config is ON OR AFTER 08-06. (b) it HAS upgrade_loan_td edgex20261NN=50,000,000, but #6181 / 2dab69220 'Stop UG TD' zeroed that on 08-07 and #6228 / d6f33ee57 'UG Start' restored it on 08-11 -> config is either 08-06..08-07 or ON OR AFTER 08-11. (c) it LACKS anchored castlelake_auto=3,500,000 from #6163 / d195816ec, 2026-08-19, still showing the old 850,000 that had stood unchanged since at least 2026-05-20 -> config is BEFORE 08-19.
+=> LAST restart of limits-server-happymoney was 2026-08-06..08-07 or 2026-08-11..08-19. Either way: between 2026-08-06 and 2026-08-19.
+
+IMPORTANT LIMIT ON THAT INFERENCE: config content dates the LAST restart, not the FIRST restart after #6097. The KeyError stopped at the first restart following 2026-07-30, which could be earlier than the window above. So 08-19 is an UPPER BOUND on when happymoney edgex20261NN offers stopped being rejected, not the date it recovered.
+
+ROOT CAUSE, RESTATED: #6097 (2026-07-30) is a single commit that changes THREE things across TWO deploy artifacts - the endpoint's booking behaviour (models_by_channel.json + happymoney_td_model.py) and the limits server's config (limits_server_config.json). The endpoint picks its half up on its own deploy; the limits server only picks its half up on a process restart, and nothing in the change forces one. Atomic in git, non-atomic in production. That is the defect - not a bad value and not CI noise.
+
+STILL OPEN (needs Sentry, one small query): first_seen / last_seen on the 'Missing Limit Configuration' issue. first_seen ~2026-07-30 confirms the deploy-ordering story and dates the start of the rejection window; a first_seen BEFORE 07-30 would instead mean happymoney was booking edgex20261NN before the limits entry ever existed, making #6097 the fix rather than the trigger. Circumstantial support for the former: ERROR-1657's number sits below ERROR-1660/1661/1663 (the statements_lc backfill tickets from 2026-08-01..03) and well below ERROR-1666-1670 (filed 2026-08-05), so the ticket was created around 2026-07-30..08-01.
