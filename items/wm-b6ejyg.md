@@ -2,9 +2,12 @@
 id: wm-b6ejyg
 type: task
 title: LC 'HappenBank' rename broke LC ingestion (7d) and leaked borrower PII into efp-raw (PD #1435)
-status: open
+status: next
+priority: high
+due: 2026-09-24
+tags: [lc, oncall, pii, pd-1435]
 created: 2026-09-23T18:54:23Z
-updated: 2026-09-23T18:54:23Z
+updated: 2026-09-23T18:54:28Z
 source: pd-1435
 ---
 
