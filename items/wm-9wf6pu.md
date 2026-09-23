@@ -6,6 +6,7 @@ status: next
 priority: p2
 size: <1 day
 tags: [oncall, pagerduty, grafana, datastores]
+links: [relates:wm-w98jug]
 created: 2026-09-23T10:46:21Z
 updated: 2026-09-23T10:46:21Z
 source: claude-code
