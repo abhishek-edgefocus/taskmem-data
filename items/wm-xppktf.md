@@ -3,7 +3,7 @@ id: wm-xppktf
 type: task
 title: Resolve PD #1253 ingest_prediction_files — acked 4.8d ago, zero recurrence in 15d
 status: next
-priority: p3
+priority: p1
 size: xs
 due: 2026-09-23
 tags: [oncall, pagerduty]
