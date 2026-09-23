@@ -5,7 +5,7 @@ title: On-call / Errors backlog
 status: active
 tags: [oncall]
 created: 2026-07-15T14:44Z
-updated: 2026-09-23T17:18:51Z
+updated: 2026-09-23T17:31:26Z
 source: dpx-tasks import
 label: On-call errors backlog
 ---
@@ -121,3 +121,22 @@ IMPORTANT LIMIT ON THAT INFERENCE: config content dates the LAST restart, not th
 ROOT CAUSE, RESTATED: #6097 (2026-07-30) is a single commit that changes THREE things across TWO deploy artifacts - the endpoint's booking behaviour (models_by_channel.json + happymoney_td_model.py) and the limits server's config (limits_server_config.json). The endpoint picks its half up on its own deploy; the limits server only picks its half up on a process restart, and nothing in the change forces one. Atomic in git, non-atomic in production. That is the defect - not a bad value and not CI noise.
 
 STILL OPEN (needs Sentry, one small query): first_seen / last_seen on the 'Missing Limit Configuration' issue. first_seen ~2026-07-30 confirms the deploy-ordering story and dates the start of the rejection window; a first_seen BEFORE 07-30 would instead mean happymoney was booking edgex20261NN before the limits entry ever existed, making #6097 the fix rather than the trigger. Circumstantial support for the former: ERROR-1657's number sits below ERROR-1660/1661/1663 (the statements_lc backfill tickets from 2026-08-01..03) and well below ERROR-1666-1670 (filed 2026-08-05), so the ticket was created around 2026-07-30..08-01.
+- 2026-09-23T17:31Z [claude-code] ERROR-1657 REOPENER FOUND 2026-09-23 — it is HAPPEN, and it is LIVE RIGHT NOW. Abhishek asked why the ticket reopened "yesterday or day before"; the answer is a third channel, not happymoney and not northpond.
+
+FIRST, A CHECKOUT TRAP THAT INVALIDATED TWO OF MY EARLIER CLAIMS: ~/repos/efp on dpx is pinned at 79549bf0c (2026-09-10) while origin/master is a81c3f964. Twelve days of commits were invisible to me. Queried GitHub directly with gh api instead. Three commits touched limits_server_config.json after my checkout:
+  - #6901 272de84fd..28500f127, 2026-09-18, "revolut: Set limits to zero, and minor code cleanup"
+  - #6914 272de84fd, 2026-09-21, "happen: Configure the production limits server and TU cache"
+  - #6958 7f2f8b551, 2026-09-22, "credible/tare: Harden re-score validation and consistency gate"
+CORRECTION TO MY 09-23 SWEEP: I reported revolut fortress_revolut as "live=0 vs repo=100,000, stale server". That was BACKWARDS — #6901 deliberately zeroed revolut on 09-18, so the live 0 is CURRENT and my repo copy was the stale one. Revolut is fine. Always check origin before calling a server stale.
+
+THE REOPENER — #6914, merged 2026-09-21, is the #6097 pattern repeating exactly:
+  - It adds a NEW channel happen_loan_td (single fund lc_fund, limit 0) to limits_server_config.json.
+  - happen_loan_td_production.json sets limits_server_host = http://limits-server-happen.edgefocus.net:5555.
+  - It edits happen_loan_td_channel.py (+1/-7) to wire the LimitsContainer up.
+VERIFIED LIVE STATE of that server from dpx: DNS resolves (172.31.175.153), the process is UP and answering /limit-status, and it has 15 channels loaded — master has 16. happen_loan_td is ABSENT. It DOES carry credible_loan_fl -> tare_credible = 1,000,000 from #6700 (09-08), so it last restarted between 2026-09-08 and 2026-09-21.
+=> Every happen_loan_td request hits limits[<channel>] KeyError, the server posts "No limits configured for channel_name [happen_loan_td] fund_name [lc_fund]" under the constant subject "Missing Limit Configuration", and sync_propagate_to_linear reopens ERROR-1657. Dates line up exactly with Abhishek's "yesterday or day before".
+CONSEQUENCE: check_allowed_and_increment returns uuids_allowed=[] so happen_loan_td is DECLINING EVERY APPLICATION right now. FIX IS A RESTART of limits-server-happen, not a code change. (Note lc_fund is configured at limit 0 anyway, so post-restart it still approves nothing — but it does so silently instead of erroring, which is presumably the intended dark-launch state. Worth asking whoever owns happen whether 0 is deliberate.)
+
+THE TEAM HAS ALREADY BUILT HALF THE GUARD: #6914 also added 33 lines to lib/efp/json_endpoints/configs/test_config_integrity.py — a new test, test_a_channel_consulting_a_limits_server_is_configured_on_it, asserting that any production config naming a limits_server_host has a matching entry in limits_server_config.json, with a docstring that states the exact failure ("a channel missing from it raises KeyError per request, which the server answers with an empty allow list -- the same outcome as an unreachable server, and equally silent"). A sibling test test_production_limits_host_belongs_to_its_own_channel already existed. GAPS THAT REMAIN: both are STATIC repo checks, so (a) they cannot catch a running server that was never restarted — which is the actual defect in both #6097 and #6914 — and (b) the new one checks CHANNEL presence only, not FUND presence, so the happymoney/edgex20261NN fund-level KeyError of ERROR-1657's original title would still slip through today.
+
+REVISED DISPOSITION FOR ERROR-1657: do NOT close it as recovered. happymoney recovered, but the ticket is currently open for a genuine, active reason. Correct sequence: restart limits-server-happen, confirm via /limit-status that happen_loan_td appears, THEN close — and separately escalate the subject-only fingerprint, because this is now the second distinct incident to land in the same bucket and the third channel to wear its title.
