@@ -5,7 +5,7 @@ title: On-call / Errors backlog
 status: active
 tags: [oncall]
 created: 2026-07-15T14:44Z
-updated: 2026-09-23T10:32:48Z
+updated: 2026-09-23T10:42:38Z
 source: dpx-tasks import
 label: On-call errors backlog
 ---
@@ -98,3 +98,16 @@ TWO SEPARATE FIXES, DO NOT CONFLATE:
 2. The subject-only fingerprint (why the ticket is unreadable and keeps reopening). Shared code, error_framework.py -> ESCALATE per the no-shared-code-changes convention. Samuel is live in this code (branches samuel/dops-684/686/687/688).
 
 NOT DONE: nothing commented on Linear, no state changed, per instruction. Sentry still unread — connectors are authorized but this session's MCP registry was bound at start, so it needs a FRESH SESSION.
+- 2026-09-23T10:42Z [claude-code] ERROR-1657 CONFIRMED RECOVERED 2026-09-23 — verified against the LIVE limits servers from dpx, not from the repo.
+
+GET http://limits-server-happymoney.edgefocus.net:5555/limit-status (reachable from dpx only) returns for happymoney_td: edgex2026PT1=0, edgex2026PT2=0, edgex20261NN=11,000,000. The fund KEY IS PRESENT, so get_limit_for_fund no longer raises KeyError and happymoney edgex20261NN offers are being limit-checked normally at the $11M ceiling. Matches Trishit's screenshot and matches repo master exactly. ERROR-1657's condition is resolved on the server that actually enforces happymoney. Closeable, with the /limit-status response as the evidence (house style: transient, recovered, proof attached).
+
+SWEEP OF EVERY CHANNEL AGAINST ITS OWN ENFORCING SERVER (each production endpoint's limits_server_host), live vs repo master:
+- IN SYNC: upgrade_loan_td, anchored_auto_indirect, foursight_auto_indirect, happymoney_td, openroad_auto_refi, prosper_loan_td, sofi_loan_td.
+- revolut_loan_fl on limits-server-revolut: fortress_revolut live max=0 vs repo 100,000. Key present so NO error is posted, but a 0 ceiling rejects every offer silently. Either the server predates the $100k entry or 0 is deliberate. WORTH CHECKING - this is the quiet failure mode of the same stale-config problem, and it produces no alert at all.
+- credible_loan_fl on limits-server-tare: UNREACHABLE from dpx. tare_credible was added 2026-09-08 (#6700). Note tare_loan_fl_production.json has limits_server_host=null while credible_loan_fl_production.json points at limits-server-tare. If that host is not deployed, credible would emit "Error Contacting Limits Server" (a DIFFERENT subject, so a different Sentry issue), not this one.
+- Not checkable from dpx: the five channels on 127.0.0.1:5555 (marlette_loan_td, innovate_auto_refi, lcx_pm, lcx_sm, upgrade_card_td) - those run on their own endpoint hosts.
+
+EVIDENCE THAT THE STALE-CONFIG PROBLEM IS REAL AND SYSTEMIC, NOT A ONE-OFF: limits-server-happymoney serves ALL channels from one config (create_app loads the whole file), and its copy is months out of date for channels it does not enforce - anchored castlelake_auto live=850,000 vs repo 4,500,000, foursight castlelake_auto live=5,000,000 vs repo 10,000,000, tare_credible absent entirely. Since it DOES carry happymoney's $11M from #6171 (2026-08-06) but NOT anchored's raise from #6163 (2026-08-19), that process last restarted between those two dates. Restart-after-config-change is clearly not reliable discipline; it only became visible here because a MISSING KEY raises and alerts, whereas a STALE VALUE does not.
+
+DISPOSITION: ERROR-1657 -> CLOSE as recovered (evidence = the happymoney /limit-status response). Separately worth raising: (1) revolut fortress_revolut=0, (2) no reload route + no startup cross-check that every bookable channel/fund is loaded, (3) the subject-only Sentry fingerprint. Nothing was posted to Linear and no state changed, per instruction.
