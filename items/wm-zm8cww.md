@@ -3,6 +3,10 @@ id: wm-zm8cww
 type: task
 title: PD #1253 ingest_prediction_files fails every ~30min in prod — root cause not in the run log group
 status: open
+priority: p1
+size: s
+due: 2026-09-24
+tags: [oncall, pagerduty, dagster]
 created: 2026-09-23T19:18:17Z
 updated: 2026-09-23T19:18:17Z
 source: pd-alert-manager
