@@ -5,7 +5,7 @@ title: On-call / Errors backlog
 status: active
 tags: [oncall]
 created: 2026-07-15T14:44Z
-updated: 2026-09-22T18:51:47Z
+updated: 2026-09-23T10:32:48Z
 source: dpx-tasks import
 label: On-call errors backlog
 ---
@@ -79,3 +79,22 @@ WHAT IS NOW PROVEN vs STILL INFERRED — the distinction matters and I had been 
 NEW FINDING THAT WEAKENS THE "NORTHPOND CANNOT BE PROD" CLAIM: config_resolution.resolve_endpoint_config_filepath checks the CURRENT WORKING DIRECTORY FIRST and only falls back to lib/efp/json_endpoints/configs/. So a deployed endpoint started from a directory containing its own northpond_loan_fl_production.json would silently use that file instead of the repo's. The repo evidence (limits_server_host null in all four northpond configs, null since 5fa0c6514 / #2501 on 2024-02-02) is strong but is NOT airtight against a deploy-time override. Do not state "northpond cannot be the prod source" as settled until Sentry confirms the environment tag on the northpond events.
 
 DISPOSITION UNCHANGED: still do not work this as a northpond bug, still do not close it on the current evidence. Nothing was commented on Linear and no ticket state was changed, per instruction.
+- 2026-09-23T10:32Z [claude-code] ERROR-1657 — 2026-09-23 MAJOR CORRECTION + LIKELY ROOT CAUSE. Abhishek read the actual ticket title to me: "Missing Limit Configuration: No limits configured for channel_name [happymoney_td] fund_name [edgex20261NN]". It is HAPPYMONEY, not northpond.
+
+MY ERROR, AND ITS SOURCE: I never read the ticket (Linear connector unavailable all session). I took "channel northpond_loan_fl fund efhyf" from the 2026-08-05 entry in this very item, written by a prior claude-code session, which said "ERROR-1657 latest event ... now reads channel northpond_loan_fl fund efhyf". That note was describing the SENTRY LATEST EVENT, not the Linear title, and I carried it forward for two days as the ticket's identity. Everything I wrote about northpond configs, FUND_WITH_PURCHASE_TAPE_EXPR and wm-7qqeke was chasing the wrong platform. Lesson matches the standing rule about not taking other agents' notes at face value.
+
+BUT THE TWO READINGS TOGETHER CONFIRM THE CATCH-ALL MECHANISM — this is now evidence, not inference. Linear title (frozen at ticket creation) = happymoney_td / edgex20261NN. Sentry latest event on 2026-08-05 = northpond_loan_fl / efhyf. TWO DIFFERENT CHANNEL/FUND PAIRS ON ONE ISSUE, observed independently five weeks apart. That is exactly what subject-only fingerprinting (scope.fingerprint = error_framework_<subject>, error_framework.py:402, subject = constant "Missing Limit Configuration") predicts. The "does it actually span multiple channels" question I flagged as unverified is now answered YES.
+
+LIKELY ROOT CAUSE OF THE HAPPYMONEY EVENT — a real prod misconfiguration, NOT CI noise:
+- edgex20261NN was added to happymoney_td's fund_configs in 2fde4fc20 / PR #6097, 2026-07-30, titled "happymoney_td: book to edgex20261NN + $9M daily purchase limit".
+- That commit is ATOMIC IN THE REPO: 3 files, limits_server_config.json + models_by_channel.json + happymoney_td_model.py. So the channel started booking to edgex20261NN and the limit was defined in the same commit.
+- BUT the limits server is a SEPARATE LONG-RUNNING PROCESS that reads its config EXACTLY ONCE, in create_app() via get_config(), and bin/limits_server/limits_server_app.py exposes only /server-status, /check-limits, /reverse-limits and /limit-status — THERE IS NO RELOAD ROUTE. A config change does nothing until limits-server-happymoney.edgefocus.net:5555 is restarted.
+- So if the happymoney endpoint picked up the new booking fund before that limits server was restarted, every happymoney edgex20261NN query KeyErrors. CONSEQUENCE IS NOT COSMETIC: check_allowed_and_increment returns uuids_allowed=[] on that path, i.e. EVERY OFFER FOR THAT FUND IS REJECTED while the window is open. That is lost volume, not just an alert.
+
+VERIFICATION PATH (no Sentry needed): GET /limit-status on limits-server-happymoney.edgefocus.net:5555 returns the live IN-MEMORY config per channel. If edgex20261NN is present now, the server has been restarted since #6097 and the condition has recovered -> ERROR-1657 is closeable with that response as the evidence, in the house "transient, recovered" style. If it is ABSENT, happymoney edgex20261NN offers are STILL being rejected right now and this is an active incident.
+
+TWO SEPARATE FIXES, DO NOT CONFLATE:
+1. Deploy ordering / no hot reload (the actual ERROR-1657 cause). Options: restart discipline documented alongside any limits_server_config.json change; or a reload route; or a startup cross-check that every channel/fund the endpoints can book is present in the loaded config. The PR that adds a fund cannot make the running server aware of it.
+2. The subject-only fingerprint (why the ticket is unreadable and keeps reopening). Shared code, error_framework.py -> ESCALATE per the no-shared-code-changes convention. Samuel is live in this code (branches samuel/dops-684/686/687/688).
+
+NOT DONE: nothing commented on Linear, no state changed, per instruction. Sentry still unread — connectors are authorized but this session's MCP registry was bound at start, so it needs a FRESH SESSION.
