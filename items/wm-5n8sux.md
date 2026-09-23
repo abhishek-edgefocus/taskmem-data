@@ -6,6 +6,7 @@ status: open
 priority: p1
 size: s
 tags: [oncall, pagerduty, grafana]
+links: [relates:wm-unb5gu]
 created: 2026-09-23T19:18:17Z
 updated: 2026-09-23T19:18:17Z
 source: pd-alert-manager
