@@ -8,7 +8,7 @@ size: ~1 day
 due: 2026-09-29
 tags: [oncall, pagerduty]
 created: 2026-09-22T17:26:27Z
-updated: 2026-09-23T19:30:34Z
+updated: 2026-09-23T19:38:09Z
 source: claude-code
 ---
 
@@ -55,3 +55,4 @@ SIDE FINDING worth its own ticket: 'pii/sandbox/hash-key' cannot be loaded (Clie
 
 CURRENT STATE 19:29Z: all four endpoints healthy and serving; last line in both tare and credible logs is 'Success putting to S3'. Zero ERROR lines on 09-23 across all four.
 VERDICT: ESCALATE/DECIDE. Do not close #1411 as transient - it bundles a live escalating defect whose fix sits in shared/model-microservice code.
+- 2026-09-23T19:38Z [pd-1253] PD #1253 (ingest_prediction_files, Dagster prod): only PARTLY DEV-1909. Incident opened 2026-09-17 21:19Z on an OOM SIGKILL of step predicted_cashflows; first duplicate(efp_id,fund,mob) ERROR in CloudWatch retention is 2026-09-18 20:08Z, a day later. Both fold into one Grafana dedup key. Last 24h: 48 RUN_FAILUREs, 0 successes; 41 OOM SIGKILL; every run that got past predicted_cashflows failed best_est_projections_at_orig on the northpond OLV duplicates (664 failures at 17:37/18:09/18:37/19:07Z; count 601->654->664). Conclusion: DEV-1909 is the current visible failure but not the incident's cause; fixing it alone will not close #1253 - the predicted_cashflows OOM needs its own ticket / memory bump.
