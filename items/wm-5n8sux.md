@@ -3,6 +3,9 @@ id: wm-5n8sux
 type: task
 title: dumbledore app-error PagerDuty alerts stopped auto-resolving after 2026-09-22
 status: open
+priority: p1
+size: s
+tags: [oncall, pagerduty, grafana]
 created: 2026-09-23T19:18:17Z
 updated: 2026-09-23T19:18:17Z
 source: pd-alert-manager
