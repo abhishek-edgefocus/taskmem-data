@@ -2,7 +2,7 @@
 id: wm-gwp79w
 type: bug
 title: PD #1438: northpond duplicate (efp_id,mob,fund) rows break best_est_projections_at_orig — all-platform gold MOB frozen since 2026-09-21
-status: next
+status: active
 priority: high
 tags: [northpond, predictions, pagerduty, oncall]
 links: [relates:wm-8uyfnw]
