@@ -7,7 +7,7 @@ priority: p2
 tags: [grafana, fund-monitoring, dev-1716]
 links: [relates:wm-uwncjv]
 created: 2026-09-23T10:24:40Z
-updated: 2026-09-23T10:24:40Z
+updated: 2026-09-23T14:16:58Z
 source: claude-code-critic
 label: FPM Monthly ROI panel understates
 ---
@@ -29,3 +29,6 @@ NOT a DEV-1716 regression: the panel SQL is unchanged prod SQL; EFHYF is just th
 - reported by: claude-code-critic
 - host: ip-192-168-1-6.ap-south-1.compute.internal
 - when: 2026-09-23T10:24:40Z
+
+## Log
+- 2026-09-23T14:16Z [claude-code-critic] 2026-09-23 Brett pushback (DM 19:41): a ~$4MM anchored efhyf->castlelake sale 'a couple of months ago' did NOT dent returns. Verified he is right: silver.transfers 2026-07 has 203 anchored loans efhyf->castlelake_auto and efhyf anchored UPB drops 3,850,587 (06-30) -> 542,686 (07-31), yet the Monthly Whole Loan Return for 2026-07 is +0.26%. Reason: in GOLD.REALIZED_CASHFLOWS_CALENDAR_MONTH_DAILY the anchored leg's BOP_VALUE was only 691,348 that month (vs 3.85M UPB) so there was no value to lose, whereas the March LC leg carried full value (lcx_pm BOP 2,145,083 -> EOP 29,990). So 'a sale always dents the panel' is NOT the rule — the LC book is valued in the table and the anchored book is not. Two open questions: why anchored value ~18%% of UPB in that table, and which panel Brett's -36%% is on (legacy Returns Breakdown 31bKjSwSz shows 2026-03 = +0.08%%; our panel 544 shows -15.79%%; -36%% reproduced on neither at fund level).
