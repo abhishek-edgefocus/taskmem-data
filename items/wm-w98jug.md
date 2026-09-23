@@ -8,7 +8,7 @@ size: ~1 day
 due: 2026-09-29
 tags: [oncall, pagerduty]
 created: 2026-09-22T17:26:27Z
-updated: 2026-09-23T18:54:01Z
+updated: 2026-09-23T19:17:37Z
 source: claude-code
 ---
 
@@ -38,3 +38,4 @@ Also in #1435 but unrelated: upgrade:pending_purchase missing 09-18/09-19 only (
 Note: prior session logged #1435 as 'a data-gap REPORT' - that reading was incomplete. The monitoring_daily job does succeed (RUN_SUCCESS), but the LC entry in it is an active 7-day outage plus a live PII exposure.
 
 No unmatched-file alerting exists for statement ingestion, so this P3 gap report was the ONLY signal that LC broke.
+- 2026-09-23T19:17Z [pd-alert-manager] 2026-09-23 ~19:2xZ: Abhishek cleared the sandbox set — merged #1414 #1415 #1416 #1418 #1420 #1421 into parent #1411 and resolved it, closed #1431 directly, held #1439 (prosper-td-sandbox, too new). Sandbox open drops from 9 to 1. Non-sandbox open remains 19.
