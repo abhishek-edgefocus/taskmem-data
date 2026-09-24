@@ -8,7 +8,7 @@ size: ~1 day
 due: 2026-09-29
 tags: [oncall, pagerduty]
 created: 2026-09-22T17:26:27Z
-updated: 2026-09-24T12:00:26Z
+updated: 2026-09-24T12:05:47Z
 source: claude-code
 ---
 
@@ -148,3 +148,4 @@ Cause: silver.transfers lifecycle validation 'sold before active purchase lifecy
 Not transient, not a code regression: validation is from 2026-07-16 (59e14c2fe, Abhijeet); newest commit on transfers_utils.py is 2026-08-27. Zero occurrences in the prior 7d, first fire 2026-09-24 00:52Z, then EVERY run since (00:52, 03:53, 04:52, 10:54, 11:51Z) — still failing 8 min before check at 11:59Z. Blast radius: upgrade_transfers blocks upgrade_positions + all four upgrade_realized_cashflows_* assets; Upgrade statements pipeline stalled ~11h.
 
 VERDICT: DELEGATE to Abhijeet Bodas — he owns both the artificial rows and the validation. Needs his call on which sale is authoritative (recommend: retire the 09-01 artificial rows now the real 09-23 sale landed). No Linear ticket exists yet. Adjacent open: DEV-1891 (EDGEX transfer-out semantics, Abhijeet, Todo). Draft message handed to Abhishek; nothing sent.
+- 2026-09-24T12:05Z [pd-1458] PD #1458 investigated. #1458 + #1457 are one failure (statements_marlette 07:23Z, marlette_transfers blocking validation transfer-lifecycle-is-well-formed, 82 errors = 41 loans double-purchased into edgex20261NN on both 09-17 and 09-18). Transfer data is now FIXED and verified in prod (zero chain violations remain; re-materialized 08:24Z, all 6 checks passed). Real remaining problem: last clean statements_marlette run was 09-21 14:35Z, 4 failures since, and 16 downstream assets (goldman-hyp trigger limits/covenants, realized cashflows, edgex 2025-1NN/2NN/2026-PT1 CL) are still stale at 09-21. An external dagster_client repair is walking only the edgex20261NN+positions branch. Needs one full statements_marlette run, which Abhishek launches. Detail in [[wm-amk623]].
