@@ -7,7 +7,7 @@ priority: high
 tags: [northpond, predictions, pagerduty, oncall]
 links: [relates:wm-8uyfnw]
 created: 2026-09-23T18:53:20Z
-updated: 2026-09-24T08:22:51Z
+updated: 2026-09-24T11:50:56Z
 source: pd-1438
 label: PD #1438
 ---
@@ -255,3 +255,18 @@ areas/efp/platforms/northpond/incidents.md: new I22 entry (the fan-out), two
 symptom-index rows, and I11 now points at I22 as its second and worse consumer.
 meta.md stamped in the same edit, flagging that I22's fix is written but NOT
 MERGED. NOT yet pushed to the dpx mirror (sync-to-dpx.sh needs dpx up).
+- 2026-09-24T11:50Z [pd-1451] PD #1451 is the SAME alert as #1438, not a new failure. Grafana triggered it independently at 2026-09-24T00:07:31Z (trigger channel=api, Grafana Events API v2) while #1438 was still open and still `triggered` — so the Dagster-asset dedup key is not folding repeats; expect more siblings until the fix lands. He acked #1451 from mobile at 08:45Z.
+
+Re-verified live on 2026-09-24 (PROD, read-only COMPUTE_WH_XS_DEV, from PD-1451 tab):
+- silver.realized_cashflows_from_origination: 668 dup (EFP_ID,FUND,MOB) groups / 1,508 rows — IDENTICAL to the pre-fix measurement, unchanged.
+- gold.predicted_cashflows_mob: MAX(AS_OF_DATE) = 2026-09-21 for ALL 13 slices (all, anchored, foursight, happymoney, innovate, lc, marlette, northpond, openroad, prosper, sofi, upgrade, upstart). Now 3 days stale.
+- silver.best_est_projections_at_orig: still MAX(AS_OF_DATE) 2026-08-24 / 95,424,815 rows.
+- CloudWatch /ecs/dagster-prod-run: ingest_prediction_files RUN_FAILURE on best_est_projections_at_orig every ~30 min continuously through 2026-09-24T07:37:21Z, and the duplicate-(efp_id,fund,mob) ERROR lines are still being emitted at 10:07:18 (northpond_OLV* at as_of_date 2026-09-23).
+- Note the failing step MOVED: through 09-23 ~09:36Z the step aborted as 'Dependencies for step best_est_projections_at_orig failed: [predicted_cashflows]'; from 09-23 22:02Z onward predicted_cashflows succeeds and best_est_projections_at_orig is itself the head failure. So PD #1433 (predicted_cashflows) is resolved-in-fact and this is now the only blocker.
+
+State of the fix as of 2026-09-24 ~10:40Z (ahead of the 08:22Z log above):
+- dp:~/claude-ws/dev-1909/efp is CLEAN on branch abhishek/dev-1909-601-... @ 26b63830f, pushed.
+- Test file northpond_realized_cashflows_from_origination_test.py HAS landed in edgefocus/transformations/silver/cashflows/.
+- PR #6989 is OPEN, DRAFT, MERGEABLE, reviewDecision REVIEW_REQUIRED. Checks: Run Tests SUCCESS, Select tests SUCCESS, Linear-link SUCCESS, diff-size SUCCESS, integration tests SKIPPED.
+- Remaining gates: (1) DEV_ABHISHEK materialization — the 668->0 proof is a read-only SELECT, not a real transform run; (2) Snowflake proof + DAG shot in the PR body per pr-style; (3) mark ready for review.
+- ~/dev-1909-pending/shared_variant.py (Mac, 16:30 IST, newest artifact) applies the cashflows/utils.py variant to measure its diff size — so the scoped-vs-shared choice may have been reopened after the commit. utils.py is NOT modified in the workspace.
