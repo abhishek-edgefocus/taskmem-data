@@ -8,7 +8,7 @@ size: ~1 day
 due: 2026-09-29
 tags: [oncall, pagerduty]
 created: 2026-09-22T17:26:27Z
-updated: 2026-09-24T11:51:04Z
+updated: 2026-09-24T11:53:09Z
 source: claude-code
 ---
 
@@ -140,3 +140,4 @@ LINEAR: ERROR-1853 (and ERROR-1854) already exist, created 2026-09-22T20:01Z, bo
 
 VERDICT: FIX NOW. It is our code, the diff is verified, and it re-crashes at 20:00Z today if untouched. Do NOT resolve #1445 as transient.
 - 2026-09-24T11:51Z [pd-1451] PD #1451 investigated (PD-1451 tab): DUPLICATE of #1438 — same alert, same asset, same root cause (wm-gwp79w / DEV-1909). Still firing every ~30 min through 2026-09-24T07:37Z; gold.predicted_cashflows_mob frozen at 2026-09-21 for all 13 platform slices, 3 days stale. Fix is PR #6989, draft, all checks green. #1433 (predicted_cashflows) is stale-in-fact — that step has succeeded since 09-23 22:02Z; best_est_projections_at_orig is now the sole head failure. Suggest merging #1451 into #1438 in the PD UI so the board carries one item.
+- 2026-09-24T11:53Z [pd-1459] PD #1459 investigated (standardized_loan_data_marlette, dumbledore, still triggered). ROOT CAUSE: vendor delivered the Marlette high_yield_prime files WITHOUT header rows on 2026-09-23. s3://efp-raw/historical_performance/marlette/high_yield_prime/positions/2026-09-23/'Historical Borrower Attributes through 202608 month end updated HYP.csv' first line is a data row, not a header -> pandas read_csv ValueError: Missing column provided to 'parse_dates': 'Contract_Date, First_Payment_Date, Funded_Date, Ops_maturitydate' (marlette.py:335). Payments file same defect -> KeyError: 'SST_loan_num'. Column count identical (55) to the good 2026-09-21 delivery, and 09-21 HAS the header row — so schema is unchanged, only the header line was dropped. Batch retried twice, both attempts exit 1 on HIGH_URGENCY_QUEUE — not spot reclaim, not transient. Cascade: HYP positions+payments FAILED -> summary/loans/cfframe FAILED as 'Dependent Job failed'. The 'standard' channel succeeded in full; only high_yield_prime is blocked, and 2026-09-23 HYP standardized data is missing. Second delivery discrepancy: 09-21 payments had 2 files (91MB 'hyp' + 2.3GB 'hyp all'), 09-23 has only the 91MB 'hyp'. No 2026-09-24 delivery had landed as of 12:0xZ. VERDICT: DELEGATE to Abhijeet Bodas (Marlette owner) to get a re-delivery with headers — per standing rule we do not patch vendor files at our end. NOT the same cause as #1455/#1456 ([DatastoreStandardizedPositions][marlette]) — those array children fail on 'ValueError: ef_score can't be null for edgex20261NN fund', a separate problem despite both being marlette.
