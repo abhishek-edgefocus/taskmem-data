@@ -8,7 +8,7 @@ size: ~1 day
 due: 2026-09-29
 tags: [oncall, pagerduty]
 created: 2026-09-22T17:26:27Z
-updated: 2026-09-24T12:05:47Z
+updated: 2026-09-24T12:09:38Z
 source: claude-code
 ---
 
@@ -149,3 +149,4 @@ Not transient, not a code regression: validation is from 2026-07-16 (59e14c2fe, 
 
 VERDICT: DELEGATE to Abhijeet Bodas — he owns both the artificial rows and the validation. Needs his call on which sale is authoritative (recommend: retire the 09-01 artificial rows now the real 09-23 sale landed). No Linear ticket exists yet. Adjacent open: DEV-1891 (EDGEX transfer-out semantics, Abhijeet, Todo). Draft message handed to Abhishek; nothing sent.
 - 2026-09-24T12:05Z [pd-1458] PD #1458 investigated. #1458 + #1457 are one failure (statements_marlette 07:23Z, marlette_transfers blocking validation transfer-lifecycle-is-well-formed, 82 errors = 41 loans double-purchased into edgex20261NN on both 09-17 and 09-18). Transfer data is now FIXED and verified in prod (zero chain violations remain; re-materialized 08:24Z, all 6 checks passed). Real remaining problem: last clean statements_marlette run was 09-21 14:35Z, 4 failures since, and 16 downstream assets (goldman-hyp trigger limits/covenants, realized cashflows, edgex 2025-1NN/2NN/2026-PT1 CL) are still stale at 09-21. An external dagster_client repair is walking only the edgex20261NN+positions branch. Needs one full statements_marlette run, which Abhishek launches. Detail in [[wm-amk623]].
+- 2026-09-24T12:09Z [pd-1455] PD #1455 + #1456 are one failure, not two (same subject/second, two apps -> two dedup keys). Root-caused in [[wm-uc6eaz]]: Marlette sent HEADER-ONLY marlette_originations files 2026-05..09-16, so 105 edgex20261NN loans funded 09-14/15 ($1.88M) have no credit attributes -> never EF-scored -> add_ef_score hard-raises -> marlette standardized_positions + ~35 dependent datastores fail EVERY night since 09-18 (6 nights, all array children exit 1). NOT transient, NOT Kabeer's #6680 ordering bug (that fix is deployed and correct). Needs his decision: vendor re-delivery vs softening the gate.
