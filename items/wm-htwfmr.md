@@ -5,8 +5,9 @@ title: Fix gateway_platforms parquet coercion crash blocking anchored_auto_indir
 status: next
 priority: high
 tags: [efp, anchored, oncall, pagerduty]
+links: [relates:wm-w98jug]
 created: 2026-09-24T11:23:32Z
-updated: 2026-09-24T11:23:32Z
+updated: 2026-09-24T11:23:45Z
 source: pd-1446
 label: Fix gateway_platforms parquet coercion crash
 estimate: <1h
