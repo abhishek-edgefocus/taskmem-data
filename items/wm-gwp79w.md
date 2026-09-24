@@ -7,7 +7,7 @@ priority: high
 tags: [northpond, predictions, pagerduty, oncall]
 links: [relates:wm-8uyfnw]
 created: 2026-09-23T18:53:20Z
-updated: 2026-09-24T07:20:36Z
+updated: 2026-09-24T08:22:51Z
 source: pd-1438
 label: PD #1438
 ---
@@ -178,4 +178,80 @@ defect, leaves the fund-blind joins live for 11 other platforms).
 Workspace: dp:~/claude-ws/dev-1909/efp (master @ e24cb02f2).
 Diagnostics: dp:~/claude-ws/dev-1909/diag/{sfq,d1..d7}.py
 (run with ~/repos/efp/.venv/bin/python; warehouse COMPUTE_WH_XS_DEV).
-- 2026-09-24T07:20Z [claude-code] 
+- 2026-09-24T08:22Z [claude-code] FIX WRITTEN AND VALIDATED ON PROD DATA. Abhishek's call (2026-09-24), asked
+twice: NorthPond-scoped, no common-code change. cashflows/utils.py is untouched.
+
+## What the fix does
+
+northpond_realized_cashflows_from_origination.py gains
+_resolve_preview_positions(sql): a sqlglot AST pass over the generated SQL that
+replaces all 12 `silver.positions` table references with a subquery keeping one
+row per (EFP_ID, AS_OF_DATE):
+
+    SELECT * FROM silver.positions
+    WHERE PLATFORM = 'northpond'
+    QUALIFY ROW_NUMBER() OVER (
+        PARTITION BY EFP_ID, AS_OF_DATE
+        ORDER BY IFF(FUND ILIKE 'to_be_purchased_%', 1, 0),
+                 UPDATED_AT DESC NULLS LAST, FUND) = 1
+
+Same precedence as gold/predicted_cashflows_aggregate.py:153 on the same pair.
+Resolves the pair BEFORE the builder sees it rather than deduplicating the
+output - once the cartesian exists, no column records which position row a row
+came from, so a post-hoc QUALIFY would be picking by column ordering.
+
+Gotcha found and fixed: an unaliased `silver.positions` is addressed downstream
+as `positions.<column>`, so the substituted subquery must be aliased
+`node.alias or node.name` - without that the query fails with
+"invalid identifier 'POSITIONS.AS_OF_DATE'".
+
+## Validation (PROD read-only, COMPUTE_WH_XS_DEV, dates=['2026-09-23'])
+
+Before/after built in one process (diag/gen_both.py) and both run as CTEs in a
+single statement (diag/d9.py), so the comparison is on one data snapshot:
+
+  BEFORE (master): 13,668 rows | 668 dup groups | 1,852 dup rows | 560 loans
+  AFTER  (fix)   : 13,118 rows |   0 dup groups |     0 dup rows |   0 loans
+
+  KEYS_ADDED 0 | KEYS_LOST 0 | AFTER_ROWS_NOT_IN_BEFORE 0
+
+668 matches PROD's live dup-group count exactly. The fix only ever removes the
+spurious twins: it creates no (efp_id, fund, mob) key, loses none, and every
+surviving row already existed in the before set.
+
+Worked loan northpond_OLV12563455 (diag/d10.py): 10 rows -> 2, and only the
+survivors balance.
+  MOB 1: 5,000.00 - 108.86 = 4,891.14
+  MOB 2: 4,891.14 -  51.59 = 4,839.55
+The discarded twins carry the payment but never apply it.
+
+## State of the change
+
+dp:~/claude-ws/dev-1909/efp, branch still master @ e24cb02f2, uncommitted.
+  M edgefocus/.../cashflows/northpond_realized_cashflows_from_origination.py
+ruff format --check: clean. ruff check: clean.
+
+## NOT DONE - dpx went unreachable mid-session (port 22 timing out, ~09:25 PT)
+
+1. The test file is written but NEVER LANDED on dpx and has NEVER RUN. It is at
+   ~/dev-1909-pending/northpond_realized_cashflows_from_origination_test.py on
+   the Mac (along with a copy of the fix). scp it to
+   edgefocus/transformations/silver/cashflows/ and run it.
+   It is duckdb row-based per the standing rule (no SQL-substring assertions):
+   fixture with an owned+preview pair, a preview-only loan and an upgrade row;
+   asserts the owned row wins, a lone preview row survives, one row per
+   (efp_id, as_of_date), northpond scoping, and that both aliased and unaliased
+   references still resolve. One structural test asserts every surviving
+   silver.positions reference sits under a QUALIFY.
+2. mypy never completed (first run died with the ssh drop at 600s, cold cache).
+3. No commit, no branch, no PR. Branch name from Linear:
+   abhishek/dev-1909-601-duplicate-efp_id-fund-mob-groups-for-northpond-in
+4. Not validated in DEV_ABHISHEK as a real transform run - the validation above
+   is a read-only SELECT against PROD, not a materialization.
+
+## Notes updated (Mac, done)
+
+areas/efp/platforms/northpond/incidents.md: new I22 entry (the fan-out), two
+symptom-index rows, and I11 now points at I22 as its second and worse consumer.
+meta.md stamped in the same edit, flagging that I22's fix is written but NOT
+MERGED. NOT yet pushed to the dpx mirror (sync-to-dpx.sh needs dpx up).
