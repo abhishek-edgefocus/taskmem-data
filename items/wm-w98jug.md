@@ -8,7 +8,7 @@ size: ~1 day
 due: 2026-09-29
 tags: [oncall, pagerduty]
 created: 2026-09-22T17:26:27Z
-updated: 2026-09-24T11:28:59Z
+updated: 2026-09-24T11:51:04Z
 source: claude-code
 ---
 
@@ -139,3 +139,4 @@ FAILED REPRO PATH, recorded so nobody repeats it: get_unadded_owned_data() from 
 LINEAR: ERROR-1853 (and ERROR-1854) already exist, created 2026-09-22T20:01Z, both still Backlog, no priority, no description. Sentry issue 7749239261.
 
 VERDICT: FIX NOW. It is our code, the diff is verified, and it re-crashes at 20:00Z today if untouched. Do NOT resolve #1445 as transient.
+- 2026-09-24T11:51Z [pd-1451] PD #1451 investigated (PD-1451 tab): DUPLICATE of #1438 — same alert, same asset, same root cause (wm-gwp79w / DEV-1909). Still firing every ~30 min through 2026-09-24T07:37Z; gold.predicted_cashflows_mob frozen at 2026-09-21 for all 13 platform slices, 3 days stale. Fix is PR #6989, draft, all checks green. #1433 (predicted_cashflows) is stale-in-fact — that step has succeeded since 09-23 22:02Z; best_est_projections_at_orig is now the sole head failure. Suggest merging #1451 into #1438 in the PD UI so the board carries one item.
