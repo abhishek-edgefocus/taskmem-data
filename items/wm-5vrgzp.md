@@ -2,7 +2,7 @@
 id: wm-5vrgzp
 type: task
 title: Confirm Kabeer owns the recurring StandardizedPositions/marlette datastore failure (daily since 2026-09-19)
-status: next
+status: done
 priority: p2
 size: xs
 due: 2026-09-23
