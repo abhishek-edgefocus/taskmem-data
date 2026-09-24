@@ -3,8 +3,10 @@ id: wm-uc6eaz
 type: bug
 title: marlette standardized_positions fails nightly since 2026-09-18: 105 edgex20261NN loans unscorable because Marlette sent header-only originations files 2026-05..09-16 (PD #1455/#1456)
 status: open
+priority: p1
+tags: [oncall, pagerduty, marlette, edgex, data-freshness]
 created: 2026-09-24T12:09:23Z
-updated: 2026-09-24T12:09:23Z
+updated: 2026-09-24T12:09:37Z
 source: pd-1455
 ---
 
