@@ -8,7 +8,7 @@ size: ~1 day
 due: 2026-09-29
 tags: [oncall, pagerduty]
 created: 2026-09-22T17:26:27Z
-updated: 2026-09-23T19:38:09Z
+updated: 2026-09-24T11:16:39Z
 source: claude-code
 ---
 
@@ -56,3 +56,38 @@ SIDE FINDING worth its own ticket: 'pii/sandbox/hash-key' cannot be loaded (Clie
 CURRENT STATE 19:29Z: all four endpoints healthy and serving; last line in both tare and credible logs is 'Success putting to S3'. Zero ERROR lines on 09-23 across all four.
 VERDICT: ESCALATE/DECIDE. Do not close #1411 as transient - it bundles a live escalating defect whose fix sits in shared/model-microservice code.
 - 2026-09-23T19:38Z [pd-1253] PD #1253 (ingest_prediction_files, Dagster prod): only PARTLY DEV-1909. Incident opened 2026-09-17 21:19Z on an OOM SIGKILL of step predicted_cashflows; first duplicate(efp_id,fund,mob) ERROR in CloudWatch retention is 2026-09-18 20:08Z, a day later. Both fold into one Grafana dedup key. Last 24h: 48 RUN_FAILUREs, 0 successes; 41 OOM SIGKILL; every run that got past predicted_cashflows failed best_est_projections_at_orig on the northpond OLV duplicates (664 failures at 17:37/18:09/18:37/19:07Z; count 601->654->664). Conclusion: DEV-1909 is the current visible failure but not the incident's cause; fixing it alone will not close #1253 - the predicted_cashflows OOM needs its own ticket / memory bump.
+- 2026-09-24T11:16Z [pd-1444] PD #1444 (collate_parquets / upgrade_loan_td) investigated end to end (tab PD-1444). ROOT CAUSE PROVEN — this is SPOT RECLAIM, not a data or memory defect, and the retry that would have absorbed it is explicitly disabled.
+
+EVIDENCE (AWS Batch, us-east-2 — NOTE: the account's Batch resources are in us-east-2; querying us-east-1 returns empty job lists and reads as 'retention expired', which is a trap):
+- Array job 345a3879-0ad4-420a-8afc-41aeb095a55e (the 2026-09-23 12:45 PT run that produced #1444) size=2: child :0 SUCCEEDED first attempt, child :1 FAILED with statusReason 'Host EC2 (instance i-046158d7455e9df6b) terminated.' — BOTH Batch attempts reclaimed (i-085a719507001b28c then i-046158d7455e9df6b).
+- The 11:45 PT run (job 1482c205-d5af-4589-9662-4f3529e6b501) is identical: :0 SUCCEEDED 1 attempt, :1 FAILED 'Host EC2 (instance i-0c6eb608224a8bd58) terminated.', 2 attempts.
+- OVERNIGHT_QUEUE compute env is type=SPOT, bidPercentage=40. Same queue and same reclaim mechanism as #1390.
+- Job retryStrategy is attempts=2, evaluateOnExit=[] — Batch-level retries existed and both got reclaimed.
+
+WHY upgrade_loan_td AND WHY ALWAYS CHILD :1:
+- bin/md/collate_parquets.py:execute_via_batch sets memory_gb = 100 if channel == 'upgrade_loan_td' else 24 (resourceRequirements MEMORY=98859 MiB, VCPU=8). It is the only channel asking for a ~100GB box, so it needs the largest/scarcest spot instance — hence it is the channel that gets reclaimed while the 24GB channels do not.
+- dates = [yesterday, today] -> child :0 = yesterday, child :1 = today. Yesterday's partition hits 'No new files to process' and exits in ~50s; today's does the real append work and runs 3-14 min. ~15x the exposure window, so the reclaim always lands on :1. Measured: :0 done in 51s, :1 still running at 14 min when killed.
+
+WHY THE ALERT EVER SURFACES — the fix is one line:
+- collate_parquets.py calls batch_pool.wait_and_retry_failures(max_tries=1, retry_threshold=1.0). With max_tries=1 the loop in lib/efp/batch.py:1916-1959 hits 'try_num == max_tries' on the FIRST failure and breaks straight to raise, so zero app-level retries happen.
+- The 'Host EC2 (instance i-...) terminated.' pattern is ALREADY in RETRY_STATUS_PATTERNS at lib/efp/batch.py:48. The machinery to absorb exactly this failure exists and is whitelisted; max_tries=1 is the only thing preventing it. Raising max_tries to 3 in collate_parquets.py is the fix. retry_threshold=1.0 is not the binding constraint.
+
+TWO SECONDARY CODE DEFECTS FOUND (both explain why this alert has been re-investigated ~15 times in 21 days):
+1. The message '2 jobs never succeeded' is WRONG — only 1 of 2 failed. At max_tries=1 the code breaks before reassigning waiting_on_jobs, so len(waiting_on_jobs) is still the full base-job list. The alert title has been misreporting the failure count all along.
+2. At max_tries=1 the code NEVER logs the Batch statusReason — the reason-inspection block sits after the max_tries break. So 'Host EC2 terminated' is invisible in /efs/logs/dumbledore/collate_parquets.log and recoverable only from AWS Batch inside the 24h retention. That is why 15 prior investigations never got the cause.
+
+#1444 ITSELF IS RECOVERED — proof, not absence:
+- Last ERROR line in the log is 2026-09-23T12:59:10-07:00 = 19:59:10Z. #1444 was created 20:05:30Z, so it IS that error's firing (it is not a resolve-artifact re-fire of #1419).
+- 61 consecutive 'Completed optimized collation for upgrade_loan_td!' lines from 2026-09-23 13:00 PT through 2026-09-24 04:03 PT (~15h, runs every ~15 min). Zero failures.
+- Output is current: s3://efp-derived/gateway/upgrade/upgrade_loan_td/model_requests/2026-09-24/000.parquet written 2026-09-24T11:01:17Z, ~9 min before the check. Daily files are ~250MB (09-21 235.7MiB, 09-22 274.6MiB, 09-23 256.0MiB) — consistent, no gap.
+- No data loss by design: the last_processed_ts S3 tag is only updated on success, so the next 15-min run reprocesses the same files. A reclaim costs one cycle of latency, nothing else.
+
+CORRECTION to the 2026-09-23T18:13Z board note, which called collate_parquets a DAILY recurrence failing 'the same minute each day' (09-22 16:35Z, 09-23 16:34Z): that is coincidence, not a cron. The 20 upgrade_loan_td failures in the log scatter across 08:08-17:01 PT (10:26, 10:45, 12:07, 14:41, 09:58, 14:23, 12:01, 12:59 etc). They cluster in US daytime because that is when spot demand peaks against a 40% bid — which is exactly what a reclaim-driven failure looks like, and not what a fixed-time job failure looks like.
+
+ALSO CORRECTING MY OWN FIRST HYPOTHESIS, recorded so no one re-runs it: I initially read 'Waiting for 2 jobs to complete' + '2 jobs never succeeded' as a wrapper poll timeout. It is not — the log explicitly says '[jobs 2/2] Failed Job', a genuine Batch FAILED state. Nor is it OOM: 250MB/day parquet against a 100GB request is not close, and the statusReason is unambiguous.
+
+RECURRENCE: 15 PD incidents in 21d on this signature, 14 self-cleared, mean open 10.0h. It will keep firing at ~1-3/day until max_tries is raised.
+
+VERDICT: TRANSIENT — RESOLVE #1444 (proof above), PLUS a one-line fix worth a PR: max_tries=1 -> 3 in bin/md/collate_parquets.py. Follow-up candidate, NOT for now: the 100GB memory request looks obsolete under the incremental append+tag design and is what forces the scarce instance class; right-sizing it would shrink the reclaim surface, but needs profiling first.
+
+RESOLVE TIMING CAVEAT: per the 2026-09-23T11:46Z note, resolving before the Grafana keep_firing_for hold expires re-opens the same alert_key as a NEW incident (#1388 -> #1419 did exactly that). #1444's key is e87cf4a33667dd8223825184. Expect a possible new number if it is clicked early.
