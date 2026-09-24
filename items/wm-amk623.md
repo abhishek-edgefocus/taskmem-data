@@ -4,8 +4,9 @@ type: bug
 title: PD #1458/#1457: marlette gold assets stale since 2026-09-21 — statements_marlette failed 4 runs straight on transfer-lifecycle validation; transfers now fixed but 16 downstream assets never rebuilt
 status: next
 tags: [marlette, edgex, oncall]
+links: [parent:wm-w98jug]
 created: 2026-09-24T12:05:38Z
-updated: 2026-09-24T12:05:38Z
+updated: 2026-09-24T12:05:53Z
 source: pd-1458
 label: PD #1458/#1457
 ---
