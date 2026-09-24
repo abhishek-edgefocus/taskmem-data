@@ -8,7 +8,7 @@ size: ~1 day
 due: 2026-09-29
 tags: [oncall, pagerduty]
 created: 2026-09-22T17:26:27Z
-updated: 2026-09-24T11:23:05Z
+updated: 2026-09-24T11:28:59Z
 source: claude-code
 ---
 
@@ -98,3 +98,44 @@ Root cause: loan anchored_9977104 entered the curr_mod candidate universe (silve
 Cleared at source. Snowflake time travel at 2026-09-23 13:30 PT: 358 api loans, anchored_9977104 ABSENT. Now: 358 api loans, PRESENT (recovery_frac=0.3312, servicing_fee=0.0175). Replicated the exact guard against the live candidate universe: 358 candidates / 358 with api rows / 0 would fail. Zero ERROR lines in predictions.log since 2026-09-23T13:31:05. Verdict: TRANSIENT - resolve both.
 
 SEPARATE live bug found: PD #1445 (open, still triggered) - historical_model_inputs_gateway_platforms, [anchored_auto_indirect][model_requests], 'Cannot compare types ndarray(dtype=object) and str' at bin/historical_model_inputs/gateway/gateway_platforms.py:107 (requests.replace(['<NA>',''], np.NaN) on a column holding list/array cells). Failed 09-22 and 09-23 with 3 gateway logs unadded; will crash again daily at 13:00 PT. Same channel, but a parallel feed - not the upstream of #1446.
+- 2026-09-24T11:28Z [pd-1445] PD #1445 (historical_model_inputs_gateway_platforms / [anchored_auto_indirect][model_requests]) investigated end to end (tab PD-1445). Same signature as #1407; extends and partially corrects the 2026-09-23T17:45Z note.
+
+STATUS: still triggered, deterministic, NOT transient. Fails every day at 13:00 PT (20:00Z). Fired 09-22 20:06Z (#1407, self-resolved after 23h48m) and 09-23 20:06Z (#1445, open). Next firing today 2026-09-24 20:00Z. 32 PD occurrences in 21d on this app, but the older ones were a different subject (point_metrics etc); the model_requests crash starts 09-22. Last successful model_requests build: 2026-09-16 (2 positions added). 09-20/09-21 logged 'Nothing to add', so the code path was not exercised - do not read those as passes.
+
+ROOT CAUSE (traceback from /efs/logs/dumbledore, line 127019-127051):
+bin/historical_model_inputs/gateway/gateway_platforms.py:107, _make_requests_parquetable ->
+  requests = requests.replace(['<NA>', ''], np.NaN)
+-> TypeError: Cannot compare types 'ndarray(dtype=object)' and 'str'
+pandas replace_list compares every cell to the scalar '<NA>'; a cell holding a numpy array returns an ndarray instead of a bool.
+
+MEASURED DATA (2026-09-24, read directly from S3, corrects the 09-23 note's counts):
+- s3://efp-derived/gateway/anchored/anchored_auto_indirect/owned_model_requests = 358 rows x 2572 cols, clean, zero list/array cells, last written 09-16.
+- Dates to add: 2026-09-04 (301 rows, 1637 cols, clean), 2026-09-07 (179 rows, 1637 cols, clean), 2026-09-11 (5168 rows, 1678 cols) <- the poison.
+- 09-11 adds 58 new columns vs 09-04 (not 41). Exactly 10 of them hold numpy ndarrays (not 11): Applicant.CreditDetails.{trades,collections,ofacResult.messages,publicRecords,idMismatchAlerts} and the 5 CoApplicant twins. 100 of 5168 rows carry Applicant values, 3 rows carry CoApplicant values.
+- _credit_pull_success on 09-11 is pandas 'boolean' dtype (3899/5168 non-null), consistent with the earlier bool->NAType drift note.
+- NO PII EXPOSURE from this one: Applicant.CreditDetails.pdfInBase64 and .creditReportLink are present as columns but 0/5168 populated. The only PII-named new column with data is Applicant.PersonallyIdentifiableInformation.LoanApplicationUuid (4889/5168), a UUID.
+Upstream cause unchanged: the anchored gateway began emitting nested credit-detail arrays on 2026-09-11.
+
+FIX - VERIFIED, one hunk in _make_requests_parquetable (gateway_platforms.py:107):
+    nested = [c for c in requests.columns
+              if requests[c].dtype == object
+              and requests[c].map(lambda x: isinstance(x, (list, np.ndarray, dict))).any()]
+    if nested:
+        scalar = [c for c in requests.columns if c not in nested]
+        requests = pd.concat([requests[scalar].replace(['<NA>', ''], np.NaN),
+                              requests[nested]], axis=1)[requests.columns]
+    else:
+        requests = requests.replace(['<NA>', ''], np.NaN)
+
+PROOF (scripts in ~/claude-ws/pd-1445/ on dpx, run under efp_env):
+- Clean-channel equivalence: owned + 09-04 (659 x 2572). current vs proposed -> identical values True, identical dtypes True. The 'if nested' guard means every channel with no array cells runs the original line unchanged, so this is a no-op for innovate/marlette/prosper/openroad/lcx/northpond/sofi despite living in a shared script.
+- Broken case: owned + the 100 poisoned 09-11 rows (458 x 2626). current -> TypeError; proposed -> OK, parquet written 4,042,401 bytes, 2626 cols, column order preserved. Dropping the nested cols also works (3,713,732 bytes, 2616 cols) but is not needed - keeping them is the smaller change.
+- Note: put_df/to_parquet was ONLY reachable after the fix, so the 'does pyarrow accept arrays-of-dicts' question was open until now. Answer: it does.
+
+SIDE EFFECT TO EXPECT: with the fix, owned_model_requests schema grows 2572 -> ~2626 cols (the 58 new gateway columns, mostly null). Harmless for parquet, but worth knowing if a downstream reader pins the column set.
+
+FAILED REPRO PATH, recorded so nobody repeats it: get_unadded_owned_data() from ~/repos/efp (master 79549bf0c) returns dates_to_add=[] / 0 positions, because the local legacy Anchored datastore is behind prod (prod logged 360 owned vs 358 stored). Had to reconstruct the frame from S3 instead. Also: running a script FROM /tmp on dpx shadows the snowflake package with a stray /tmp/snowflake.py - run from ~/claude-ws.
+
+LINEAR: ERROR-1853 (and ERROR-1854) already exist, created 2026-09-22T20:01Z, both still Backlog, no priority, no description. Sentry issue 7749239261.
+
+VERDICT: FIX NOW. It is our code, the diff is verified, and it re-crashes at 20:00Z today if untouched. Do NOT resolve #1445 as transient.
