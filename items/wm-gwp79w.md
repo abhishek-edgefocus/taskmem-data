@@ -7,7 +7,7 @@ priority: high
 tags: [northpond, predictions, pagerduty, oncall]
 links: [relates:wm-8uyfnw]
 created: 2026-09-23T18:53:20Z
-updated: 2026-09-23T19:55:34Z
+updated: 2026-09-24T07:20:36Z
 source: pd-1438
 label: PD #1438
 ---
@@ -178,3 +178,4 @@ defect, leaves the fund-blind joins live for 11 other platforms).
 Workspace: dp:~/claude-ws/dev-1909/efp (master @ e24cb02f2).
 Diagnostics: dp:~/claude-ws/dev-1909/diag/{sfq,d1..d7}.py
 (run with ~/repos/efp/.venv/bin/python; warehouse COMPUTE_WH_XS_DEV).
+- 2026-09-24T07:20Z [claude-code] 
