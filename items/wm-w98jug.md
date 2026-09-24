@@ -8,7 +8,7 @@ size: ~1 day
 due: 2026-09-29
 tags: [oncall, pagerduty]
 created: 2026-09-22T17:26:27Z
-updated: 2026-09-24T11:16:39Z
+updated: 2026-09-24T11:23:05Z
 source: claude-code
 ---
 
@@ -91,3 +91,10 @@ RECURRENCE: 15 PD incidents in 21d on this signature, 14 self-cleared, mean open
 VERDICT: TRANSIENT — RESOLVE #1444 (proof above), PLUS a one-line fix worth a PR: max_tries=1 -> 3 in bin/md/collate_parquets.py. Follow-up candidate, NOT for now: the 100GB memory request looks obsolete under the incremental append+tag design and is what forces the scarce instance class; right-sizing it would shrink the reclaim surface, but needs profiling first.
 
 RESOLVE TIMING CAVEAT: per the 2026-09-23T11:46Z note, resolving before the Grafana keep_firing_for hold expires re-opens the same alert_key as a NEW incident (#1388 -> #1419 did exactly that). #1444's key is e87cf4a33667dd8223825184. Expect a possible new number if it is clicked early.
+- 2026-09-24T11:23Z [pd-1446] PD #1446 + #1448 (predictions / anchored_auto_indirect, 09-23 20:36Z): investigated. #1448 is a DUP of #1446 - same log, same PID 3444696, 8s apart; #1446 is the predictor ERROR line, #1448 the runner summary line. Different Grafana 'subject' label -> different dedup_key -> two incidents (fan-out mechanism 2).
+
+Root cause: loan anchored_9977104 entered the curr_mod candidate universe (silver.api_credit_attributes, 357->358) before its row existed in the api cashflow-config slice (silver.predictions source='api'). base.py:_per_loan_cashflow_config raises rather than fabricate recovery_frac/servicing_fee. First and only firing of this guard in the whole retained log window (since 2026-06-26).
+
+Cleared at source. Snowflake time travel at 2026-09-23 13:30 PT: 358 api loans, anchored_9977104 ABSENT. Now: 358 api loans, PRESENT (recovery_frac=0.3312, servicing_fee=0.0175). Replicated the exact guard against the live candidate universe: 358 candidates / 358 with api rows / 0 would fail. Zero ERROR lines in predictions.log since 2026-09-23T13:31:05. Verdict: TRANSIENT - resolve both.
+
+SEPARATE live bug found: PD #1445 (open, still triggered) - historical_model_inputs_gateway_platforms, [anchored_auto_indirect][model_requests], 'Cannot compare types ndarray(dtype=object) and str' at bin/historical_model_inputs/gateway/gateway_platforms.py:107 (requests.replace(['<NA>',''], np.NaN) on a column holding list/array cells). Failed 09-22 and 09-23 with 3 gateway logs unadded; will crash again daily at 13:00 PT. Same channel, but a parallel feed - not the upstream of #1446.
