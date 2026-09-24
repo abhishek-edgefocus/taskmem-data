@@ -5,7 +5,7 @@ title: marlette standardized_positions fails nightly since 2026-09-18: 105 edgex
 status: open
 priority: p1
 tags: [oncall, pagerduty, marlette, edgex, data-freshness]
-links: [relates:wm-w98jug]
+links: [relates:wm-w98jug, relates:wm-zgx7tj]
 created: 2026-09-24T12:09:23Z
 updated: 2026-09-24T12:09:37Z
 source: pd-1455
